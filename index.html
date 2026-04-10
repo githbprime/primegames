@@ -16,7 +16,8 @@
         /* Rows */
         .container { padding: 0 4% 50px 4%; }
         .row-title { font-size: 1.4vw; font-weight: 500; margin-top: 30px; margin-bottom: 10px; color: #999; }
-        .row { display: flex; gap: 10px; overflow-x: auto; padding-bottom: 20px; scrollbar-width: none; }
+        /* Added some padding-top to the row so the glows don't get clipped by the top of the container */
+        .row { display: flex; gap: 15px; overflow-x: auto; padding-top: 15px; padding-bottom: 30px; padding-left: 10px; padding-right: 10px; scrollbar-width: none; }
         .row::-webkit-scrollbar { display: none; }
 
         /* Game Posters & Glow Effects */
@@ -32,16 +33,17 @@
             height: 260px; 
             object-fit: cover; 
             border-radius: 4px; 
-            filter: blur(18px); /* Controls how soft the glow is */
-            opacity: 0.45; /* Base transparency */
+            filter: blur(20px); /* Softer, wider blur */
+            opacity: 0.75; /* Boosted base transparency so it is visible */
+            transform: scale(1.15) translateY(5px); /* THIS pushes the image out from behind the poster */
             z-index: 0; 
-            transition: opacity 0.3s; 
+            transition: opacity 0.3s, filter 0.3s; 
         }
         
         /* Make the glow pop when hovering! */
         .card:hover img.glow {
-            opacity: 0.85; 
-            filter: blur(22px);
+            opacity: 1; 
+            filter: blur(25px);
         }
 
         /* The main poster image */
