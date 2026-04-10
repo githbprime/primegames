@@ -1,11 +1,11 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Google</title>
+    <title>Loading...</title>
 </head>
-<body>
+<body style="background-color: black;">
     <script>
-        // CHANGE THIS TO THE GAME'S ACTUAL URL
+        // Change this URL for each game folder
         const gameUrl = "truffled.lol/games/YOMIHustle/";
 
         function launch() {
@@ -21,13 +21,18 @@
                 ifr.src = gameUrl;
                 win.document.body.appendChild(ifr);
                 
-                // Redirect the original "Menu" tab to Google to hide evidence
-                window.location.replace("https://google.com");
+                // We removed the Google redirect. 
+                // Now we just close this small redirect tab to keep things clean.
+                window.close(); 
             } else {
-                document.body.innerHTML = "<h1>Please allow pop-ups for this site.</h1>";
+                document.body.innerHTML = "<h2 style='color:white; font-family:sans-serif; text-align:center; margin-top:20%;'>Pop-up Blocked! Click the icon in your address bar to allow.</h2>";
             }
         }
         
+        launch();
+    </script>
+</body>
+</html>
         launch();
     </script>
 </body>
