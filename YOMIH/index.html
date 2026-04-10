@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Loading...</title>
+</head>
+<body style="background-color: black;">
+    <script>
+        // This link is more likely to allow being put in an iframe
+        const gameUrl = "https://games.g95.org/yomihustle/";
+
+        function launch() {
+            const win = window.open('about:blank', '_blank');
+            if (win) {
+                const doc = win.document;
+                doc.title = "Game Session";
+                
+                // Style the popup
+                doc.body.style.margin = '0';
+                doc.body.style.padding = '0';
+                doc.body.style.height = '100vh';
+                doc.body.style.overflow = 'hidden';
+                doc.body.style.background = '#000';
+
+                // Create and inject the iframe
+                const ifr = doc.createElement('iframe');
+                ifr.style.border = 'none';
+                ifr.style.width = '100%';
+                ifr.style.height = '100%';
+                ifr.setAttribute("allow", "fullscreen; keyboard; autoplay");
+                ifr.src = gameUrl;
+                
+                doc.body.appendChild(ifr);
+
+                // Send the main site back to the dashboard
+                window.history.back();
+            } else {
+                document.body.innerHTML = "<h2 style='color:white; font-family:sans-serif; text-align:center; margin-top:20%;'>Pop-up Blocked! Click the icon in your address bar to allow.</h2>";
+            }
+        }
+
+        // Run the launch
+        launch();
+    </script>
+</body>
+</html>
