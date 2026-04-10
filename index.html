@@ -124,13 +124,45 @@
         });
     }
 
-    // --- 3. THE SEARCH BAR ---
+    // --- 3. THE SEARCH BAR (UPDATED) ---
     function search() {
         let input = document.getElementById('searchBar').value.toLowerCase();
-        let cards = document.getElementsByClassName('card');
-        for (let i = 0; i < cards.length; i++) {
-            let name = cards[i].getAttribute('data-name').toLowerCase();
-            cards[i].style.display = name.includes(input) ? "block" : "none";
+        let titles = document.getElementsByClassName('row-title');
+        
+        if (input.trim() !== "") {
+            // 1. Hide all category text (Trending, New, All)
+            for (let i = 0; i < titles.length; i++) {
+                titles[i].style.display = "none";
+            }
+            
+            // 2. Hide 'trending' and 'new' rows so we don't see duplicate games
+            document.getElementById('trending').style.display = "none";
+            document.getElementById('new').style.display = "none";
+            
+            // 3. Make the 'all' row wrap like a grid for search results
+            document.getElementById('all').style.flexWrap = "wrap";
+            
+            // 4. Filter only the cards inside the 'all' row
+            let cards = document.getElementById('all').getElementsByClassName('card');
+            for (let i = 0; i < cards.length; i++) {
+                let name = cards[i].getAttribute('data-name').toLowerCase();
+                cards[i].style.display = name.includes(input) ? "block" : "none";
+            }
+            
+        } else {
+            // User cleared the search bar - restore the normal homepage layout!
+            for (let i = 0; i < titles.length; i++) {
+                titles[i].style.display = "block"; // Bring back category text
+            }
+            document.getElementById('trending').style.display = "flex"; // Bring back rows
+            document.getElementById('new').style.display = "flex";
+            document.getElementById('all').style.flexWrap = "nowrap"; // Stop wrapping
+            
+            // Reset all cards everywhere to be visible
+            let allCards = document.getElementsByClassName('card');
+            for (let i = 0; i < allCards.length; i++) {
+                allCards[i].style.display = "block";
+            }
         }
     }
 
