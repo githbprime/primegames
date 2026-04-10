@@ -19,11 +19,43 @@
         .row { display: flex; gap: 10px; overflow-x: auto; padding-bottom: 20px; scrollbar-width: none; }
         .row::-webkit-scrollbar { display: none; }
 
-        /* Game Posters */
+        /* Game Posters & Glow Effects */
         .card { flex: 0 0 auto; width: 180px; position: relative; cursor: pointer; transition: transform 0.3s; text-decoration: none; color: inherit; }
         .card:hover { transform: scale(1.05); z-index: 10; }
-        .card img { width: 100%; height: 260px; object-fit: cover; border-radius: 4px; border: 1px solid #222; }
-        .card-title { margin-top: 8px; font-size: 14px; text-align: center; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; display: block; }
+        
+        /* The duplicated blurred background image */
+        .card img.glow { 
+            position: absolute; 
+            top: 0; 
+            left: 0; 
+            width: 100%; 
+            height: 260px; 
+            object-fit: cover; 
+            border-radius: 4px; 
+            filter: blur(18px); /* Controls how soft the glow is */
+            opacity: 0.45; /* Base transparency */
+            z-index: 0; 
+            transition: opacity 0.3s; 
+        }
+        
+        /* Make the glow pop when hovering! */
+        .card:hover img.glow {
+            opacity: 0.85; 
+            filter: blur(22px);
+        }
+
+        /* The main poster image */
+        .card img.poster { 
+            position: relative; /* Keeps it layered above the glow */
+            width: 100%; 
+            height: 260px; 
+            object-fit: cover; 
+            border-radius: 4px; 
+            border: 1px solid #222; 
+            z-index: 1; 
+        }
+        
+        .card-title { margin-top: 8px; font-size: 14px; text-align: center; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; display: block; position: relative; z-index: 2; }
     </style>
 </head>
 <body>
@@ -36,30 +68,32 @@
 <div class="container">
     <div class="row-title">Trending Now</div>
     <div class="row" id="trending-row">
-        <!-- Example Game -->
         <a href="./hustle/index.html" class="card" data-name="YOMI Hustle">
-            <img src="https://e.snmc.io/lk/f/x/d65d937781df0213f0bf0aa628aa0d06/13368350" alt="YOMIH">
+            <img src="https://e.snmc.io/lk/f/x/d65d937781df0213f0bf0aa628aa0d06/13368350" alt="YOMIH Glow" class="glow">
+            <img src="https://e.snmc.io/lk/f/x/d65d937781df0213f0bf0aa628aa0d06/13368350" alt="YOMIH" class="poster">
             <span class="card-title">Your Only Move Is HUSTLE</span>
         </a>
+        
         <a href="./ppg/index.html" class="card" data-name="PPG">
-            <img src="https://images.steamusercontent.com/ugc/4095452832467359472/B4E6625860974C17D011AC1D3F0063E1F8005604/?imw=5000&imh=5000&ima=fit&impolicy=Letterbox&imcolor=%23000000&letterbox=false" alt="TurboWarp">
+            <img src="https://images.steamusercontent.com/ugc/4095452832467359472/B4E6625860974C17D011AC1D3F0063E1F8005604/?imw=5000&imh=5000&ima=fit&impolicy=Letterbox&imcolor=%23000000&letterbox=false" alt="TurboWarp Glow" class="glow">
+            <img src="https://images.steamusercontent.com/ugc/4095452832467359472/B4E6625860974C17D011AC1D3F0063E1F8005604/?imw=5000&imh=5000&ima=fit&impolicy=Letterbox&imcolor=%23000000&letterbox=false" alt="TurboWarp" class="poster">
             <span class="card-title">People Playground</span>
         </a>
+        
         <a href="./gdash/index.html" class="card" data-name="GD">
-            <img src="https://images.ctfassets.net/vfkpgemp7ek3/1204734511/2c0723c100ed8d02a603dfe74597a6cb/geometry-dash-revenue.jpg" alt="Geometry Dash">
+            <img src="https://images.ctfassets.net/vfkpgemp7ek3/1204734511/2c0723c100ed8d02a603dfe74597a6cb/geometry-dash-revenue.jpg" alt="Geometry Dash Glow" class="glow">
+            <img src="https://images.ctfassets.net/vfkpgemp7ek3/1204734511/2c0723c100ed8d02a603dfe74597a6cb/geometry-dash-revenue.jpg" alt="Geometry Dash" class="poster">
             <span class="card-title">Geometry Dash</span>
         </a>
     </div>
 
     <div class="row-title">New Releases</div>
     <div class="row" id="new-row">
-        <!-- Add more cards here -->
-    </div>
+        </div>
 
     <div class="row-title">All Games</div>
     <div class="row" id="all-games-row">
-        <!-- Cards will repeat here for 'All' -->
-    </div>
+        </div>
 </div>
 
 <script>
