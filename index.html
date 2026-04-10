@@ -15,18 +15,16 @@
 
         /* Rows */
         .container { padding: 0 4% 50px 4%; }
-        /* Pulled bottom margin up slightly to balance the new top padding on the row */
         .row-title { font-size: 1.4vw; font-weight: 500; margin-top: 30px; margin-bottom: -10px; color: #999; } 
         
-        /* UPDATED: Increased padding to stop clipping, and increased gap for better spacing */
         .row { 
             display: flex; 
-            gap: 35px; /* More breathing room between the posters */
+            gap: 35px; 
             overflow-x: auto; 
-            padding-top: 40px; /* Room for top glow */
-            padding-bottom: 50px; /* Room for bottom glow */
-            padding-left: 30px; /* Fixes left clipping */
-            padding-right: 30px; /* Fixes right clipping */
+            padding-top: 40px; 
+            padding-bottom: 50px; 
+            padding-left: 30px; 
+            padding-right: 30px; 
             scrollbar-width: none; 
         }
         .row::-webkit-scrollbar { display: none; }
@@ -35,7 +33,6 @@
         .card { flex: 0 0 auto; width: 180px; position: relative; cursor: pointer; transition: transform 0.3s; text-decoration: none; color: inherit; }
         .card:hover { transform: scale(1.05); z-index: 10; }
         
-        /* The duplicated blurred background image */
         .card img.glow { 
             position: absolute; 
             top: 0; 
@@ -51,15 +48,10 @@
             transition: opacity 0.3s, filter 0.3s; 
         }
         
-        /* Make the glow pop when hovering! */
-        .card:hover img.glow {
-            opacity: 1; 
-            filter: blur(25px);
-        }
+        .card:hover img.glow { opacity: 1; filter: blur(25px); }
 
-        /* The main poster image */
         .card img.poster { 
-            position: relative; /* Keeps it layered above the glow */
+            position: relative; 
             width: 100%; 
             height: 260px; 
             object-fit: cover; 
@@ -80,36 +72,59 @@
 
 <div class="container">
     <div class="row-title">Trending Now</div>
-    <div class="row" id="trending-row">
-        <a href="./hustle/index.html" class="card" data-name="YOMI Hustle">
-            <img src="https://e.snmc.io/lk/f/x/d65d937781df0213f0bf0aa628aa0d06/13368350" alt="YOMIH Glow" class="glow">
-            <img src="https://e.snmc.io/lk/f/x/d65d937781df0213f0bf0aa628aa0d06/13368350" alt="YOMIH" class="poster">
-            <span class="card-title">Your Only Move Is HUSTLE</span>
-        </a>
-        
-        <a href="./ppg/index.html" class="card" data-name="PPG">
-            <img src="https://images.steamusercontent.com/ugc/4095452832467359472/B4E6625860974C17D011AC1D3F0063E1F8005604/?imw=5000&imh=5000&ima=fit&impolicy=Letterbox&imcolor=%23000000&letterbox=false" alt="TurboWarp Glow" class="glow">
-            <img src="https://images.steamusercontent.com/ugc/4095452832467359472/B4E6625860974C17D011AC1D3F0063E1F8005604/?imw=5000&imh=5000&ima=fit&impolicy=Letterbox&imcolor=%23000000&letterbox=false" alt="TurboWarp" class="poster">
-            <span class="card-title">People Playground</span>
-        </a>
-        
-        <a href="./gdash/index.html" class="card" data-name="GD">
-            <img src="https://images.ctfassets.net/vfkpgemp7ek3/1204734511/2c0723c100ed8d02a603dfe74597a6cb/geometry-dash-revenue.jpg" alt="Geometry Dash Glow" class="glow">
-            <img src="https://images.ctfassets.net/vfkpgemp7ek3/1204734511/2c0723c100ed8d02a603dfe74597a6cb/geometry-dash-revenue.jpg" alt="Geometry Dash" class="poster">
-            <span class="card-title">Geometry Dash</span>
-        </a>
-    </div>
+    <div class="row" id="trending"></div>
 
     <div class="row-title">New Releases</div>
-    <div class="row" id="new-row">
-        </div>
+    <div class="row" id="new"></div>
 
     <div class="row-title">All Games</div>
-    <div class="row" id="all-games-row">
-        </div>
+    <div class="row" id="all"></div>
 </div>
 
 <script>
+    // --- 1. YOUR GAME DATABASE ---
+    const gamesDB = [
+        {
+            title: "Your Only Move Is HUSTLE",
+            url: "./hustle/index.html",
+            imgSrc: "https://e.snmc.io/lk/f/x/d65d937781df0213f0bf0aa628aa0d06/13368350",
+            tags: ["trending", "all"] 
+        },
+        {
+            title: "People Playground",
+            url: "./ppg/index.html",
+            imgSrc: "https://images.steamusercontent.com/ugc/4095452832467359472/B4E6625860974C17D011AC1D3F0063E1F8005604/?imw=5000&imh=5000&ima=fit&impolicy=Letterbox&imcolor=%23000000&letterbox=false",
+            tags: ["trending", "all", "new"] 
+        },
+        {
+            title: "Geometry Dash",
+            url: "./gdash/index.html",
+            imgSrc: "https://images.ctfassets.net/vfkpgemp7ek3/1204734511/2c0723c100ed8d02a603dfe74597a6cb/geometry-dash-revenue.jpg",
+            tags: ["trending", "all"]
+        }
+    ];
+
+    // --- 2. THE RENDERER ---
+    function loadGames() {
+        gamesDB.forEach(game => {
+            const cardHTML = `
+                <a href="${game.url}" class="card" data-name="${game.title}">
+                    <img src="${game.imgSrc}" alt="${game.title} Glow" class="glow">
+                    <img src="${game.imgSrc}" alt="${game.title}" class="poster">
+                    <span class="card-title">${game.title}</span>
+                </a>
+            `;
+
+            game.tags.forEach(tag => {
+                const targetRow = document.getElementById(tag);
+                if (targetRow) {
+                    targetRow.insertAdjacentHTML('beforeend', cardHTML);
+                }
+            });
+        });
+    }
+
+    // --- 3. THE SEARCH BAR ---
     function search() {
         let input = document.getElementById('searchBar').value.toLowerCase();
         let cards = document.getElementsByClassName('card');
@@ -118,6 +133,8 @@
             cards[i].style.display = name.includes(input) ? "block" : "none";
         }
     }
+
+    window.onload = loadGames;
 </script>
 
 </body>
