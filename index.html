@@ -6,167 +6,227 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Home</title>
     <style>
-        :root { --bg: #050505; --card-bg: #141414; --text: #e5e5e5; --accent: #b9090b; }
-        body { background-color: var(--bg); color: var(--text); font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; margin: 0; padding: 0; overflow-x: hidden; }
-        
+        :root {
+            --bg: #050505;
+            --card-bg: #141414;
+            --text: #e5e5e5;
+            --accent: #b9090b;
+        }
+        body {
+            background-color: var(--bg);
+            color: var(--text);
+            font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            overflow-x: hidden;
+        }
         /* Header & Search */
-        header { padding: 20px 4%; display: flex; align-items: center; justify-content: space-between; position: sticky; top: 0; background: linear-gradient(to bottom, rgba(0,0,0,0.8), transparent); z-index: 100; }
-        .logo { color: var(--accent); font-size: 24px; font-weight: bold; letter-spacing: 1px; }
-        #searchBar { background: rgba(0,0,0,0.6); border: 1px solid #333; color: white; padding: 8px 15px; border-radius: 4px; width: 250px; outline: none; }
-
+        header {
+            padding: 20px 4%;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            position: sticky;
+            top: 0;
+            background: linear-gradient(to bottom, rgba(0,0,0,0.8), transparent);
+            z-index: 100;
+        }
+        .logo {
+            color: var(--accent);
+            font-size: 24px;
+            font-weight: bold;
+            letter-spacing: 1px;
+        }
+        #searchBar {
+            background: rgba(0,0,0,0.6);
+            border: 1px solid #333;
+            color: white;
+            padding: 8px 15px;
+            border-radius: 4px;
+            width: 250px;
+            outline: none;
+        }
         /* Rows */
-        .container { padding: 0 4% 50px 4%; }
-        .row-title { font-size: 1.4vw; font-weight: 500; margin-top: 30px; margin-bottom: -10px; color: #999; } 
-        
-        .row { 
-            display: flex; 
-            gap: 35px; 
-            overflow-x: auto; 
-            padding-top: 40px; 
-            padding-bottom: 50px; 
-            padding-left: 30px; 
-            padding-right: 30px; 
-            scrollbar-width: none; 
+        .container {
+            padding: 0 4% 50px 4%;
         }
-        .row::-webkit-scrollbar { display: none; }
-
+        .row-title {
+            font-size: 1.4vw;
+            font-weight: 500;
+            margin-top: 30px;
+            margin-bottom: -10px;
+            color: #999;
+        }
+        .row {
+            display: flex;
+            gap: 35px;
+            overflow-x: auto;
+            padding-top: 40px;
+            padding-bottom: 50px;
+            padding-left: 30px;
+            padding-right: 30px;
+            scrollbar-width: none;
+        }
+        .row::-webkit-scrollbar {
+            display: none;
+        }
         /* Game Posters & Glow Effects */
-        .card { flex: 0 0 auto; width: 180px; position: relative; cursor: pointer; transition: transform 0.3s; text-decoration: none; color: inherit; }
-        .card:hover { transform: scale(1.05); z-index: 10; }
-        
-        .card img.glow { 
-            position: absolute; 
-            top: 0; 
-            left: 0; 
-            width: 100%; 
-            height: 260px; 
-            object-fit: cover; 
-            border-radius: 4px; 
-            filter: blur(20px); 
-            opacity: 0.75; 
-            transform: scale(1.15) translateY(5px); 
-            z-index: 0; 
-            transition: opacity 0.3s, filter 0.3s; 
+        .card {
+            flex: 0 0 auto;
+            width: 180px;
+            position: relative;
+            cursor: pointer;
+            transition: transform 0.3s;
+            text-decoration: none;
+            color: inherit;
         }
-        
-        .card:hover img.glow { opacity: 1; filter: blur(25px); }
+        .card:hover {
+            transform: scale(1.05);
+            z-index: 10;
+        }
+        .card img.glow {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 260px;
+            object-fit: cover;
+            border-radius: 4px;
+            filter: blur(20px);
+            opacity: 0.75;
+            transform: scale(1.15) translateY(5px);
+            z-index: 0;
+            transition: opacity 0.3s, filter 0.3s;
+        }
+        .card:hover img.glow {
+            opacity: 1;
+            filter: blur(25px);
+        }
+        .card img.poster {
+            position: relative;
+            width: 100%;
+            height: 260px;
+            object-fit: cover;
+            border-radius: 4px;
+            border: 1px solid #222;
+            z-index: 1;
+        }
+        .card-title {
+            margin-top: 8px;
+            font-size: 14px;
+            text-align: center;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            display: block;
+            position: relative;
+            z-index: 2;
+        }
 
-        .card img.poster { 
-            position: relative; 
-            width: 100%; 
-            height: 260px; 
-            object-fit: cover; 
-            border-radius: 4px; 
-            border: 1px solid #222; 
-            z-index: 1; 
+        /* --- NEW: REQUEST BUTTON STYLES --- */
+        footer {
+            padding: 60px 0;
+            display: flex;
+            justify-content: center;
+            background-color: var(--bg);
         }
-        
-        .card-title { margin-top: 8px; font-size: 14px; text-align: center; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; display: block; position: relative; z-index: 2; }
+        .request-btn {
+            background-color: transparent;
+            color: #777;
+            border: 1px solid #444;
+            padding: 12px 35px;
+            font-size: 14px;
+            text-decoration: none;
+            border-radius: 4px;
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+        }
+        .request-btn:hover {
+            background-color: var(--text);
+            color: var(--bg);
+            border-color: var(--text);
+        }
     </style>
 </head>
 <body>
+    <header>
+        <div class="logo">PRIME GAMES</div>
+        <input type="text" id="searchBar" placeholder="Search games..." onkeyup="search()">
+    </header>
+    
+    <div class="container">
+        <div class="row-title">Trending Now</div>
+        <div class="row" id="trending"></div>
+        <div class="row-title">New Releases</div>
+        <div class="row" id="new"></div>
+        <div class="row-title">All Games</div>
+        <div class="row" id="all"></div>
+    </div>
 
-<header>
-    <div class="logo">PRIME GAMES</div>
-    <input type="text" id="searchBar" placeholder="Search games..." onkeyup="search()">
-</header>
+    <!-- --- NEW: REQUEST BUTTON HTML --- -->
+    <footer id="requestFooter">
+        <a href="https://docs.google.com/forms/d/e/1FAIpQLScIhmI3hEFJE3hjmUuGqQIFWCHLSbySl_R3BNaJIWPNFbFuSA/viewform?usp=publish-editor" target="_blank" class="request-btn">Request a Game</a>
+    </footer>
 
-<div class="container">
-    <div class="row-title">Trending Now</div>
-    <div class="row" id="trending"></div>
+    <script>
+        const gamesDB = [
+            { title: "Your Only Move Is HUSTLE", url: "./hustle/index.html", imgSrc: "https://snmc.io", tags: ["trending", "new", "all"] },
+            { title: "People Playground", url: "./ppg/index.html", imgSrc: "https://steamusercontent.com", tags: ["new", "all"] },
+            { title: "Geometry Dash", url: "./gdash/index.html", imgSrc: "https://ctfassets.net", tags: ["new", "all"] },
+            { title: "Needy Streamer Overload", url: "./needy/index.html", imgSrc: "https://ytimg.com", tags: ["new", "all"] }
+        ];
 
-    <div class="row-title">New Releases</div>
-    <div class="row" id="new"></div>
-
-    <div class="row-title">All Games</div>
-    <div class="row" id="all"></div>
-</div>
-
-<script>
-    // --- 1. YOUR GAME DATABASE ---
-    const gamesDB = [
-        {
-            title: "Your Only Move Is HUSTLE",
-            url: "./hustle/index.html",
-            imgSrc: "https://e.snmc.io/lk/f/x/d65d937781df0213f0bf0aa628aa0d06/13368350",
-            tags: ["trending", "new", "all"] 
-        },
-        {
-            title: "People Playground",
-            url: "./ppg/index.html",
-            imgSrc: "https://images.steamusercontent.com/ugc/4095452832467359472/B4E6625860974C17D011AC1D3F0063E1F8005604/?imw=5000&imh=5000&ima=fit&impolicy=Letterbox&imcolor=%23000000&letterbox=false",
-            tags: ["new", "all"] 
-        },
-        {
-            title: "Geometry Dash",
-            url: "./gdash/index.html",
-            imgSrc: "https://images.ctfassets.net/vfkpgemp7ek3/1204734511/2c0723c100ed8d02a603dfe74597a6cb/geometry-dash-revenue.jpg",
-            tags: ["new", "all"]
-        },
-        {
-            title: "Needy Streamer Overload",
-            url: "./needy/index.html",
-            imgSrc: "https://i.ytimg.com/vi/ju3tdM9Knn0/sddefault.jpg",
-            tags: ["new", "all"]
-        }
-    ];
-
-    // --- 2. THE RENDERER ---
-    function loadGames() {
-        gamesDB.forEach(game => {
-            const cardHTML = `
-                <a href="${game.url}" class="card" data-name="${game.title}">
-                    <img src="${game.imgSrc}" alt="${game.title} Glow" class="glow">
-                    <img src="${game.imgSrc}" alt="${game.title}" class="poster">
-                    <span class="card-title">${game.title}</span>
-                </a>
-            `;
-
-            game.tags.forEach(tag => {
-                const targetRow = document.getElementById(tag);
-                if (targetRow) {
-                    targetRow.insertAdjacentHTML('beforeend', cardHTML);
-                }
+        function loadGames() {
+            gamesDB.forEach(game => {
+                const cardHTML = `
+                    <a href="${game.url}" class="card" data-name="${game.title}">
+                        <img src="${game.imgSrc}" alt="${game.title} Glow" class="glow">
+                        <img src="${game.imgSrc}" alt="${game.title}" class="poster">
+                        <span class="card-title">${game.title}</span>
+                    </a>
+                `;
+                game.tags.forEach(tag => {
+                    const targetRow = document.getElementById(tag);
+                    if (targetRow) {
+                        targetRow.insertAdjacentHTML('beforeend', cardHTML);
+                    }
+                });
             });
-        });
-    }
-
-    // --- 3. THE SEARCH BAR (CLEAN MODE) ---
-    function search() {
-        let input = document.getElementById('searchBar').value.toLowerCase();
-        let titles = document.getElementsByClassName('row-title');
-        let trendingRow = document.getElementById('trending');
-        let newRow = document.getElementById('new');
-        let allRow = document.getElementById('all');
-        
-        if (input.trim() !== "") {
-            // Hide category titles and other rows
-            for (let i = 0; i < titles.length; i++) titles[i].style.display = "none";
-            trendingRow.style.display = "none";
-            newRow.style.display = "none";
-            
-            // Transform 'all' row into a wrapping search result grid
-            allRow.style.flexWrap = "wrap";
-            
-            let cards = allRow.getElementsByClassName('card');
-            for (let i = 0; i < cards.length; i++) {
-                let name = cards[i].getAttribute('data-name').toLowerCase();
-                cards[i].style.display = name.includes(input) ? "block" : "none";
-            }
-        } else {
-            // Restore everything
-            for (let i = 0; i < titles.length; i++) titles[i].style.display = "block";
-            trendingRow.style.display = "flex";
-            newRow.style.display = "flex";
-            allRow.style.flexWrap = "nowrap";
-            
-            let allCards = document.getElementsByClassName('card');
-            for (let i = 0; i < allCards.length; i++) allCards[i].style.display = "block";
         }
-    }
 
-    window.onload = loadGames;
-</script>
+        /* --- UPDATED SEARCH FUNCTION --- */
+        function search() {
+            let input = document.getElementById('searchBar').value.toLowerCase();
+            let titles = document.getElementsByClassName('row-title');
+            let trendingRow = document.getElementById('trending');
+            let newRow = document.getElementById('new');
+            let allRow = document.getElementById('all');
+            let footer = document.getElementById('requestFooter'); // Target the button footer
 
+            if (input.trim() !== "") {
+                footer.style.display = "none"; // Hide button during search
+                for (let i = 0; i < titles.length; i++) titles[i].style.display = "none";
+                trendingRow.style.display = "none";
+                newRow.style.display = "none";
+                allRow.style.flexWrap = "wrap";
+                let cards = allRow.getElementsByClassName('card');
+                for (let i = 0; i < cards.length; i++) {
+                    let name = cards[i].getAttribute('data-name').toLowerCase();
+                    cards[i].style.display = name.includes(input) ? "block" : "none";
+                }
+            } else {
+                footer.style.display = "flex"; // Show button when search is cleared
+                for (let i = 0; i < titles.length; i++) titles[i].style.display = "block";
+                trendingRow.style.display = "flex";
+                newRow.style.display = "flex";
+                allRow.style.flexWrap = "nowrap";
+                let allCards = document.getElementsByClassName('card');
+                for (let i = 0; i < allCards.length; i++) allCards[i].style.display = "block";
+            }
+        }
+
+        window.onload = loadGames;
+    </script>
 </body>
 </html>
