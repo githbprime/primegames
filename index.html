@@ -218,13 +218,26 @@
             { title: "Slope", url: "./slope/index.html", imgSrc: "https://i.ytimg.com/vi/yEnVcLpTri0/maxresdefault.jpg", tags: ["new", "trending", "all"], index: "5" },
             { title: "Ultrakill", url: "./ultrakill/index.html", imgSrc: "https://shared.fastly.steamstatic.com/store_item_assets/steam/apps/1229490/capsule_616x353.jpg?t=1774188523", tags: ["new", "trending", "all"], index: "6" },
             { title: "The Binding of Isaac", url: "./tboi/index.html", imgSrc: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTSVwshZ-Gy5uWVlR5YIFHF93Dp4uwHEf2-rw&s", tags: ["new", "trending", "all"], index: "7" },
-            { title: "Pokémon: Fire Red", url: "./firered/index.html", imgSrc: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcR86fNkVgTboxGRyLAE-6dY5Q9ViEQoOG7SRQ&s", tags: ["new", "pokemon", "all"], index: "8" }
+            { title: "Pokémon: Fire Red", url: "./firered/index.html", id: "firered-link", imgSrc: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcR86fNkVgTboxGRyLAE-6dY5Q9ViEQoOG7SRQ&s", tags: ["new", "pokemon", "all"], index: "8" }
         ];
+
+        <script>
+        document.getElementById('firered-link').addEventListener('click', function(event) {
+        event.preventDefault();
+        let choice = confirm("OK for Normal, Cancel for Randomizer.");
+        let baseURL = "games/firered/";
+        if (choice) {
+        window.location.href = baseURL;
+        } else {
+        window.location.href = baseURL + "random/";
+        }
+        });
+        </script>
 
         function loadGames() {
             gamesDB.forEach(game => {
                 const cardHTML = `
-                    <a href="${game.url}" class="card" data-name="${game.title}">
+                    <a <href="${game.url}" class="card" data-name="${game.title}" id="${game.id}">
                         <img src="${game.imgSrc}" alt="${game.title} Glow" class="glow">
                         <img src="${game.imgSrc}" alt="${game.title}" class="poster">
                         <span class="card-title">${game.title}</span>
