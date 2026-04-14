@@ -152,6 +152,31 @@
             color: var(--bg);
             border-color: var(--text);
         }
+        /* --- Sort Dropdown Styling --- */
+        .all-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-end; /* Aligns the dropdown with the bottom of the title */
+            padding-right: 4%;
+            margin-top: 30px;
+        }
+        .all-header .row-title {
+            margin-top: 0; /* Remove top margin so flexbox handles spacing */
+        }
+        #sortDropdown {
+            background-color: var(--card-bg);
+            color: var(--text);
+            border: 1px solid #444;
+            padding: 6px 12px;
+            border-radius: 4px;
+            font-size: 13px;
+            outline: none;
+            cursor: pointer;
+            transition: border-color 0.3s;
+        }
+        #sortDropdown:hover {
+            border-color: var(--accent);
+        }
     </style>
 </head>
 <body>
@@ -165,7 +190,17 @@
         <div class="row" id="trending"></div>
         <div class="row-title">New Releases</div>
         <div class="row" id="new"></div>
-        <div class="row-title">All Games</div>
+        <div class="row-title">Pokémon Main Series"</div>
+        <div class="row" id="pokemon"></div>
+        <div class="all-header">
+            <div class="row-title">All Games</div>
+            <select id="sortDropdown" onchange="sortAllGames()">
+                <option value="newest">Newest First</option>
+                <option value="oldest">Oldest First</option>
+                <option value="az">A-Z</option>
+                <option value="za">Z-A</option>
+            </select>
+        </div>
         <div class="row" id="all"></div>
     </div>
 
@@ -176,13 +211,14 @@
 
     <script>
         const gamesDB = [
-            { title: "Your Only Move Is HUSTLE", url: "./hustle/index.html", imgSrc: "https://external-preview.redd.it/your-only-move-is-hustle-the-turn-based-frame-perfect-high-v0-RZJLb1kkVr8huRXs29I3OAHNhYvC257QKBWkDd2F8m8.png?auto=webp&s=639aff9cdff28edcbdf84fdd5fba5c186b4e1712", tags: ["trending", "all"] },
-            { title: "People Playground", url: "./ppg/index.html", imgSrc: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRFTD-fKpHod-WBHHOwok7sZ-gK3RpiBLyTxg&s", tags: ["all"] },
-            { title: "Geometry Dash", url: "./gdash/index.html", imgSrc: "https://images.ctfassets.net/vfkpgemp7ek3/1204734511/2c0723c100ed8d02a603dfe74597a6cb/geometry-dash-revenue.jpg", tags: ["all"] },
-            { title: "Needy Streamer Overload", url: "./needy/index.html", imgSrc: "https://i.ytimg.com/vi/BBzKrPTFcsU/hqdefault.jpg", tags: ["all"] },
-            { title: "Slope", url: "./slope/index.html", imgSrc: "https://i.ytimg.com/vi/yEnVcLpTri0/maxresdefault.jpg", tags:["new", "trending", "all"] },
-            { title: "Ultrakill", url: "./ultrakill/index.html", imgSrc: "https://shared.fastly.steamstatic.com/store_item_assets/steam/apps/1229490/capsule_616x353.jpg?t=1774188523", tags:["new", "trending", "all"] },
-            { title: "The Binding of Isaac", url: "./tboi/index.html", imgSrc: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTSVwshZ-Gy5uWVlR5YIFHF93Dp4uwHEf2-rw&s", tags:["new", "trending", "all"] }
+            { title: "Your Only Move Is HUSTLE", url: "./hustle/index.html", imgSrc: "https://external-preview.redd.it/your-only-move-is-hustle-the-turn-based-frame-perfect-high-v0-RZJLb1kkVr8huRXs29I3OAHNhYvC257QKBWkDd2F8m8.png?auto=webp&s=639aff9cdff28edcbdf84fdd5fba5c186b4e1712", tags: ["trending", "all"], index: "1" },
+            { title: "People Playground", url: "./ppg/index.html", imgSrc: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRFTD-fKpHod-WBHHOwok7sZ-gK3RpiBLyTxg&s", tags: ["all"], index: "2" },
+            { title: "Geometry Dash", url: "./gdash/index.html", imgSrc: "https://images.ctfassets.net/vfkpgemp7ek3/1204734511/2c0723c100ed8d02a603dfe74597a6cb/geometry-dash-revenue.jpg", tags: ["all"], index: "3" },
+            { title: "Needy Streamer Overload", url: "./needy/index.html", imgSrc: "https://i.ytimg.com/vi/BBzKrPTFcsU/hqdefault.jpg", tags: ["all"], index: "4" },
+            { title: "Slope", url: "./slope/index.html", imgSrc: "https://i.ytimg.com/vi/yEnVcLpTri0/maxresdefault.jpg", tags:["new", "trending", "all"], index: "5" },
+            { title: "Ultrakill", url: "./ultrakill/index.html", imgSrc: "https://shared.fastly.steamstatic.com/store_item_assets/steam/apps/1229490/capsule_616x353.jpg?t=1774188523", tags:["new", "trending", "all"], index: "6" },
+            { title: "The Binding of Isaac", url: "./tboi/index.html", imgSrc: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTSVwshZ-Gy5uWVlR5YIFHF93Dp4uwHEf2-rw&s", tags:["new", "trending", "all"], index: "7" },
+            { title: "Pokémon: Fire Red", url: "./firered/index.html", imgSrc: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcR86fNkVgTboxGRyLAE-6dY5Q9ViEQoOG7SRQ&s", tags:["new", "pokemon", "all"], index: "8" }
         ];
 
         function loadGames() {
@@ -233,8 +269,47 @@
                 for (let i = 0; i < allCards.length; i++) allCards[i].style.display = "block";
             }
         }
+        /* --- SORT FUNCTION --- */
+        function sortAllGames() {
+            const criteria = document.getElementById('sortDropdown').value;
+            const allRow = document.getElementById('all');
+            
+            // Filter games that contain the "all" tag
+            let allCategoryGames = gamesDB.filter(game => game.tags.includes("all"));
+            
+            // Sort based on the dropdown criteria
+            allCategoryGames.sort((a, b) => {
+                if (criteria === 'az') return a.title.localeCompare(b.title);
+                if (criteria === 'za') return b.title.localeCompare(a.title);
+                
+                // Based on your logic: Oldest = largest index, Newest = smallest index
+                let indexA = parseInt(a.index) || 0;
+                let indexB = parseInt(b.index) || 0;
+                
+                if (criteria === 'oldest') return indexB - indexA;
+                if (criteria === 'newest') return indexA - indexB;
+            });
+            
+            // Clear the "All Games" row
+            allRow.innerHTML = '';
+            
+            // Re-render the sorted games
+            allCategoryGames.forEach(game => {
+                const cardHTML = `
+                    <a href="${game.url}" class="card" data-name="${game.title}">
+                        <img src="${game.imgSrc}" alt="${game.title} Glow" class="glow">
+                        <img src="${game.imgSrc}" alt="${game.title}" class="poster">
+                        <span class="card-title">${game.title}</span>
+                    </a>
+                `;
+                allRow.insertAdjacentHTML('beforeend', cardHTML);
+            });
+        }
 
-        window.onload = loadGames;
+        window.onload = () {
+            loadGames();
+            sortAllGames();
+        };
     </script>
 </body>
 </html>
