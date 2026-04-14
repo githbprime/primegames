@@ -281,12 +281,12 @@
                 if (criteria === 'az') return a.title.localeCompare(b.title);
                 if (criteria === 'za') return b.title.localeCompare(a.title);
                 
-                // Based on your logic: Oldest = largest index, Newest = smallest index
+                // Oldest = smallest index, Newest = highest index
                 let indexA = parseInt(a.index) || 0;
                 let indexB = parseInt(b.index) || 0;
                 
-                if (criteria === 'oldest') return indexA - indexB;
-                if (criteria === 'newest') return indexB - indexA;
+                if (criteria === 'oldest') return indexB - indexA;
+                if (criteria === 'newest') return indexA - indexB;
             });
             
             // Clear the "All Games" row
