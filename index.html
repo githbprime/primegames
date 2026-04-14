@@ -20,7 +20,7 @@
             padding: 0;
             overflow-x: hidden;
         }
-        /* Header & Search */
+        
         header {
             padding: 20px 4%;
             display: flex;
@@ -46,7 +46,7 @@
             width: 250px;
             outline: none;
         }
-        /* Rows */
+
         .container {
             padding: 0 4% 50px 4%;
         }
@@ -70,12 +70,12 @@
         .row::-webkit-scrollbar {
             display: none;
         }
-        /* --- NEW: Grid styling for All Games --- */
+        
         #all {
             flex-wrap: wrap;
             overflow-x: visible;
         }
-        /* Game Posters & Glow Effects */
+
         .card {
             flex: 0 0 auto;
             width: 180px;
@@ -128,7 +128,6 @@
             z-index: 2;
         }
 
-        /* --- NEW: REQUEST BUTTON STYLES --- */
         footer {
             padding: 60px 0;
             display: flex;
@@ -152,16 +151,16 @@
             color: var(--bg);
             border-color: var(--text);
         }
-        /* --- Sort Dropdown Styling --- */
+
         .all-header {
             display: flex;
             justify-content: space-between;
-            align-items: flex-end; /* Aligns the dropdown with the bottom of the title */
+            align-items: flex-end;
             padding-right: 4%;
             margin-top: 30px;
         }
         .all-header .row-title {
-            margin-top: 0; /* Remove top margin so flexbox handles spacing */
+            margin-top: 0;
         }
         #sortDropdown {
             background-color: var(--card-bg);
@@ -218,8 +217,7 @@
             { title: "Ultrakill", url: "./ultrakill/index.html", imgSrc: "https://shared.fastly.steamstatic.com/store_item_assets/steam/apps/1229490/capsule_616x353.jpg", tags: ["new", "trending", "all"], index: "6" },
             { title: "The Binding of Isaac", url: "./tboi/index.html", imgSrc: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTSVwshZ-Gy5uWVlR5YIFHF93Dp4uwHEf2-rw&s", tags: ["new", "trending", "all"], index: "7" },
             { title: "Pokémon: Fire Red", url: "./firered/index.html", imgSrc: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcR86fNkVgTboxGRyLAE-6dY5Q9ViEQoOG7SRQ&s", tags: ["new", "pokemon", "all"], index: "8" },
-            { title: "Melon Sandbox", url: "./melon/index.html", imgSrc: "https://images.steamusercontent.com/ugc/2041853622142661038/6E00C11C89A6207B1A090B94A96A02FA64657896/?imw=637&imh=358&ima=fit&impolicy=Letterbox&imcolor=%23000000&letterbox=true", tags: ["new", "all"], index: "9" },
-            { title: "Lime Playground", url: "./lime/index.html", imgSrc: "https://m.media-amazon.com/images/I/91xc3aI19wL.png", tags: ["new", "all"], index: "10" }
+            { title: "Melon Sandbox", url: "./melon/index.html", imgSrc: "https://images.steamusercontent.com/ugc/2041853622142661038/6E00C11C89A6207B1A090B94A96A02FA64657896/?imw=637&imh=358&ima=fit&impolicy=Letterbox&imcolor=%23000000&letterbox=true", tags: ["new", "all"], index: "9" }
         ];
 
         function loadGames() {
@@ -240,7 +238,6 @@
             });
         }
 
-        /* --- UPDATED SEARCH FUNCTION --- */
         function search() {
             let input = document.getElementById('searchBar').value.toLowerCase();
             let titles = document.getElementsByClassName('row-title');
@@ -248,10 +245,10 @@
             let newRow = document.getElementById('new');
             let pokemonRow = document.getElementById('pokemon');
             let allRow = document.getElementById('all');
-            let footer = document.getElementById('requestFooter'); // Target the button footer
+            let footer = document.getElementById('requestFooter');
 
             if (input.trim() !== "") {
-                footer.style.display = "none"; // Hide button during search
+                footer.style.display = "none";
                 for (let i = 0; i < titles.length; i++) titles[i].style.display = "none";
                 trendingRow.style.display = "none";
                 newRow.style.display = "none";
@@ -262,7 +259,7 @@
                     cards[i].style.display = name.includes(input) ? "block" : "none";
                 }
             } else {
-                footer.style.display = "flex"; // Show button when search is cleared
+                footer.style.display = "flex";
                 for (let i = 0; i < titles.length; i++) titles[i].style.display = "block";
                 trendingRow.style.display = "flex";
                 newRow.style.display = "flex";
@@ -271,20 +268,17 @@
                 for (let i = 0; i < allCards.length; i++) allCards[i].style.display = "block";
             }
         }
-        /* --- SORT FUNCTION --- */
+
         function sortAllGames() {
             const criteria = document.getElementById('sortDropdown').value;
             const allRow = document.getElementById('all');
             
-            // Filter games that contain the "all" tag
             let allCategoryGames = gamesDB.filter(game => game.tags.includes("all"));
             
-            // Sort based on the dropdown criteria
             allCategoryGames.sort((a, b) => {
                 if (criteria === 'az') return a.title.localeCompare(b.title);
                 if (criteria === 'za') return b.title.localeCompare(a.title);
                 
-                // Oldest = smallest index, Newest = highest index
                 let indexA = parseInt(a.index) || 0;
                 let indexB = parseInt(b.index) || 0;
                 
@@ -292,10 +286,8 @@
                 if (criteria === 'newest') return indexA - indexB;
             });
             
-            // Clear the "All Games" row
             allRow.innerHTML = '';
             
-            // Re-render the sorted games
             allCategoryGames.forEach(game => {
                 const cardHTML = `
                     <a href="${game.url}" class="card" data-name="${game.title}">
