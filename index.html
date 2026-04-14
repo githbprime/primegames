@@ -70,6 +70,11 @@
         .row::-webkit-scrollbar {
             display: none;
         }
+        /* --- NEW: Grid styling for All Games --- */
+        #all {
+            flex-wrap: wrap;
+            overflow-x: visible;
+        }
         /* Game Posters & Glow Effects */
         .card {
             flex: 0 0 auto;
@@ -212,7 +217,7 @@
                 for (let i = 0; i < titles.length; i++) titles[i].style.display = "none";
                 trendingRow.style.display = "none";
                 newRow.style.display = "none";
-                allRow.style.flexWrap = "wrap";
+                
                 let cards = allRow.getElementsByClassName('card');
                 for (let i = 0; i < cards.length; i++) {
                     let name = cards[i].getAttribute('data-name').toLowerCase();
@@ -223,7 +228,7 @@
                 for (let i = 0; i < titles.length; i++) titles[i].style.display = "block";
                 trendingRow.style.display = "flex";
                 newRow.style.display = "flex";
-                allRow.style.flexWrap = "nowrap";
+                
                 let allCards = document.getElementsByClassName('card');
                 for (let i = 0; i < allCards.length; i++) allCards[i].style.display = "block";
             }
