@@ -195,8 +195,8 @@
         <div class="all-header">
             <div class="row-title">All Games</div>
             <select id="sortDropdown" onchange="sortAllGames()">
-                <option value="newest">Newest First</option>
-                <option value="oldest">Oldest First</option>
+                <option value="newest">Oldest First</option>
+                <option value="oldest">Newest First</option>
                 <option value="az">A-Z</option>
                 <option value="za">Z-A</option>
             </select>
@@ -285,8 +285,8 @@
                 let indexA = parseInt(a.index) || 0;
                 let indexB = parseInt(b.index) || 0;
                 
-                if (criteria === 'oldest') return indexB - indexA;
-                if (criteria === 'newest') return indexA - indexB;
+                if (criteria === 'oldest') return indexA - indexB;
+                if (criteria === 'newest') return indexB - indexA;
             });
             
             // Clear the "All Games" row
