@@ -57,6 +57,13 @@
             margin-bottom: -10px;
             color: #ffffff;
         }
+        .big-row-title {
+            font-size: 2.8vw;
+            font-weight: 1000;
+            margin-top: 60px;
+            margin-bottom: -20px;
+            color: #ffffff;
+        }
         .row {
             display: flex;
             gap: 35px;
@@ -201,6 +208,8 @@
             </select>
         </div>
         <div class="row" id="all"></div>
+        <div class="big-row-title">Apps</div>
+        <div class="row" id="apps"></div>
     </div>
 
     <footer id="requestFooter">
@@ -218,7 +227,8 @@
             { title: "The Binding of Isaac", url: "./tboi/index.html", imgSrc: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTSVwshZ-Gy5uWVlR5YIFHF93Dp4uwHEf2-rw&s", tags: ["new", "trending", "all"], index: "7" },
             { title: "Pokémon: Fire Red", url: "./firered/index.html", imgSrc: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcR86fNkVgTboxGRyLAE-6dY5Q9ViEQoOG7SRQ&s", tags: ["new", "pokemon", "all"], index: "8" },
             { title: "Melon Sandbox", url: "./melon/index.html", imgSrc: "https://images.steamusercontent.com/ugc/2041853622142661038/6E00C11C89A6207B1A090B94A96A02FA64657896/?imw=637&imh=358&ima=fit&impolicy=Letterbox&imcolor=%23000000&letterbox=true", tags: ["new", "all"], index: "9" },
-            { title: "Bloodmoney", url: "./bloodmoney/index.html", imgSrc: "https://img.itch.zone/aW1nLzIyNDMzMTYyLnBuZw==/original/tX1Cbj.png", tags: ["new", "all"], index: "10" }
+            { title: "Bloodmoney", url: "./bloodmoney/index.html", imgSrc: "https://img.itch.zone/aW1nLzIyNDMzMTYyLnBuZw==/original/tX1Cbj.png", tags: ["new", "all"], index: "10" },
+            { title: "Discord", url: ".discord/index.html", imgSrc: "https://img.icons8.com/external-tal-revivo-color-tal-revivo/1200/external-discord-chat-for-social-gaming-between-peers-logo-color-tal-revivo.jpg", tags: ["apps"] }
         ];
 
         function loadGames() {
