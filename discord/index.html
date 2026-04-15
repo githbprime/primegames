@@ -68,14 +68,16 @@
     // 1. YOUR KEYS PLUGGED IN
     const SUPABASE_URL = 'https://ovwvdfnilvedplhwzzjl.supabase.co';
     const SUPABASE_KEY = 'sb_publishable_FUPgy9ZRC9hrNfMUborCdQ_WF-pD5UP';
-    const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+    
+    // FIXED: Renamed our connection to 'db' so it doesn't crash!
+    const db = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
     const chatMessages = document.querySelector('.chat-messages');
     const chatInput = document.querySelector('.chat-input');
 
     // 2. LOAD EXISTING MESSAGES
     async function loadMessages() {
-        const { data, error } = await supabase
+        const { data, error } = await db
             .from('messages') 
             .select('*')
             .order('created_at', { ascending: true });
@@ -86,14 +88,23 @@
             return;
         }
 
-        chatMessages.innerHTML = ''; // Clear loading text
-        if (data) {
+        chatMessages.innerHTML = ''; // Clear "Loading..." text
+        
+        // If there are messages, show them. If not, show a placeholder.
+        if (data && data.length > 0) {
             data.forEach(msg => appendMessage(msg.username, msg.content));
+        } else {
+            chatMessages.innerHTML = `<div style="color: #949ba4; text-align: center; margin-top: 20px;">No messages yet. Be the first to say hi!</div>`;
         }
     }
 
     // 3. ADD MESSAGE TO SCREEN
     function appendMessage(user, text) {
+        // Remove the "No messages yet" text if it's there
+        if (chatMessages.innerHTML.includes("No messages yet")) {
+            chatMessages.innerHTML = '';
+        }
+
         const msgHTML = `
             <div class="message">
                 <div class="avatar" style="background-color: #5865f2;"></div>
@@ -113,12 +124,11 @@
     chatInput.addEventListener('keypress', async (e) => {
         if (e.key === 'Enter' && chatInput.value.trim() !== '') {
             const content = chatInput.value.trim();
-            chatInput.value = ''; // Clear box
+            chatInput.value = ''; // Clear box immediately
 
-            // Assigns a random guest number so you can tell people apart
             const randomGuestName = 'Guest_' + Math.floor(Math.random() * 1000);
 
-            const { error } = await supabase
+            const { error } = await db
                 .from('messages')
                 .insert([{ username: randomGuestName, content: content }]);
             
@@ -127,7 +137,7 @@
     });
 
     // 5. REALTIME LISTEN
-    supabase
+    db
         .channel('schema-db-changes')
         .on('postgres_changes', 
             { event: 'INSERT', schema: 'public', table: 'messages' }, 
@@ -137,6 +147,7 @@
         )
         .subscribe();
 
+    // Start everything up
     loadMessages();
 </script>
 </body>
