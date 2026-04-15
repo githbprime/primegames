@@ -45,7 +45,6 @@
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
-    // PLUGGED IN FROM YOUR SCREENSHOT
     const SUPABASE_URL = 'https://ovwvdfnilvedplhwzzjl.supabase.co';
     const SUPABASE_KEY = 'sb_publishable_FUPgy9ZRC9hrNfMUborCdQ_WF-pD5UP';
     
@@ -55,7 +54,8 @@
     const input = document.getElementById('chat-box');
 
     function addMessageToScreen(user, text) {
-        if (container.innerText.includes("Connecting") || container.innerText.includes("No messages") || container.innerText.includes("Error")) {
+        // Remove placeholders
+        if (container.innerText.includes("Connecting") || container.innerText.includes("No messages")) {
             container.innerHTML = '';
         }
         const html = `
@@ -71,11 +71,12 @@
     }
 
     async function loadOldMessages() {
-        // FIX 1: Changed to 'Messages'
+        console.log("Attempting to load messages...");
         const { data, error } = await db.from('Messages').select('*').order('created_at', { ascending: true });
         
         if (error) {
-            container.innerHTML = `<div style="color:red; text-align:center;">Connection Error: ${error.message}</div>`;
+            console.error("Load Error:", error);
+            container.innerHTML = `<div style="color:red; text-align:center;">Error: ${error.message}</div>`;
             return;
         }
         
@@ -93,17 +94,23 @@
             input.value = '';
             const user = 'Guest_' + Math.floor(Math.random() * 100);
             
-            // FIX 2: Changed to 'Messages'
-            await db.from('Messages').insert([{ username: user, content: val }]);
+            console.log("Sending message...");
+            const { error } = await db.from('Messages').insert([{ username: user, content: val }]);
+            if (error) console.error("Send Error:", error);
         }
     });
 
-    // FIX 3: Changed table parameter to 'Messages'
-    db.channel('realtime-chat')
-      .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'Messages' }, payload => {
-          addMessageToScreen(payload.new.username, payload.new.content);
+    // LISTEN TO EVERYTHING
+    db.channel('any')
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'Messages' }, payload => {
+          console.log("New change received!", payload);
+          if (payload.new) {
+              addMessageToScreen(payload.new.username, payload.new.content);
+          }
       })
-      .subscribe();
+      .subscribe((status) => {
+          console.log("Realtime status:", status);
+      });
 
     loadOldMessages();
 </script>
