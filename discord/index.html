@@ -1,1 +1,70 @@
-<iframe src="https://azaan-ullah-khan.github.io/Discord-UI-Clone/" style="position:fixed; top:0; left:0; bottom:0; right:0; width:100%; height:100%; border:none; margin:0; padding:0; overflow:hidden; z-index:999999;">Your browser doesn't support iframes</iframe>
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Discord Guest View</title>
+    <script type="module" src="https://unpkg.com/wc-discord-message@^3.0.0/dist/wc-discord-message/wc-discord-message.esm.js"></script>
+    <style>
+        body, html { margin: 0; padding: 0; height: 100%; font-family: sans-serif; overflow: hidden; }
+        .app-container { display: flex; height: 100vh; background: #313338; color: white; }
+        
+        /* Sidebar - Servers */
+        .server-bar { width: 72px; background: #1e1f22; display: flex; flex-direction: column; align-items: center; padding-top: 12px; gap: 8px; }
+        .server-icon { width: 48px; height: 48px; background: #5865f2; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold; cursor: pointer; }
+        
+        /* Sidebar - Channels */
+        .channel-bar { width: 240px; background: #2b2d31; display: flex; flex-direction: column; }
+        .channel-header { padding: 15px; font-weight: bold; border-bottom: 1px solid #1e1f22; }
+        .channel-list { padding: 10px; flex-grow: 1; color: #949ba4; }
+        .channel-item { padding: 6px 8px; border-radius: 4px; margin-bottom: 2px; cursor: pointer; }
+        .channel-item:hover { background: #35373c; color: #dbdee1; }
+        .channel-item.active { background: #3f4147; color: white; }
+
+        /* Main Chat Area */
+        .chat-area { flex-grow: 1; display: flex; flex-direction: column; background: #313338; }
+        .chat-messages { flex-grow: 1; padding: 20px; overflow-y: auto; }
+        .chat-input-wrapper { padding: 0 16px 24px; }
+        .chat-input { background: #383a40; padding: 10px 15px; border-radius: 8px; color: #dcddde; border: none; width: calc(100% - 30px); }
+    </style>
+</head>
+<body>
+
+<div class="app-container">
+    <div class="server-bar">
+        <div class="server-icon">G</div>
+        <div class="server-icon" style="background:#35373c; border-radius: 15px;">+</div>
+    </div>
+
+    <div class="channel-bar">
+        <div class="channel-header">Guest Server</div>
+        <div class="channel-list">
+            <div class="channel-item active"># welcome</div>
+            <div class="channel-item"># general</div>
+            <div class="channel-item"># rules</div>
+        </div>
+    </div>
+
+    <div class="chat-area">
+        <div class="chat-messages">
+            <discord-messages>
+                <discord-message author="System" avatar="https://i.imgur.com/0TeacfY.png" bot="true" role-color="#0099ff">
+                    Welcome to the guest portal! Feel free to look around.
+                </discord-message>
+                
+                <discord-message author="Guest User" avatar="blue">
+                    Wow, this looks exactly like the real app.
+                </discord-message>
+                
+                <discord-message author="Helper Bot" avatar="https://i.imgur.com/axQ9wJl.png" bot="true" role-color="#ee82ee">
+                    This is a static preview. To chat for real, you would need to log in!
+                </discord-message>
+            </discord-messages>
+        </div>
+
+        <div class="chat-input-wrapper">
+            <div class="chat-input">Message #welcome</div>
+        </div>
+    </div>
+</div>
+
+</body>
+</html>
