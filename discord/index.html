@@ -4,151 +4,103 @@
     <meta charset="UTF-8">
     <title>Guest Discord</title>
     <style>
-        /* CORE LAYOUT */
         body, html { margin: 0; padding: 0; height: 100%; font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; overflow: hidden; background-color: #313338; }
         .app-container { display: flex; height: 100vh; width: 100vw; }
-
-        /* SERVER BAR */
         .server-bar { width: 72px; background: #1e1f22; display: flex; flex-direction: column; align-items: center; padding-top: 12px; gap: 8px; flex-shrink: 0; }
-        .server-icon { width: 48px; height: 48px; background: #5865f2; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; font-weight: bold; cursor: pointer; transition: 0.2s; }
-        
-        /* CHANNEL BAR */
+        .server-icon { width: 48px; height: 48px; background: #5865f2; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; font-weight: bold; }
         .channel-bar { width: 240px; background: #2b2d31; display: flex; flex-direction: column; flex-shrink: 0; }
         .channel-header { padding: 15px; color: white; font-weight: bold; border-bottom: 1px solid #1e1f22; font-size: 15px; }
-        .channel-list { padding: 10px; flex-grow: 1; overflow-y: auto; }
-        .channel-item { padding: 8px 10px; border-radius: 4px; color: #949ba4; font-size: 15px; margin-bottom: 2px; cursor: pointer; display: flex; align-items: center; }
+        .channel-list { padding: 10px; flex-grow: 1; }
+        .channel-item { padding: 8px 10px; border-radius: 4px; color: #949ba4; font-size: 15px; background: #3f4147; color: white; }
         .channel-item:before { content: "#"; margin-right: 8px; font-size: 20px; color: #5f636a; }
-        .channel-item.active { background: #3f4147; color: white; }
-
-        /* CHAT AREA */
-        .chat-area { flex-grow: 1; display: flex; flex-direction: column; background: #313338; position: relative; }
+        .chat-area { flex-grow: 1; display: flex; flex-direction: column; background: #313338; }
         .chat-messages { flex-grow: 1; padding: 20px; overflow-y: auto; display: flex; flex-direction: column; gap: 18px; }
-
-        /* MESSAGE STYLING */
         .message { display: flex; gap: 16px; align-items: flex-start; }
         .avatar { width: 40px; height: 40px; border-radius: 50%; background: #7289da; flex-shrink: 0; }
         .msg-content { display: flex; flex-direction: column; }
-        .msg-header { display: flex; align-items: center; gap: 8px; margin-bottom: 2px; }
         .username { color: #f2f3f5; font-weight: 500; font-size: 16px; }
-        .timestamp { color: #949ba4; font-size: 12px; }
+        .timestamp { color: #949ba4; font-size: 12px; margin-left: 8px; }
         .text { color: #dbdee1; font-size: 15px; line-height: 1.3; }
-
-        /* INPUT BOX */
-        .chat-input-wrapper { padding: 0 16px 24px; flex-shrink: 0; }
+        .chat-input-wrapper { padding: 0 16px 24px; }
         .chat-input { background: #383a40; padding: 12px 16px; border-radius: 8px; color: #dcddde; font-size: 15px; border: none; width: calc(100% - 32px); outline: none; }
     </style>
 </head>
 <body>
 
 <div class="app-container">
-    <div class="server-bar">
-        <div class="server-icon">G</div>
-    </div>
-
+    <div class="server-bar"><div class="server-icon">G</div></div>
     <div class="channel-bar">
         <div class="channel-header">Guest Server</div>
-        <div class="channel-list">
-            <div class="channel-item active">welcome</div>
-        </div>
+        <div class="channel-list"><div class="channel-item">welcome</div></div>
     </div>
-
     <div class="chat-area">
-        <div class="chat-messages">
-            <div style="color: #949ba4; text-align: center; margin-top: 20px;">Loading messages...</div>
+        <div class="chat-messages" id="message-container">
+            <div style="color: #949ba4; text-align: center; margin-top: 20px;">Connecting to database...</div>
         </div>
-
         <div class="chat-input-wrapper">
-            <input type="text" class="chat-input" placeholder="Message #welcome">
+            <input type="text" class="chat-input" id="chat-box" placeholder="Message #welcome">
         </div>
     </div>
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
-    // 1. YOUR KEYS PLUGGED IN
+    // PLUGGED IN FROM YOUR SCREENSHOT
     const SUPABASE_URL = 'https://ovwvdfnilvedplhwzzjl.supabase.co';
     const SUPABASE_KEY = 'sb_publishable_FUPgy9ZRC9hrNfMUborCdQ_WF-pD5UP';
     
-    // FIXED: Renamed our connection to 'db' so it doesn't crash!
+    // Using window.supabase to ensure the library is found
     const db = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-    const chatMessages = document.querySelector('.chat-messages');
-    const chatInput = document.querySelector('.chat-input');
+    const container = document.getElementById('message-container');
+    const input = document.getElementById('chat-box');
 
-    // 2. LOAD EXISTING MESSAGES
-    async function loadMessages() {
-        const { data, error } = await db
-            .from('messages') 
-            .select('*')
-            .order('created_at', { ascending: true });
-
-        if (error) {
-            console.error("Error loading:", error);
-            chatMessages.innerHTML = `<div style="color:red; text-align:center;">Error connecting to database. Check console.</div>`;
-            return;
+    function addMessageToScreen(user, text) {
+        if (container.innerText.includes("Connecting") || container.innerText.includes("No messages")) {
+            container.innerHTML = '';
         }
-
-        chatMessages.innerHTML = ''; // Clear "Loading..." text
-        
-        // If there are messages, show them. If not, show a placeholder.
-        if (data && data.length > 0) {
-            data.forEach(msg => appendMessage(msg.username, msg.content));
-        } else {
-            chatMessages.innerHTML = `<div style="color: #949ba4; text-align: center; margin-top: 20px;">No messages yet. Be the first to say hi!</div>`;
-        }
-    }
-
-    // 3. ADD MESSAGE TO SCREEN
-    function appendMessage(user, text) {
-        // Remove the "No messages yet" text if it's there
-        if (chatMessages.innerHTML.includes("No messages yet")) {
-            chatMessages.innerHTML = '';
-        }
-
-        const msgHTML = `
+        const html = `
             <div class="message">
-                <div class="avatar" style="background-color: #5865f2;"></div>
+                <div class="avatar"></div>
                 <div class="msg-content">
-                    <div class="msg-header">
-                        <span class="username">${user}</span>
-                        <span class="timestamp">Just now</span>
-                    </div>
+                    <div><span class="username">${user}</span><span class="timestamp">Just now</span></div>
                     <div class="text">${text}</div>
                 </div>
             </div>`;
-        chatMessages.insertAdjacentHTML('beforeend', msgHTML);
-        chatMessages.scrollTop = chatMessages.scrollHeight; 
+        container.insertAdjacentHTML('beforeend', html);
+        container.scrollTop = container.scrollHeight;
     }
 
-    // 4. SEND MESSAGE ON ENTER
-    chatInput.addEventListener('keypress', async (e) => {
-        if (e.key === 'Enter' && chatInput.value.trim() !== '') {
-            const content = chatInput.value.trim();
-            chatInput.value = ''; // Clear box immediately
+    async function loadOldMessages() {
+        const { data, error } = await db.from('messages').select('*').order('created_at', { ascending: true });
+        if (error) {
+            container.innerHTML = `<div style="color:red; text-align:center;">Connection Error: ${error.message}</div>`;
+            return;
+        }
+        container.innerHTML = '';
+        if (data.length === 0) {
+            container.innerHTML = `<div style="color: #949ba4; text-align: center; margin-top: 20px;">No messages yet!</div>`;
+        } else {
+            data.forEach(m => addMessageToScreen(m.username, m.content));
+        }
+    }
 
-            const randomGuestName = 'Guest_' + Math.floor(Math.random() * 1000);
-
-            const { error } = await db
-                .from('messages')
-                .insert([{ username: randomGuestName, content: content }]);
-            
-            if (error) console.error("Error sending:", error.message);
+    input.addEventListener('keypress', async (e) => {
+        if (e.key === 'Enter' && input.value.trim() !== '') {
+            const val = input.value;
+            input.value = '';
+            const user = 'Guest_' + Math.floor(Math.random() * 100);
+            await db.from('messages').insert([{ username: user, content: val }]);
         }
     });
 
-    // 5. REALTIME LISTEN
-    db
-        .channel('schema-db-changes')
-        .on('postgres_changes', 
-            { event: 'INSERT', schema: 'public', table: 'messages' }, 
-            (payload) => {
-                appendMessage(payload.new.username, payload.new.content);
-            }
-        )
-        .subscribe();
+    db.channel('realtime-chat')
+      .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'messages' }, payload => {
+          addMessageToScreen(payload.new.username, payload.new.content);
+      })
+      .subscribe();
 
-    // Start everything up
-    loadMessages();
+    loadOldMessages();
 </script>
 </body>
 </html>
