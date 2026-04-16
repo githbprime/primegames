@@ -43,9 +43,9 @@
         .username { font-weight: 500; font-size: 16px; }
         .timestamp { color: #949ba4; font-size: 12px; margin-left: 8px; }
         
-        /* FIX: Deep Text Wrap */
         .text { color: #dbdee1; font-size: 15px; line-height: 1.3; white-space: pre-wrap; word-break: break-word; overflow-wrap: break-word; }
-        .chat-img { max-width: 100%; max-height: 300px; border-radius: 8px; margin-top: 4px; border: 1px solid #1e1f22; object-fit: contain; cursor: zoom-in; }
+        /* FIXED: Added align-self: flex-start to push it left, removed border */
+        .chat-img { max-width: 100%; max-height: 300px; border-radius: 8px; margin-top: 4px; object-fit: contain; cursor: zoom-in; align-self: flex-start; }
         
         /* REPLIES & REACTIONS */
         .reply-banner { color: #b5bac1; font-size: 12px; display: flex; align-items: center; margin-bottom: 4px; margin-left: -42px; cursor: pointer; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;}
@@ -251,7 +251,7 @@
             const img = new Image();
             img.onload = function() {
                 const canvas = document.createElement('canvas');
-                canvas.width = 32; canvas.height = 32; // Upgrade to 32x32 per request
+                canvas.width = 32; canvas.height = 32; 
                 const ctx = canvas.getContext('2d');
                 ctx.drawImage(img, 0, 0, 32, 32);
                 myAvatar = canvas.toDataURL('image/png'); 
@@ -395,6 +395,9 @@
         return html;
     }
 
+    // FIXED: Text escaping function so single quotes don't break the onclick handler
+    const escapeQuote = (str) => str ? str.replace(/'/g, "&#39;").replace(/"/g, "&quot;") : '';
+
     function addMessageToScreen(id, user, rawText, timestamp, reactions) {
         if (container.innerText.includes("Establishing") || container.innerText.includes("No messages")) container.innerHTML = '';
         
@@ -437,21 +440,20 @@
             const innerDiv = lastRenderedMsg.div.querySelector('.msg-content-inner');
             innerDiv.insertAdjacentHTML('beforeend', contentHTML);
             
-            // Re-render reactions at the bottom of the group
             let reactDiv = lastRenderedMsg.div.querySelector('.reaction-bar');
             if (reactDiv) reactDiv.remove();
             if (reactions && Object.keys(reactions).length > 0) {
                 innerDiv.insertAdjacentHTML('beforeend', renderReactionsHTML(reactions));
             }
             
-            lastRenderedMsg.time = msgTime; // Extend merge window
+            lastRenderedMsg.time = msgTime;
         } else {
-            // NEW MESSAGE BLOCK
+            // FIXED: Using escapeQuote around variables injected into onclick
             const actionsHTML = `
                 <div class="msg-actions">
                     <div class="msg-btn" onclick="toggleReaction('${id}', '👍')">👍</div>
                     <div class="msg-btn" onclick="toggleReaction('${id}', '❤️')">❤️</div>
-                    <div class="msg-btn" onclick="startReply('${id}', '${user}', '${visuals.dName}', '${visuals.av}', '${safeTextPreview}')">↩️</div>
+                    <div class="msg-btn" onclick="startReply('${id}', '${escapeQuote(user)}', '${escapeQuote(visuals.dName)}', '${visuals.av}', '${escapeQuote(safeTextPreview)}')">↩️</div>
                     ${checkAdmin(myUsername) ? `<div class="msg-btn delete" onclick="deleteMessage('${id}')">🗑️</div>` : ''}
                 </div>`;
 
@@ -533,7 +535,7 @@
 
             const sendMessage = async (rawContent) => {
                 let finalContent = rawContent;
-                if (replyMeta) finalContent = `${replyMeta}"${rawContent}"}`;
+                if (replyMeta) finalContent = `${replyMeta}"${rawContent.replace(/"/g, '\\"')}"}`;
 
                 if (currentChannel === 'welcome') {
                     let pass = null;
@@ -554,25 +556,17 @@
         updateBottomPanel();
         checkActiveTimeout();
         
-        // Listen for new messages, deletes, and reactions
         db.channel('chat').on('postgres_changes', { event: '*', schema: 'public', table: 'Messages' }, payload => {
             if (payload.eventType === 'INSERT' && payload.new.channel === currentChannel) {
                 addMessageToScreen(payload.new.id, payload.new.username, payload.new.content, payload.new.created_at, payload.new.reactions);
             }
-            if (payload.eventType === 'DELETE' || payload.eventType === 'UPDATE') {
-                // Bruteforce refresh to ensure DOM stays clean during merges/deletions
-                loadOldMessages();
-            }
+            if (payload.eventType === 'DELETE' || payload.eventType === 'UPDATE') loadOldMessages();
         }).subscribe();
 
-        // Listen for Timeouts
         db.channel('timeouts').on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'Timeouts' }, payload => {
-            if (payload.new.username === myUsername && new Date(payload.new.expires_at) > new Date()) {
-                applyTimeoutUI(payload.new.expires_at);
-            }
+            if (payload.new.username === myUsername && new Date(payload.new.expires_at) > new Date()) applyTimeoutUI(payload.new.expires_at);
         }).subscribe();
 
-        // Presence Logic
         livePresenceChannel = db.channel('online-users', { config: { presence: { key: myUsername } } });
         livePresenceChannel.on('presence', { event: 'sync' }, () => {
             const state = livePresenceChannel.presenceState();
