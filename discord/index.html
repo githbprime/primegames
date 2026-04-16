@@ -33,17 +33,17 @@
 
         /* CHAT AREA */
         .chat-area { flex-grow: 1; display: flex; flex-direction: column; background: #313338; min-width: 0; }
-        .chat-messages { flex-grow: 1; padding: 20px 0; overflow-y: auto; display: flex; flex-direction: column; }
+        .chat-messages { flex-grow: 1; padding-bottom: 20px; overflow-y: auto; display: flex; flex-direction: column; }
         
-        /* INDIVIDUAL MESSAGE STYLING */
-        .message { position: relative; padding: 2px 16px 2px 72px; min-height: 28px; }
+        /* FIXED: Group spacing and alignment */
+        .message { position: relative; padding: 2px 16px 2px 72px; min-height: 24px; }
         .message:hover { background: #2e3035; }
-        .message.first-in-group { margin-top: 14px; padding-top: 6px; }
+        .message.first-in-group { margin-top: 20px; padding-top: 8px; }
         
-        .message .avatar { position: absolute; left: 16px; top: 6px; width: 40px; height: 40px; border-radius: 50%; cursor: pointer; display: none; }
+        .message .avatar { position: absolute; left: 16px; top: 8px; width: 40px; height: 40px; border-radius: 50%; cursor: pointer; display: none; }
         .message.first-in-group .avatar { display: block; }
         
-        .msg-header { display: none; align-items: center; gap: 8px; margin-bottom: 2px; }
+        .msg-header { display: none; align-items: center; gap: 8px; margin-bottom: 4px; }
         .message.first-in-group .msg-header { display: flex; }
         
         .username { font-weight: 500; font-size: 16px; color: #f2f3f5; cursor: pointer; }
@@ -51,10 +51,12 @@
         .timestamp { color: #949ba4; font-size: 12px; }
         
         .text { color: #dbdee1; font-size: 15px; line-height: 1.375; white-space: pre-wrap; word-wrap: break-word; }
-        .chat-img { max-width: 100%; max-height: 350px; border-radius: 8px; margin-top: 4px; cursor: zoom-in; align-self: flex-start; display: block;}
+        
+        /* FIXED: Image spacing to prevent overlapping */
+        .chat-img { max-width: 100%; max-height: 350px; border-radius: 8px; margin: 8px 0 6px 0; cursor: zoom-in; align-self: flex-start; display: block; }
 
         /* MESSAGE HOVER ACTIONS */
-        .msg-actions { position: absolute; right: 16px; top: -18px; background: #313338; border: 1px solid #1e1f22; border-radius: 4px; display: none; z-index: 10; box-shadow: 0 2px 4px rgba(0,0,0,0.2); }
+        .msg-actions { position: absolute; right: 16px; top: -18px; background: #313338; border: 1px solid #1e1f22; border-radius: 4px; display: none; z-index: 100; box-shadow: 0 2px 4px rgba(0,0,0,0.2); }
         .message:hover .msg-actions { display: flex; }
         .msg-btn { padding: 4px 8px; cursor: pointer; color: #b5bac1; font-size: 14px; }
         .msg-btn:hover { background: #3f4147; color: white; }
@@ -65,7 +67,7 @@
         .reply-context::before { content: ''; width: 33px; height: 10px; border-top: 2px solid #4e5058; border-left: 2px solid #4e5058; border-top-left-radius: 6px; margin-right: 4px; margin-top: 10px; }
         .reply-av { width: 16px; height: 16px; border-radius: 50%; margin-right: 4px; }
 
-        .reaction-bar { display: flex; gap: 4px; margin-top: 4px; }
+        .reaction-bar { display: flex; gap: 4px; margin: 4px 0; }
         .reaction-pill { background: #2b2d31; border: 1px solid transparent; border-radius: 8px; padding: 2px 6px; font-size: 12px; color: #b5bac1; cursor: pointer; }
         .reaction-pill.active { background: rgba(88,101,242,0.15); border-color: #5865f2; color: #5865f2; }
 
@@ -75,7 +77,7 @@
         .chat-input-row { display: flex; gap: 12px; align-items: center; background: #383a40; padding: 10px 16px; border-radius: 8px; }
         .chat-input { background: transparent; border: none; color: #dcddde; font-size: 15px; flex-grow: 1; outline: none; }
 
-        /* MEMBERS BAR & STATUS */
+        /* MEMBERS BAR */
         .members-bar { width: 240px; background: #2b2d31; flex-shrink: 0; border-left: 1px solid #1e1f22; }
         .members-header { padding: 20px 15px 10px; color: #949ba4; font-weight: bold; font-size: 12px; text-transform: uppercase; }
         .member-item { display: flex; align-items: center; gap: 12px; padding: 6px 8px; margin: 1px 8px; border-radius: 4px; cursor: pointer; position: relative; }
@@ -85,7 +87,7 @@
         .status-dot { position: absolute; bottom: -2px; right: -2px; width: 10px; height: 10px; border-radius: 50%; border: 3px solid #2b2d31; background: #23a55a; }
         .member-name { color: #949ba4; font-size: 15px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 
-        /* POPOUT */
+        /* MODALS & POPOUT */
         #user-popout { position: fixed; width: 300px; background: #111214; border-radius: 8px; box-shadow: 0 8px 24px rgba(0,0,0,0.5); display: none; z-index: 1000; overflow: hidden; }
         .popout-banner { height: 60px; background: #5865f2; }
         .popout-avatar-wrap { margin: -30px 0 0 16px; border: 6px solid #111214; border-radius: 50%; width: 80px; height: 80px; background: #111214; }
@@ -168,7 +170,8 @@
     const SUPABASE_KEY = 'sb_publishable_FUPgy9ZRC9hrNfMUborCdQ_WF-pD5UP';
     const db = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-    const ADMIN_USER = 'githbprime#3951'; // Updated to your new account
+    // FIXED: Trimmed constant to ensure exact match with SQL
+    const ADMIN_USER = 'githbprime#3951'; 
 
     let currentChannel = 'welcome';
     let myUsername = localStorage.getItem('discordGuestName');
@@ -201,7 +204,7 @@
         if(!myUsername) myUsername = user + '#' + Math.floor(1000+Math.random()*9000);
         myDisplayName = disp || myUsername.split('#')[0];
         
-        localStorage.setItem('discordGuestName', myUsername);
+        localStorage.setItem('discordGuestName', myUsername.trim());
         localStorage.setItem('discordDisplayName', myDisplayName);
         localStorage.setItem('discordAvatar', myAvatar);
         
@@ -255,6 +258,7 @@
 
     function addMessageToScreen(m) {
         const container = document.getElementById('message-container');
+        // Grouping logic: new group if different user OR more than 5 mins passed
         const isFirst = (m.username !== lastUser || (new Date(m.created_at) - lastTime) > 300000);
         let content = m.content;
         let replyHeader = '';
@@ -267,7 +271,7 @@
             } catch(e){}
         }
 
-        const isAdmin = m.username === ADMIN_USER;
+        const isAdmin = m.username.trim() === ADMIN_USER;
         const visuals = onlineUsersData[m.username] || { displayName: m.username.split('#')[0], avatar: `https://api.dicebear.com/7.x/pixel-art/svg?seed=${m.username}` };
         
         const msgDiv = document.createElement('div');
@@ -279,7 +283,7 @@
             <div class="msg-actions">
                 <div class="msg-btn" onclick="toggleReaction('${m.id}', '👍')">👍</div>
                 <div class="msg-btn" onclick="startReply('${m.id}', '${visuals.displayName.replace(/'/g,"\\'")}', '${visuals.avatar}', '${safeText}')">↩️</div>
-                ${(m.username === myUsername || myUsername === ADMIN_USER) ? `<div class="msg-btn delete" onclick="deleteMessage('${m.id}')">🗑️</div>` : ''}
+                ${(m.username.trim() === myUsername.trim() || myUsername.trim() === ADMIN_USER) ? `<div class="msg-btn delete" onclick="deleteMessage('${m.id}')">🗑️</div>` : ''}
             </div>`;
 
         let reactHtml = '';
@@ -326,8 +330,10 @@
             // COMMAND: CLEAR
             if (val === '/clear') {
                 if(confirm("Clear all messages in this channel?")) {
-                    let pass = (myUsername === ADMIN_USER) ? null : prompt("Admin Passcode:");
-                    const { data, error } = await db.rpc('clear_messages', { passcode: pass, p_channel: currentChannel, p_username: myUsername });
+                    let pass = null;
+                    // FIXED: Always ask for passcode if RPC fails or if not exact admin match
+                    if (myUsername.trim() !== ADMIN_USER) pass = prompt("Admin Passcode:");
+                    const { data, error } = await db.rpc('clear_messages', { passcode: pass, p_channel: currentChannel, p_username: myUsername.trim() });
                     if (error || data !== 'Success') alert(data || "Unauthorized");
                 }
                 e.target.value = ''; return;
@@ -338,13 +344,24 @@
                 finalContent = JSON.stringify({ _reply: pendingReply, content: val });
             }
 
-            // POSTING LOGIC
+            // FIXED: Improved #welcome authorization logic
             if (currentChannel === 'welcome') {
-                let pass = (myUsername === ADMIN_USER) ? null : prompt("Post to #welcome? Enter Admin Passcode:");
-                const { data, error } = await db.rpc('post_admin_message', { passcode: pass, p_username: myUsername, p_content: finalContent, p_channel: 'welcome' });
-                if (error || data !== 'Success') alert(data || "Unauthorized");
+                let pass = null;
+                if (myUsername.trim() !== ADMIN_USER) {
+                    pass = prompt("Post to #welcome? Enter Admin Passcode:");
+                }
+                const { data, error } = await db.rpc('post_admin_message', { passcode: pass, p_username: myUsername.trim(), p_content: finalContent, p_channel: 'welcome' });
+                
+                // FALLBACK: If first attempt failed because username didn't match, try prompt
+                if (data === 'Unauthorized' && !pass) {
+                    pass = prompt("Unauthorized. Please enter Admin Passcode:");
+                    const retry = await db.rpc('post_admin_message', { passcode: pass, p_username: myUsername.trim(), p_content: finalContent, p_channel: 'welcome' });
+                    if (retry.error || retry.data !== 'Success') alert("Failed: " + (retry.data || "Unauthorized"));
+                } else if (error || data !== 'Success') {
+                    alert(data || "Unauthorized");
+                }
             } else {
-                await db.from('Messages').insert([{ username: myUsername, content: finalContent, channel: currentChannel }]);
+                await db.from('Messages').insert([{ username: myUsername.trim(), content: finalContent, channel: currentChannel }]);
             }
 
             e.target.value = '';
@@ -382,7 +399,7 @@
             users.forEach(u => {
                 const info = state[u][0];
                 onlineUsersData[u] = info;
-                const isAdmin = u === ADMIN_USER;
+                const isAdmin = u.trim() === ADMIN_USER;
                 container.innerHTML += `
                     <div class="member-item" onclick="showPopout('${u}', this)">
                         <div class="avatar-container">
