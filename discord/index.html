@@ -34,28 +34,22 @@
         /* INPUT */
         .chat-input-wrapper { padding: 0 16px 24px; }
         .chat-input { background: #383a40; padding: 12px 16px; border-radius: 8px; color: #dcddde; font-size: 15px; border: none; width: calc(100% - 32px); outline: none; }
-
-        <div class="server-bar">
-        <div class="server-icon" style="background: none;">
-        <img src="fvicon.png" style="width: 48px; height: 48px; border-radius: 50%; object-fit: cover;" alt="Logo">
-        </div>
-        </div>
     </style>
 </head>
 <body>
 
 <div class="app-container">
     <div class="server-bar">
-    <div class="server-icon" style="background: none;">
-        <img src="fvicon.png" style="width: 48px; height: 48px; border-radius: 50%; object-fit: cover;" alt="Logo">
-    </div>
+        <div class="server-icon" style="background: none;">
+            <img src="fvicon.png" style="width: 48px; height: 48px; border-radius: 50%; object-fit: cover;" alt="Logo">
+        </div>
     </div>
     
     <div class="channel-bar">
         <div class="channel-header">Prime Server</div>
         <div class="channel-list">
-            <div class="channel-item active" data-channel="general">general</div>
-            <div class="channel-item" data-channel="welcome">welcome</div>
+            <div class="channel-item" data-channel="general">general</div>
+            <div class="channel-item active" data-channel="welcome">welcome</div>
         </div>
     </div>
 
@@ -64,7 +58,7 @@
             <div style="color: #949ba4; text-align: center; margin-top: 20px;">Loading...</div>
         </div>
         <div class="chat-input-wrapper">
-            <input type="text" class="chat-input" id="chat-box" placeholder="Message #general">
+            <input type="text" class="chat-input" id="chat-box" placeholder="Message #welcome">
         </div>
     </div>
 </div>
@@ -75,10 +69,11 @@
     const SUPABASE_KEY = 'sb_publishable_FUPgy9ZRC9hrNfMUborCdQ_WF-pD5UP';
     const db = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
+    // Fixed Javascript order: Define currentChannel BEFORE using it
+    let currentChannel = 'welcome';
     const container = document.getElementById('message-container');
     const input = document.getElementById('chat-box');
     input.placeholder = `Message #${currentChannel}`;
-    let currentChannel = 'welcome';
 
     // USERNAME LOGIC
     let myUsername = localStorage.getItem('discordGuestName');
