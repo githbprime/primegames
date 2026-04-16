@@ -204,6 +204,10 @@
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
+    
+    // Favicon magic
+    ((i, l) => { i.onload = () => { const c = document.createElement('canvas'), ctx = c.getContext('2d'), s = i.width; c.width = c.height = s; ctx.drawImage(i, 0, (i.height - s) / 2, s, s, 0, 0, s, s); l.rel = 'icon'; l.href = c.toDataURL(); document.head.appendChild(l); }; i.src = 'Discourse.png'; })(new Image(), document.createElement('link'));
+    
     const SUPABASE_URL = 'https://ovwvdfnilvedplhwzzjl.supabase.co';
     const SUPABASE_KEY = 'sb_publishable_FUPgy9ZRC9hrNfMUborCdQ_WF-pD5UP';
     const db = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
