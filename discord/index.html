@@ -16,11 +16,13 @@
         .channel-bar { width: 240px; background: #2b2d31; display: flex; flex-direction: column; flex-shrink: 0; }
         .channel-header { padding: 16px; font-weight: bold; color: white; border-bottom: 1px solid #1e1f22; }
         .channel-list { padding: 8px; flex-grow: 1; }
-        .channel-item { padding: 8px 12px; border-radius: 4px; color: #949ba4; cursor: pointer; margin-bottom: 2px; display: flex; align-items: center; }
-        .channel-item.active { background: #3f4147; color: white; }
+        .channel-item { padding: 8px 12px; border-radius: 4px; color: #949ba4; cursor: pointer; margin-bottom: 2px; display: flex; align-items: center; transition: 0.1s; }
         .channel-item:before { content: "#"; margin-right: 8px; font-size: 20px; color: #5f636a; }
+        .channel-item:hover { background: #35373c; color: #dbdee1; } /* RESTORED HOVER */
+        .channel-item.active { background: #3f4147; color: white; }
 
-        .user-panel { background: #232428; padding: 8px; display: flex; align-items: center; gap: 8px; cursor: pointer; }
+        .user-panel { background: #232428; padding: 8px; display: flex; align-items: center; gap: 8px; cursor: pointer; transition: 0.1s; }
+        .user-panel:hover { background: #35373c; } /* RESTORED HOVER */
         .user-avatar { width: 32px; height: 32px; border-radius: 50%; background: #1e1f22; }
 
         /* CHAT AREA */
@@ -58,14 +60,22 @@
 
         /* INPUT AREA */
         .input-wrapper { padding: 0 16px 24px; }
-        .reply-preview { background: #2b2d31; padding: 8px 16px; border-radius: 8px 8px 0 0; display: none; justify-content: space-between; font-size: 13px; color: #b5bac1; }
+        .preview-bar { background: #2b2d31; padding: 8px 16px; border-radius: 8px 8px 0 0; display: none; align-items: center; justify-content: space-between; font-size: 13px; color: #b5bac1; margin-bottom: 2px; }
+        .preview-img-container { position: relative; display: inline-block; }
+        .preview-img { height: 60px; border-radius: 4px; }
+        .cancel-btn { cursor: pointer; color: #f23f42; font-weight: bold; font-size: 16px; padding: 4px; }
+        
         .input-box { background: #383a40; padding: 10px 16px; border-radius: 8px; display: flex; align-items: center; gap: 12px; }
         .input-box input[type="text"] { background: transparent; border: none; color: #dcddde; flex-grow: 1; outline: none; font-size: 15px; }
 
         /* MEMBERS BAR */
         .members-bar { width: 240px; background: #2b2d31; flex-shrink: 0; padding: 20px 8px; }
         .member-header { color: #949ba4; text-transform: uppercase; font-size: 12px; font-weight: bold; margin-bottom: 12px; padding-left: 8px; }
-        .member-item { display: flex; align-items: center; gap: 10px; padding: 6px 8px; border-radius: 4px; color: #949ba4; }
+        .member-item { display: flex; align-items: center; gap: 10px; padding: 6px 8px; border-radius: 4px; color: #949ba4; cursor: pointer; transition: 0.1s; }
+        .member-item:hover { background: #35373c; color: #dbdee1; } /* RESTORED HOVER */
+        .member-avatar-wrapper { position: relative; width: 32px; height: 32px; flex-shrink: 0; }
+        .member-avatar-wrapper img { width: 100%; height: 100%; border-radius: 50%; }
+        .status-dot { position: absolute; bottom: -2px; right: -2px; width: 10px; height: 10px; background: #23a559; border-radius: 50%; border: 2px solid #2b2d31; } /* RESTORED GREEN DOT */
 
         /* OVERLAYS */
         #signup-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.85); display: none; justify-content: center; align-items: center; z-index: 2000; }
@@ -76,11 +86,11 @@
 
 <div id="signup-overlay">
     <div class="signup-card">
-        <h2 style="color:white">Set Up Profile</h2>
-        <img id="modal-avatar" style="width:80px; height:80px; border-radius:50%; margin-bottom:15px;">
-        <input type="text" id="modal-displayname" placeholder="Display Name" style="width:100%; padding:10px; margin-bottom:10px; background:#1e1f22; border:none; color:white; border-radius:4px;">
+        <h2 style="color:white" id="modal-title">Set Up Profile</h2>
+        <img id="modal-avatar" style="width:80px; height:80px; border-radius:50%; margin-bottom:15px; cursor:pointer;" onclick="this.src=`https://api.dicebear.com/7.x/pixel-art/svg?seed=${Math.random()}`" title="Click to reroll avatar">
         <input type="text" id="modal-username" placeholder="Username (e.g. prime)" style="width:100%; padding:10px; margin-bottom:20px; background:#1e1f22; border:none; color:white; border-radius:4px;">
-        <button onclick="saveProfile()" style="width:100%; padding:12px; background:#5865f2; border:none; color:white; border-radius:4px; font-weight:bold; cursor:pointer;">Join Server</button>
+        <button onclick="saveProfile()" style="width:100%; padding:12px; background:#5865f2; border:none; color:white; border-radius:4px; font-weight:bold; cursor:pointer;">Save & Join</button>
+        <div id="cancel-profile-btn" onclick="document.getElementById('signup-overlay').style.display='none'" style="display:none; color:#949ba4; margin-top:15px; cursor:pointer; font-size:13px;">Cancel</div>
     </div>
 </div>
 
@@ -95,7 +105,7 @@
             <div class="channel-item active" data-channel="welcome">welcome</div>
             <div class="channel-item" data-channel="general">general</div>
         </div>
-        <div class="user-panel" onclick="openModal()">
+        <div class="user-panel" onclick="openModal(true)">
             <img id="my-pfp" class="user-avatar">
             <div style="font-size:13px; font-weight:bold; color:white;" id="my-name">Guest</div>
         </div>
@@ -104,10 +114,17 @@
     <div class="chat-area">
         <div class="chat-messages" id="message-container"></div>
         <div class="input-wrapper">
-            <div id="reply-bar" class="reply-preview">
+            <div id="reply-bar" class="preview-bar">
                 <span>Replying to <strong id="reply-target"></strong></span>
-                <span onclick="cancelReply()" style="cursor:pointer">✕</span>
+                <span class="cancel-btn" onclick="cancelReply()">✕</span>
             </div>
+            <div id="attach-bar" class="preview-bar">
+                <div class="preview-img-container">
+                    <img id="attach-preview-img" class="preview-img">
+                </div>
+                <span class="cancel-btn" onclick="cancelAttachment()">✕</span>
+            </div>
+
             <div class="input-box">
                 <label style="color:#b5bac1; cursor:pointer; font-size:20px; font-weight:bold;" title="Upload Image">
                     +
@@ -134,10 +151,31 @@
     let currentChannel = 'welcome';
     let myUsername = localStorage.getItem('discordGuestName');
     let pendingReply = null;
+    let pendingAttachment = null;
     let lastUser = null;
     let lastTime = 0;
 
-    // --- REPLIES & ACTIONS ---
+    // --- DB ACTIONS (WITH ERROR LOGGING IN CASE RLS FAILS) ---
+    async function executeDelete(msgId) {
+        const { error } = await db.from('Messages').delete().eq('id', msgId);
+        if (error) { console.error("Delete failed (Likely Supabase Permissions):", error.message); alert("Could not delete. Check Supabase RLS policies."); }
+    }
+
+    async function addReaction(msgId, emoji) {
+        const { data, error: fetchErr } = await db.from('Messages').select('reactions').eq('id', msgId).single();
+        if (fetchErr) return console.error("Reaction fetch failed:", fetchErr);
+        
+        let r = data.reactions || {};
+        if (!r[emoji]) r[emoji] = [];
+        const idx = r[emoji].indexOf(myUsername);
+        if (idx > -1) r[emoji].splice(idx, 1); else r[emoji].push(myUsername);
+        if (r[emoji].length === 0) delete r[emoji];
+        
+        const { error: updateErr } = await db.from('Messages').update({ reactions: r }).eq('id', msgId);
+        if (updateErr) { console.error("Reaction update failed:", updateErr); alert("Reaction failed to save. Check Supabase RLS."); }
+    }
+
+    // --- REPLIES & ATTACHMENTS ---
     function setReply(id, name, pfp, text) {
         pendingReply = { id, name, pfp, text: text.substring(0, 40) };
         document.getElementById('reply-target').innerText = name;
@@ -145,18 +183,9 @@
         document.getElementById('chat-input').focus();
     }
     function cancelReply() { pendingReply = null; document.getElementById('reply-bar').style.display = 'none'; }
+    function cancelAttachment() { pendingAttachment = null; document.getElementById('attach-bar').style.display = 'none'; }
 
-    async function addReaction(msgId, emoji) {
-        const { data } = await db.from('Messages').select('reactions').eq('id', msgId).single();
-        let r = data.reactions || {};
-        if (!r[emoji]) r[emoji] = [];
-        const idx = r[emoji].indexOf(myUsername);
-        if (idx > -1) r[emoji].splice(idx, 1); else r[emoji].push(myUsername);
-        if (r[emoji].length === 0) delete r[emoji];
-        await db.from('Messages').update({ reactions: r }).eq('id', msgId);
-    }
-
-    // --- AUTO-COMPRESSING BASE64 FILE UPLOAD ---
+    // --- STAGE IMAGE FOR SENDING ---
     function handleFileAsBase64(input) {
         const file = input.files[0];
         if (!file) return;
@@ -167,47 +196,41 @@
             img.onload = function() {
                 const canvas = document.createElement('canvas');
                 const ctx = canvas.getContext('2d');
-
-                let width = img.width;
-                let height = img.height;
-                const MAX_DIMENSION = 1920; // Scale down if larger than 1080p
+                let width = img.width, height = img.height;
+                const MAX_DIMENSION = 1920; 
 
                 if (width > MAX_DIMENSION || height > MAX_DIMENSION) {
                     const ratio = Math.min(MAX_DIMENSION / width, MAX_DIMENSION / height);
-                    width *= ratio;
-                    height *= ratio;
+                    width *= ratio; height *= ratio;
                 }
 
-                canvas.width = width;
-                canvas.height = height;
+                canvas.width = width; canvas.height = height;
                 ctx.drawImage(img, 0, 0, width, height);
 
-                // If file is > 2MB, compress it heavily (0.6), otherwise keep it high quality (0.9)
                 const quality = file.size > 2 * 1024 * 1024 ? 0.6 : 0.9;
+                pendingAttachment = canvas.toDataURL('image/jpeg', quality);
                 
-                // Force convert to JPEG to ensure compression works (PNGs ignore quality parameter)
-                const base64String = canvas.toDataURL('image/jpeg', quality);
-
-                // Quick check to make sure the final string isn't STILL absurdly huge
-                if (base64String.length * 0.75 > 3 * 1024 * 1024) {
-                    alert("Image is still too large even after compression! Try a smaller image.");
-                } else {
-                    sendMessage("[IMG]" + base64String);
-                }
+                // Show preview
+                document.getElementById('attach-preview-img').src = pendingAttachment;
+                document.getElementById('attach-bar').style.display = 'flex';
+                document.getElementById('chat-input').focus();
             };
             img.src = e.target.result;
         };
         reader.readAsDataURL(file);
-        input.value = ""; // reset input so you can upload the same file twice if needed
+        input.value = ""; 
     }
 
+    // --- RENDER MESSAGES ---
     function renderMessage(m) {
         const container = document.getElementById('message-container');
         const isFirst = (m.username !== lastUser || (new Date(m.created_at) - lastTime) > 300000);
         const isAdmin = m.username.trim().toLowerCase() === ADMIN_USER.toLowerCase();
         
-        let content = m.content;
+        let content = m.content || "";
         let replyHtml = '';
+        
+        // Parse Reply
         if (content.startsWith('{"_reply"')) {
             try {
                 const p = JSON.parse(content);
@@ -216,9 +239,18 @@
             } catch(e){}
         }
 
+        // Parse Image embedded in content
+        let imgSrc = null;
+        if (content.includes('[IMG]')) {
+            const parts = content.split('[IMG]');
+            content = parts[0]; 
+            imgSrc = parts[1]; // The base64 string
+        }
+
         const row = document.createElement('div');
         row.className = `msg-row ${isFirst || replyHtml ? 'first' : ''}`;
         
+        // Reactions
         let reactHtml = '<div class="react-bar">';
         if (m.reactions) {
             for (let [emoji, users] of Object.entries(m.reactions)) {
@@ -227,25 +259,28 @@
         }
         reactHtml += '</div>';
 
-        const body = content.startsWith('[IMG]') ? `<img src="${content.replace('[IMG]','')}" class="chat-img">` : `<div class="msg-text">${content}</div>`;
+        const textVisual = content.trim() ? `<div class="msg-text">${content}</div>` : '';
+        const imgVisual = imgSrc ? `<img src="${imgSrc}" class="chat-img">` : '';
 
+        // RESTORED CROWN LOGIC
         row.innerHTML = `
             ${replyHtml}
             <div class="msg-flex">
                 <div class="avatar-col">${(isFirst || replyHtml) ? `<img src="https://api.dicebear.com/7.x/pixel-art/svg?seed=${m.username}" class="msg-pfp">` : ''}</div>
                 <div class="content-col">
                     ${(isFirst || replyHtml) ? `<div class="msg-header">
-                        <span class="username" style="color:${isAdmin?'#ffcc00':''}">${m.username.split('#')[0]}</span>
+                        <span class="username" style="color:${isAdmin?'#ffcc00':''}">${m.username.split('#')[0]}${isAdmin?' 👑':''}</span>
                         <span class="timestamp">${new Date(m.created_at).toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'})}</span>
                     </div>` : ''}
-                    ${body}
+                    ${textVisual}
+                    ${imgVisual}
                     ${reactHtml === '<div class="react-bar"></div>' ? '' : reactHtml}
                 </div>
             </div>
             <div class="msg-actions">
                 <div class="action-btn" onclick="addReaction('${m.id}', '👍')">👍</div>
                 <div class="action-btn" onclick="setReply('${m.id}', '${m.username.split('#')[0]}', 'https://api.dicebear.com/7.x/pixel-art/svg?seed=${m.username}', '${content}')">↩️</div>
-                ${(m.username === myUsername || myUsername.toLowerCase() === ADMIN_USER) ? `<div class="action-btn" onclick="db.from('Messages').delete().eq('id', '${m.id}')">🗑️</div>` : ''}
+                ${(m.username === myUsername || isAdmin) ? `<div class="action-btn" onclick="executeDelete('${m.id}')">🗑️</div>` : ''}
             </div>`;
         container.appendChild(row);
         container.scrollTop = container.scrollHeight;
@@ -254,32 +289,71 @@
 
     async function sendMessage(val) {
         let finalVal = val;
-        if (pendingReply) finalVal = JSON.stringify({ _reply: pendingReply, content: val });
+        
+        // Append image if staged
+        if (pendingAttachment) {
+            finalVal += "[IMG]" + pendingAttachment;
+        }
+
+        // Wrap in reply object if needed
+        if (pendingReply) {
+            finalVal = JSON.stringify({ _reply: pendingReply, content: finalVal });
+        }
         
         if (currentChannel === 'welcome') {
-            const pass = (myUsername.toLowerCase() === ADMIN_USER) ? null : prompt("Admin Passcode:");
+            const pass = (myUsername.toLowerCase() === ADMIN_USER.toLowerCase()) ? null : prompt("Admin Passcode:");
             await db.rpc('post_admin_message', { passcode: pass, p_username: myUsername, p_content: finalVal, p_channel: 'welcome' });
         } else {
             await db.from('Messages').insert([{ username: myUsername, content: finalVal, channel: currentChannel }]);
         }
+        
         cancelReply();
+        cancelAttachment();
     }
 
+    // --- CHAT INPUT HANDLER ---
+    document.getElementById('chat-input').onkeypress = (e) => { 
+        if(e.key === 'Enter') {
+            const val = e.target.value.trim();
+            
+            // LOCAL CLEAR COMMAND
+            if (val === '/clear') {
+                document.getElementById('message-container').innerHTML = '';
+                e.target.value = '';
+                return;
+            }
+
+            if(val || pendingAttachment) {
+                sendMessage(val); 
+                e.target.value = ''; 
+            }
+        } 
+    };
+
     // --- USER PROFILE & PRESENCE ---
-    function openModal() {
+    function openModal(isEdit = false) {
         document.getElementById('signup-overlay').style.display = 'flex';
-        document.getElementById('modal-avatar').src = `https://api.dicebear.com/7.x/pixel-art/svg?seed=${Math.random()}`;
+        if (isEdit && myUsername) {
+            document.getElementById('modal-title').innerText = "Edit Profile";
+            document.getElementById('modal-username').value = myUsername.split('#')[0];
+            document.getElementById('modal-avatar').src = `https://api.dicebear.com/7.x/pixel-art/svg?seed=${myUsername}`;
+            document.getElementById('cancel-profile-btn').style.display = 'block';
+        } else {
+            document.getElementById('modal-avatar').src = `https://api.dicebear.com/7.x/pixel-art/svg?seed=${Math.random()}`;
+        }
     }
     
     function saveProfile() {
         const u = document.getElementById('modal-username').value.trim();
         if(!u) return alert("Username required");
-        myUsername = u + "#" + Math.floor(1000+Math.random()*9000);
+        // Keep tag if editing, otherwise generate new one
+        const currentTag = myUsername ? myUsername.split('#')[1] : Math.floor(1000+Math.random()*9000);
+        myUsername = u + "#" + currentTag;
         localStorage.setItem('discordGuestName', myUsername);
         location.reload();
     }
 
-    if (!myUsername) openModal();
+    if (!myUsername) openModal(false);
     else {
         document.getElementById('my-name').innerText = myUsername.split('#')[0];
         document.getElementById('my-pfp').src = `https://api.dicebear.com/7.x/pixel-art/svg?seed=${myUsername}`;
@@ -295,8 +369,12 @@
             const uniqueUsers = Object.keys(state);
             document.getElementById('online-count').innerText = uniqueUsers.length;
             uniqueUsers.forEach(userKey => {
-                list.innerHTML += `<div class="member-item">
-                    <img style="width:32px; border-radius:50%;" src="https://api.dicebear.com/7.x/pixel-art/svg?seed=${userKey}">
+                // RESTORED HOVER & GREEN DOT & CLICKABLE STUB
+                list.innerHTML += `<div class="member-item" onclick="alert('Viewing profile for: ${userKey}')">
+                    <div class="member-avatar-wrapper">
+                        <img src="https://api.dicebear.com/7.x/pixel-art/svg?seed=${userKey}">
+                        <div class="status-dot"></div>
+                    </div>
                     <span>${userKey.split('#')[0]}</span>
                 </div>`;
             });
@@ -310,8 +388,6 @@
         const { data } = await db.from('Messages').select('*').eq('channel', currentChannel).order('created_at', { ascending: true });
         if(data) data.forEach(renderMessage);
     }
-
-    document.getElementById('chat-input').onkeypress = (e) => { if(e.key==='Enter' && e.target.value.trim()){ sendMessage(e.target.value); e.target.value=''; } };
     
     document.querySelectorAll('.channel-item').forEach(ci => {
         ci.onclick = () => {
