@@ -28,46 +28,48 @@
         .user-panel:hover { background: #3f4147; }
         .user-panel-avatar { width: 32px; height: 32px; border-radius: 50%; object-fit: cover; }
         .user-panel-info { display: flex; flex-direction: column; flex-grow: 1; overflow: hidden; }
-        .user-panel-display { color: #f2f3f5; font-size: 14px; font-weight: bold; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .user-panel-display { color: #f2f3f5; font-size: 14px; font-weight: bold; }
         .user-panel-username { color: #b5bac1; font-size: 12px; }
 
         /* CHAT AREA */
         .chat-area { flex-grow: 1; display: flex; flex-direction: column; background: #313338; min-width: 0; }
-        .chat-messages { flex-grow: 1; padding-bottom: 20px; overflow-y: auto; display: flex; flex-direction: column; }
+        .chat-messages { flex-grow: 1; padding: 10px 0; overflow-y: auto; display: flex; flex-direction: column; }
         
-        /* FIXED: Group spacing and alignment */
-        .message { position: relative; padding: 2px 16px 2px 72px; min-height: 24px; }
+        /* SPACING FIX: Messages */
+        .message { position: relative; padding: 2px 16px 2px 72px; min-height: 24px; box-sizing: border-box; }
         .message:hover { background: #2e3035; }
-        .message.first-in-group { margin-top: 20px; padding-top: 8px; }
         
-        .message .avatar { position: absolute; left: 16px; top: 8px; width: 40px; height: 40px; border-radius: 50%; cursor: pointer; display: none; }
+        /* Spacing for new user chunks */
+        .message.first-in-group { margin-top: 22px; padding-top: 6px; }
+        
+        .message .avatar { position: absolute; left: 16px; top: 6px; width: 40px; height: 40px; border-radius: 50%; cursor: pointer; display: none; }
         .message.first-in-group .avatar { display: block; }
         
-        .msg-header { display: none; align-items: center; gap: 8px; margin-bottom: 4px; }
+        .msg-header { display: none; align-items: center; gap: 8px; margin-bottom: 2px; }
         .message.first-in-group .msg-header { display: flex; }
         
         .username { font-weight: 500; font-size: 16px; color: #f2f3f5; cursor: pointer; }
         .username:hover { text-decoration: underline; }
         .timestamp { color: #949ba4; font-size: 12px; }
         
-        .text { color: #dbdee1; font-size: 15px; line-height: 1.375; white-space: pre-wrap; word-wrap: break-word; }
-        
-        /* FIXED: Image spacing to prevent overlapping */
-        .chat-img { max-width: 100%; max-height: 350px; border-radius: 8px; margin: 8px 0 6px 0; cursor: zoom-in; align-self: flex-start; display: block; }
+        .text { color: #dbdee1; font-size: 15px; line-height: 1.375; white-space: pre-wrap; word-wrap: break-word; padding-bottom: 2px; }
+
+        /* SPACING FIX: Images */
+        .chat-img { max-width: 100%; max-height: 400px; border-radius: 8px; margin: 8px 0 10px 0; cursor: zoom-in; align-self: flex-start; display: block; clear: both; }
 
         /* MESSAGE HOVER ACTIONS */
-        .msg-actions { position: absolute; right: 16px; top: -18px; background: #313338; border: 1px solid #1e1f22; border-radius: 4px; display: none; z-index: 100; box-shadow: 0 2px 4px rgba(0,0,0,0.2); }
+        .msg-actions { position: absolute; right: 16px; top: -14px; background: #313338; border: 1px solid #1e1f22; border-radius: 4px; display: none; z-index: 100; box-shadow: 0 2px 4px rgba(0,0,0,0.2); }
         .message:hover .msg-actions { display: flex; }
-        .msg-btn { padding: 4px 8px; cursor: pointer; color: #b5bac1; font-size: 14px; }
+        .msg-btn { padding: 4px 10px; cursor: pointer; color: #b5bac1; font-size: 14px; }
         .msg-btn:hover { background: #3f4147; color: white; }
         .msg-btn.delete:hover { background: #da373c; }
 
         /* REPLIES & REACTIONS */
-        .reply-context { color: #b5bac1; font-size: 13px; display: flex; align-items: center; margin-bottom: 4px; margin-left: -42px; opacity: 0.8; }
-        .reply-context::before { content: ''; width: 33px; height: 10px; border-top: 2px solid #4e5058; border-left: 2px solid #4e5058; border-top-left-radius: 6px; margin-right: 4px; margin-top: 10px; }
+        .reply-context { color: #b5bac1; font-size: 13px; display: flex; align-items: center; margin-bottom: 6px; margin-left: -42px; opacity: 0.8; }
+        .reply-context::before { content: ''; width: 33px; height: 12px; border-top: 2px solid #4e5058; border-left: 2px solid #4e5058; border-top-left-radius: 6px; margin-right: 4px; margin-top: 10px; }
         .reply-av { width: 16px; height: 16px; border-radius: 50%; margin-right: 4px; }
 
-        .reaction-bar { display: flex; gap: 4px; margin: 4px 0; }
+        .reaction-bar { display: flex; gap: 4px; margin-top: 4px; margin-bottom: 6px; }
         .reaction-pill { background: #2b2d31; border: 1px solid transparent; border-radius: 8px; padding: 2px 6px; font-size: 12px; color: #b5bac1; cursor: pointer; }
         .reaction-pill.active { background: rgba(88,101,242,0.15); border-color: #5865f2; color: #5865f2; }
 
@@ -78,26 +80,25 @@
         .chat-input { background: transparent; border: none; color: #dcddde; font-size: 15px; flex-grow: 1; outline: none; }
 
         /* MEMBERS BAR */
-        .members-bar { width: 240px; background: #2b2d31; flex-shrink: 0; border-left: 1px solid #1e1f22; }
+        .members-bar { width: 240px; background: #2b2d31; flex-shrink: 0; }
         .members-header { padding: 20px 15px 10px; color: #949ba4; font-weight: bold; font-size: 12px; text-transform: uppercase; }
         .member-item { display: flex; align-items: center; gap: 12px; padding: 6px 8px; margin: 1px 8px; border-radius: 4px; cursor: pointer; position: relative; }
         .member-item:hover { background: #35373c; }
         .avatar-container { position: relative; width: 32px; height: 32px; }
         .member-avatar { width: 100%; height: 100%; border-radius: 50%; }
         .status-dot { position: absolute; bottom: -2px; right: -2px; width: 10px; height: 10px; border-radius: 50%; border: 3px solid #2b2d31; background: #23a55a; }
-        .member-name { color: #949ba4; font-size: 15px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-
-        /* MODALS & POPOUT */
-        #user-popout { position: fixed; width: 300px; background: #111214; border-radius: 8px; box-shadow: 0 8px 24px rgba(0,0,0,0.5); display: none; z-index: 1000; overflow: hidden; }
-        .popout-banner { height: 60px; background: #5865f2; }
-        .popout-avatar-wrap { margin: -30px 0 0 16px; border: 6px solid #111214; border-radius: 50%; width: 80px; height: 80px; background: #111214; }
-        .popout-body { padding: 12px 16px 16px; color: white; }
+        .member-name { color: #949ba4; font-size: 15px; }
 
         #fullscreen-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.9); z-index: 9999; display: none; align-items: center; justify-content: center; }
         #signup-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.8); display: none; justify-content: center; align-items: center; z-index: 2000; }
         .signup-card { background: #313338; padding: 32px; border-radius: 8px; width: 320px; text-align: center; }
         .btn { padding: 10px; border-radius: 4px; border: none; cursor: pointer; font-weight: bold; background: #5865f2; color: white; width: 100%; margin-top: 10px; }
         input[type="text"] { width: 100%; padding: 10px; background: #1e1f22; border: none; color: white; border-radius: 4px; margin: 10px 0; box-sizing: border-box; }
+        
+        #user-popout { position: fixed; width: 300px; background: #111214; border-radius: 8px; box-shadow: 0 8px 24px rgba(0,0,0,0.5); display: none; z-index: 1000; overflow: hidden; }
+        .popout-banner { height: 60px; background: #5865f2; }
+        .popout-avatar-wrap { margin: -30px 0 0 16px; border: 6px solid #111214; border-radius: 50%; width: 80px; height: 80px; background: #111214; }
+        .popout-body { padding: 12px 16px 16px; color: white; }
     </style>
 </head>
 <body>
@@ -170,8 +171,7 @@
     const SUPABASE_KEY = 'sb_publishable_FUPgy9ZRC9hrNfMUborCdQ_WF-pD5UP';
     const db = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-    // FIXED: Trimmed constant to ensure exact match with SQL
-    const ADMIN_USER = 'githbprime#3951'; 
+    const ADMIN_USER = 'githbprime#3951';
 
     let currentChannel = 'welcome';
     let myUsername = localStorage.getItem('discordGuestName');
@@ -182,7 +182,9 @@
     let lastUser = null;
     let lastTime = 0;
 
-    // --- PROFILE LOGIC ---
+    // --- UTILS ---
+    const checkAdmin = () => (myUsername || "").trim().toLowerCase() === ADMIN_USER.toLowerCase();
+
     function openModal(mode) {
         document.getElementById('signup-overlay').style.display = 'flex';
         if (mode === 'signup') generateRandomAvatar();
@@ -207,12 +209,10 @@
         localStorage.setItem('discordGuestName', myUsername.trim());
         localStorage.setItem('discordDisplayName', myDisplayName);
         localStorage.setItem('discordAvatar', myAvatar);
-        
-        document.getElementById('signup-overlay').style.display = 'none';
         location.reload(); 
     }
 
-    // --- CHAT LOGIC ---
+    // --- CHAT ACTIONS ---
     function clearReply() { pendingReply = null; document.getElementById('active-reply-bar').style.display = 'none'; }
     
     function startReply(id, dName, av, text) {
@@ -226,11 +226,9 @@
         const { data } = await db.from('Messages').select('reactions').eq('id', msgId).single();
         let reacts = data?.reactions || {};
         if (!reacts[emoji]) reacts[emoji] = [];
-        
         const idx = reacts[emoji].indexOf(myUsername);
         if (idx > -1) reacts[emoji].splice(idx, 1);
         else reacts[emoji].push(myUsername);
-        
         if (reacts[emoji].length === 0) delete reacts[emoji];
         await db.from('Messages').update({ reactions: reacts }).eq('id', msgId);
     }
@@ -247,7 +245,6 @@
         document.getElementById('popout-img').src = data.avatar;
         document.getElementById('popout-displayname').innerText = data.displayName;
         document.getElementById('popout-username').innerText = user;
-        
         const rect = el.getBoundingClientRect();
         pop.style.display = 'block';
         pop.style.top = Math.min(rect.top, window.innerHeight - 250) + 'px';
@@ -258,7 +255,6 @@
 
     function addMessageToScreen(m) {
         const container = document.getElementById('message-container');
-        // Grouping logic: new group if different user OR more than 5 mins passed
         const isFirst = (m.username !== lastUser || (new Date(m.created_at) - lastTime) > 300000);
         let content = m.content;
         let replyHeader = '';
@@ -271,7 +267,7 @@
             } catch(e){}
         }
 
-        const isAdmin = m.username.trim() === ADMIN_USER;
+        const isAdmin = m.username.trim().toLowerCase() === ADMIN_USER.toLowerCase();
         const visuals = onlineUsersData[m.username] || { displayName: m.username.split('#')[0], avatar: `https://api.dicebear.com/7.x/pixel-art/svg?seed=${m.username}` };
         
         const msgDiv = document.createElement('div');
@@ -283,7 +279,7 @@
             <div class="msg-actions">
                 <div class="msg-btn" onclick="toggleReaction('${m.id}', '👍')">👍</div>
                 <div class="msg-btn" onclick="startReply('${m.id}', '${visuals.displayName.replace(/'/g,"\\'")}', '${visuals.avatar}', '${safeText}')">↩️</div>
-                ${(m.username.trim() === myUsername.trim() || myUsername.trim() === ADMIN_USER) ? `<div class="msg-btn delete" onclick="deleteMessage('${m.id}')">🗑️</div>` : ''}
+                ${(m.username.trim() === myUsername.trim() || checkAdmin()) ? `<div class="msg-btn delete" onclick="deleteMessage('${m.id}')">🗑️</div>` : ''}
             </div>`;
 
         let reactHtml = '';
@@ -329,12 +325,10 @@
             
             // COMMAND: CLEAR
             if (val === '/clear') {
-                if(confirm("Clear all messages in this channel?")) {
-                    let pass = null;
-                    // FIXED: Always ask for passcode if RPC fails or if not exact admin match
-                    if (myUsername.trim() !== ADMIN_USER) pass = prompt("Admin Passcode:");
-                    const { data, error } = await db.rpc('clear_messages', { passcode: pass, p_channel: currentChannel, p_username: myUsername.trim() });
-                    if (error || data !== 'Success') alert(data || "Unauthorized");
+                if(confirm("Clear channel?")) {
+                    let pass = checkAdmin() ? null : prompt("Admin Passcode Required:");
+                    const { data } = await db.rpc('clear_messages', { passcode: pass, p_channel: currentChannel, p_username: myUsername.trim() });
+                    if (data !== 'Success') alert(data || "Unauthorized");
                 }
                 e.target.value = ''; return;
             }
@@ -344,21 +338,18 @@
                 finalContent = JSON.stringify({ _reply: pendingReply, content: val });
             }
 
-            // FIXED: Improved #welcome authorization logic
+            // WELCOME CHANNEL AUTH FIX
             if (currentChannel === 'welcome') {
-                let pass = null;
-                if (myUsername.trim() !== ADMIN_USER) {
-                    pass = prompt("Post to #welcome? Enter Admin Passcode:");
-                }
-                const { data, error } = await db.rpc('post_admin_message', { passcode: pass, p_username: myUsername.trim(), p_content: finalContent, p_channel: 'welcome' });
+                let pass = checkAdmin() ? null : prompt("Posting to #welcome requires Admin Passcode:");
+                let { data, error } = await db.rpc('post_admin_message', { passcode: pass, p_username: myUsername.trim(), p_content: finalContent, p_channel: 'welcome' });
                 
-                // FALLBACK: If first attempt failed because username didn't match, try prompt
-                if (data === 'Unauthorized' && !pass) {
-                    pass = prompt("Unauthorized. Please enter Admin Passcode:");
+                // If the check failed, try one more time with a manual prompt to prevent loop
+                if (data === 'Unauthorized') {
+                    pass = prompt("Account not recognized. Enter Master Passcode:");
                     const retry = await db.rpc('post_admin_message', { passcode: pass, p_username: myUsername.trim(), p_content: finalContent, p_channel: 'welcome' });
-                    if (retry.error || retry.data !== 'Success') alert("Failed: " + (retry.data || "Unauthorized"));
-                } else if (error || data !== 'Success') {
-                    alert(data || "Unauthorized");
+                    if (retry.data !== 'Success') alert("Unauthorized");
+                } else if (error) {
+                    alert("Error: " + error.message);
                 }
             } else {
                 await db.from('Messages').insert([{ username: myUsername.trim(), content: finalContent, channel: currentChannel }]);
@@ -399,7 +390,7 @@
             users.forEach(u => {
                 const info = state[u][0];
                 onlineUsersData[u] = info;
-                const isAdmin = u.trim() === ADMIN_USER;
+                const isAdmin = u.trim().toLowerCase() === ADMIN_USER.toLowerCase();
                 container.innerHTML += `
                     <div class="member-item" onclick="showPopout('${u}', this)">
                         <div class="avatar-container">
