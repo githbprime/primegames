@@ -44,13 +44,21 @@
         .username { font-weight: 500; font-size: 16px; }
         .timestamp { color: #949ba4; font-size: 12px; margin-left: 8px; }
         .text { color: #dbdee1; font-size: 15px; line-height: 1.3; white-space: pre-wrap; }
-        .chat-img { max-width: 100%; max-height: 300px; border-radius: 8px; margin-top: 8px; border: 1px solid #1e1f22; object-fit: contain; }
+        .chat-img { max-width: 100%; max-height: 300px; border-radius: 8px; margin-top: 4px; border: 1px solid #1e1f22; object-fit: contain; }
         
         /* INPUT AREA + UPLOAD BUTTON */
-        .chat-input-wrapper { padding: 0 16px 24px; display: flex; gap: 12px; align-items: center; }
+        .chat-input-wrapper { padding: 0 16px 24px; display: flex; flex-direction: column; }
+        
+        /* NEW: Attachment Preview Area */
+        .attachment-preview { display: none; background: #2b2d31; padding: 12px; border-radius: 8px 8px 0 0; position: relative; width: max-content; margin-bottom: -8px; margin-left: 10px; z-index: 10;}
+        .attachment-preview img { height: 80px; border-radius: 4px; object-fit: contain; }
+        .remove-attachment { position: absolute; top: -6px; right: -6px; background: #da373c; color: white; width: 22px; height: 22px; border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; font-size: 12px; font-weight: bold; box-shadow: 0 2px 4px rgba(0,0,0,0.4); }
+        .remove-attachment:hover { background: #c92b30; }
+
+        .chat-input-row { display: flex; gap: 12px; align-items: center; width: 100%; }
         .upload-btn { background: #4e5058; color: #dbdee1; border-radius: 50%; width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 20px; cursor: pointer; transition: 0.2s; flex-shrink: 0; }
         .upload-btn:hover { background: #dbdee1; color: #313338; }
-        .chat-input { background: #383a40; padding: 12px 16px; border-radius: 8px; color: #dcddde; font-size: 15px; border: none; flex-grow: 1; outline: none; }
+        .chat-input { background: #383a40; padding: 12px 16px; border-radius: 8px; color: #dcddde; font-size: 15px; border: none; flex-grow: 1; outline: none; z-index: 11;}
 
         /* MEMBER SIDEBAR */
         .members-bar { width: 240px; background: #2b2d31; display: flex; flex-direction: column; flex-shrink: 0; border-left: 1px solid #1e1f22; position: relative; }
@@ -149,10 +157,18 @@
 
     <div class="chat-area">
         <div class="chat-messages" id="message-container"></div>
+        
         <div class="chat-input-wrapper">
-            <div class="upload-btn" title="Upload Image" onclick="document.getElementById('chat-image-upload').click()">+</div>
-            <input type="file" id="chat-image-upload" class="hidden-file-input" accept="image/*">
-            <input type="text" class="chat-input" id="chat-box" placeholder="Message #welcome">
+            <div id="attachment-preview" class="attachment-preview">
+                <div class="remove-attachment" onclick="clearAttachment()">✕</div>
+                <img id="preview-img" src="">
+            </div>
+
+            <div class="chat-input-row">
+                <div class="upload-btn" title="Upload Image" onclick="document.getElementById('chat-image-upload').click()">+</div>
+                <input type="file" id="chat-image-upload" class="hidden-file-input" accept="image/*">
+                <input type="text" class="chat-input" id="chat-box" placeholder="Message #welcome">
+            </div>
         </div>
     </div>
 
@@ -180,6 +196,7 @@
     let generatedHash = "";
     let onlineUsersData = {}; 
     let livePresenceChannel = null;
+    let pendingChatImage = null; // NEW: Holds the image before sending
 
     // --- MODAL LOGIC (SIGNUP vs EDIT) ---
     function openModal(mode) {
@@ -281,17 +298,23 @@
         }
     });
 
-    // --- CHAT IMAGE UPLOAD LOGIC ---
+    // --- CHAT IMAGE PREVIEW LOGIC ---
+    function clearAttachment() {
+        pendingChatImage = null;
+        document.getElementById('attachment-preview').style.display = 'none';
+        document.getElementById('chat-image-upload').value = '';
+    }
+
     document.getElementById('chat-image-upload').addEventListener('change', function(e) {
         const file = e.target.files[0];
         if (!file) return;
         const reader = new FileReader();
         reader.onload = function(event) {
             const img = new Image();
-            img.onload = async function() {
+            img.onload = function() {
                 const canvas = document.createElement('canvas');
-                // Cap dimensions to prevent hitting Supabase payload limits
-                const MAX_SIZE = 400; 
+                // Drop to 300 to ensure we safely clear real-time payload limits
+                const MAX_SIZE = 300; 
                 let width = img.width;
                 let height = img.height;
 
@@ -306,16 +329,15 @@
                 const ctx = canvas.getContext('2d');
                 ctx.drawImage(img, 0, 0, width, height);
                 
-                // Compress to JPEG to save space
-                const base64String = canvas.toDataURL('image/jpeg', 0.8); 
-                
-                // Send automatically prefixed with [IMG]
-                await db.from('Messages').insert([{ username: myUsername, content: '[IMG]' + base64String, channel: currentChannel }]);
+                // Store in memory, show preview, and refocus chat box
+                pendingChatImage = canvas.toDataURL('image/jpeg', 0.8); 
+                document.getElementById('preview-img').src = pendingChatImage;
+                document.getElementById('attachment-preview').style.display = 'block';
+                input.focus();
             };
             img.src = event.target.result;
         };
         reader.readAsDataURL(file);
-        e.target.value = ''; // Reset input so you can upload the same image again if needed
     });
 
     // --- CORE APP LOGIC ---
@@ -374,26 +396,49 @@
         };
     });
 
+    // UPDATED SEND LOGIC
     input.onkeypress = async (e) => {
-        if (e.key === 'Enter' && input.value.trim() !== '') {
+        if (e.key === 'Enter') {
             const val = input.value.trim();
-            input.value = '';
+            const hasText = val !== '';
+            const hasImage = pendingChatImage !== null;
 
-            if (val === '/clear') {
+            if (!hasText && !hasImage) return; // Prevent empty sends
+
+            // Handle Admin clear command (text only)
+            if (hasText && val === '/clear') {
                 const pass = prompt("Admin Passcode:");
                 const { data, error } = await db.rpc('clear_messages', { passcode: pass });
                 if (error || data !== 'Success') alert(error?.message || data);
+                input.value = '';
                 return;
             }
+
+            // Temporarily save states and clear UI instantly so it feels responsive
+            const textToSend = val;
+            const imgToSend = pendingChatImage;
+            input.value = '';
+            clearAttachment();
 
             if (currentChannel === 'welcome') {
                 const pass = prompt("Post to #welcome? Enter Admin Passcode:");
-                const { data, error } = await db.rpc('post_admin_message', { passcode: pass, p_username: myUsername, p_content: val, p_channel: 'welcome' });
-                if (error || data !== 'Success') alert(data || "Unauthorized");
-                return;
+                if (hasText) {
+                    const { data, error } = await db.rpc('post_admin_message', { passcode: pass, p_username: myUsername, p_content: textToSend, p_channel: 'welcome' });
+                    if (error || data !== 'Success') return alert(data || "Unauthorized");
+                }
+                if (hasImage) {
+                    const { data, error } = await db.rpc('post_admin_message', { passcode: pass, p_username: myUsername, p_content: '[IMG]' + imgToSend, p_channel: 'welcome' });
+                    if (error || data !== 'Success') return alert(data || "Unauthorized");
+                }
+            } else {
+                // If there is both text and an image, it sends them as two separate back-to-back messages (just like Discord!)
+                if (hasText) {
+                    await db.from('Messages').insert([{ username: myUsername, content: textToSend, channel: currentChannel }]);
+                }
+                if (hasImage) {
+                    await db.from('Messages').insert([{ username: myUsername, content: '[IMG]' + imgToSend, channel: currentChannel }]);
+                }
             }
-
-            await db.from('Messages').insert([{ username: myUsername, content: val, channel: currentChannel }]);
         }
     };
 
