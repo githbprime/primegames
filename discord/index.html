@@ -18,12 +18,16 @@
         .channel-list { padding: 8px; flex-grow: 1; }
         .channel-item { padding: 8px 12px; border-radius: 4px; color: #949ba4; cursor: pointer; margin-bottom: 2px; display: flex; align-items: center; transition: 0.1s; }
         .channel-item:before { content: "#"; margin-right: 8px; font-size: 20px; color: #5f636a; }
-        .channel-item:hover { background: #35373c; color: #dbdee1; } /* RESTORED HOVER */
+        .channel-item:hover { background: #35373c; color: #dbdee1; }
         .channel-item.active { background: #3f4147; color: white; }
 
-        .user-panel { background: #232428; padding: 8px; display: flex; align-items: center; gap: 8px; cursor: pointer; transition: 0.1s; }
-        .user-panel:hover { background: #35373c; } /* RESTORED HOVER */
-        .user-avatar { width: 32px; height: 32px; border-radius: 50%; background: #1e1f22; }
+        /* USER PANEL (BOTTOM LEFT) */
+        .user-panel { background: #232428; padding: 8px; display: flex; align-items: center; gap: 10px; cursor: pointer; transition: 0.1s; }
+        .user-panel:hover { background: #35373c; }
+        .user-avatar { width: 32px; height: 32px; border-radius: 50%; background: #1e1f22; object-fit: cover; }
+        .user-info { display: flex; flex-direction: column; }
+        .user-name { font-size: 13px; font-weight: bold; color: white; }
+        .user-hash { font-size: 11px; color: #b5bac1; }
 
         /* CHAT AREA */
         .chat-area { flex-grow: 1; display: flex; flex-direction: column; min-width: 0; background: #313338; position: relative; }
@@ -36,7 +40,7 @@
         
         .msg-flex { display: flex; width: 100%; }
         .avatar-col { width: 50px; flex-shrink: 0; }
-        .msg-pfp { width: 40px; height: 40px; border-radius: 50%; margin-top: 4px; }
+        .msg-pfp { width: 40px; height: 40px; border-radius: 50%; margin-top: 4px; object-fit: cover; cursor: pointer; }
         .content-col { flex-grow: 1; min-width: 0; padding-left: 10px; }
         
         /* ACTION BAR */
@@ -53,10 +57,10 @@
         .react-pill.active { background: rgba(88,101,242,0.15); border-color: #5865f2; color: #5865f2; }
 
         .msg-header { margin-bottom: 2px; display: flex; align-items: center; gap: 8px; }
-        .username { color: white; font-weight: 500; font-size: 16px; }
+        .username { color: white; font-weight: 500; font-size: 16px; cursor: pointer; }
         .timestamp { color: #949ba4; font-size: 12px; }
         .msg-text { color: #dbdee1; font-size: 15px; line-height: 1.4; word-break: break-word; }
-        .chat-img { max-width: 100%; max-height: 350px; border-radius: 8px; margin: 6px 0; display: block; background: #2b2d31; }
+        .chat-img { max-width: 100%; max-height: 350px; border-radius: 8px; margin: 6px 0; display: block; background: #2b2d31; cursor: zoom-in; }
 
         /* INPUT AREA */
         .input-wrapper { padding: 0 16px 24px; }
@@ -72,23 +76,57 @@
         .members-bar { width: 240px; background: #2b2d31; flex-shrink: 0; padding: 20px 8px; }
         .member-header { color: #949ba4; text-transform: uppercase; font-size: 12px; font-weight: bold; margin-bottom: 12px; padding-left: 8px; }
         .member-item { display: flex; align-items: center; gap: 10px; padding: 6px 8px; border-radius: 4px; color: #949ba4; cursor: pointer; transition: 0.1s; }
-        .member-item:hover { background: #35373c; color: #dbdee1; } /* RESTORED HOVER */
+        .member-item:hover { background: #35373c; color: #dbdee1; } 
         .member-avatar-wrapper { position: relative; width: 32px; height: 32px; flex-shrink: 0; }
-        .member-avatar-wrapper img { width: 100%; height: 100%; border-radius: 50%; }
-        .status-dot { position: absolute; bottom: -2px; right: -2px; width: 10px; height: 10px; background: #23a559; border-radius: 50%; border: 2px solid #2b2d31; } /* RESTORED GREEN DOT */
+        .member-avatar-wrapper img { width: 100%; height: 100%; border-radius: 50%; object-fit: cover; }
+        .status-dot { position: absolute; bottom: -2px; right: -2px; width: 10px; height: 10px; background: #23a559; border-radius: 50%; border: 2px solid #2b2d31; } 
 
-        /* OVERLAYS */
+        /* OVERLAYS & MODALS */
         #signup-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.85); display: none; justify-content: center; align-items: center; z-index: 2000; }
-        .signup-card { background: #313338; padding: 32px; border-radius: 8px; width: 320px; text-align: center; }
+        .signup-card { background: #313338; padding: 32px; border-radius: 8px; width: 340px; text-align: center; }
+        
+        #lightbox { position: fixed; inset: 0; background: rgba(0,0,0,0.9); z-index: 3000; display: none; justify-content: center; align-items: center; cursor: zoom-out; }
+        #lightbox img { max-width: 90vw; max-height: 90vh; border-radius: 4px; object-fit: contain; }
+
+        .mini-profile-overlay { position: fixed; inset: 0; z-index: 1000; display: none; }
+        .mini-profile-card { position: absolute; width: 300px; background: #111214; border-radius: 8px; box-shadow: 0 8px 16px rgba(0,0,0,0.4); overflow: hidden; z-index: 1001; display: none; flex-direction: column; }
+        .mini-profile-banner { height: 60px; background: #5865f2; }
+        .mini-profile-avatar { width: 80px; height: 80px; border-radius: 50%; border: 6px solid #111214; margin-top: -40px; margin-left: 16px; background: #1e1f22; object-fit: cover; }
+        .mini-profile-body { padding: 12px 16px 16px; background: #111214; color: #dbdee1; display: flex; flex-direction: column; gap: 4px; }
     </style>
 </head>
 <body>
 
+<div id="lightbox" onclick="this.style.display='none'">
+    <img id="lightbox-img" src="">
+</div>
+
+<div id="mp-overlay" class="mini-profile-overlay" onclick="closeMiniProfile()"></div>
+<div id="mp-card" class="mini-profile-card">
+    <div class="mini-profile-banner"></div>
+    <img id="mp-pfp" class="mini-profile-avatar">
+    <div class="mini-profile-body">
+        <div style="font-size: 20px; font-weight: bold;" id="mp-name"></div>
+        <div style="font-size: 14px; color: #b5bac1;" id="mp-hash"></div>
+    </div>
+</div>
+
 <div id="signup-overlay">
     <div class="signup-card">
         <h2 style="color:white" id="modal-title">Set Up Profile</h2>
-        <img id="modal-avatar" style="width:80px; height:80px; border-radius:50%; margin-bottom:15px; cursor:pointer;" onclick="this.src=`https://api.dicebear.com/7.x/pixel-art/svg?seed=${Math.random()}`" title="Click to reroll avatar">
-        <input type="text" id="modal-username" placeholder="Username (e.g. prime)" style="width:100%; padding:10px; margin-bottom:20px; background:#1e1f22; border:none; color:white; border-radius:4px;">
+        
+        <div style="display:flex; justify-content:center; gap:16px; margin-bottom:20px; align-items:center;">
+            <img id="modal-avatar" style="width:80px; height:80px; border-radius:50%; object-fit:cover; border:2px solid #1e1f22;">
+            <div style="display:flex; flex-direction:column; gap:8px;">
+                <button onclick="document.getElementById('modal-avatar').src = `https://api.dicebear.com/7.x/pixel-art/svg?seed=${Math.random()}`" style="padding:6px 12px; background:#4e5058; color:white; border:none; border-radius:4px; cursor:pointer;">🎲 Randomize</button>
+                <label style="padding:6px 12px; background:#2b2d31; color:white; border:none; border-radius:4px; cursor:pointer; font-size:13px;">
+                    📁 Upload Custom
+                    <input type="file" accept="image/*" style="display:none;" onchange="handleAvatarUpload(this)">
+                </label>
+            </div>
+        </div>
+
+        <input type="text" id="modal-username" placeholder="Username (e.g. prime)" style="width:100%; padding:10px; margin-bottom:20px; background:#1e1f22; border:none; color:white; border-radius:4px; box-sizing:border-box;">
         <button onclick="saveProfile()" style="width:100%; padding:12px; background:#5865f2; border:none; color:white; border-radius:4px; font-weight:bold; cursor:pointer;">Save & Join</button>
         <div id="cancel-profile-btn" onclick="document.getElementById('signup-overlay').style.display='none'" style="display:none; color:#949ba4; margin-top:15px; cursor:pointer; font-size:13px;">Cancel</div>
     </div>
@@ -107,7 +145,10 @@
         </div>
         <div class="user-panel" onclick="openModal(true)">
             <img id="my-pfp" class="user-avatar">
-            <div style="font-size:13px; font-weight:bold; color:white;" id="my-name">Guest</div>
+            <div class="user-info">
+                <div class="user-name" id="my-name">Guest</div>
+                <div class="user-hash" id="my-hash">#0000</div>
+            </div>
         </div>
     </div>
 
@@ -124,7 +165,6 @@
                 </div>
                 <span class="cancel-btn" onclick="cancelAttachment()">✕</span>
             </div>
-
             <div class="input-box">
                 <label style="color:#b5bac1; cursor:pointer; font-size:20px; font-weight:bold;" title="Upload Image">
                     +
@@ -150,32 +190,76 @@
 
     let currentChannel = 'welcome';
     let myUsername = localStorage.getItem('discordGuestName');
+    let myAvatar = localStorage.getItem('discordGuestPfp');
     let pendingReply = null;
     let pendingAttachment = null;
     let lastUser = null;
     let lastTime = 0;
 
-    // --- DB ACTIONS (WITH ERROR LOGGING IN CASE RLS FAILS) ---
-    async function executeDelete(msgId) {
+    function isAdmin(user) {
+        return user && user.toLowerCase() === ADMIN_USER.toLowerCase();
+    }
+
+    // --- UI INTERACTIVITY ---
+    function openLightbox(src) {
+        document.getElementById('lightbox-img').src = src;
+        document.getElementById('lightbox').style.display = 'flex';
+    }
+
+    function showMiniProfile(event, username, pfpSrc) {
+        const card = document.getElementById('mp-card');
+        const overlay = document.getElementById('mp-overlay');
+        
+        const isAdm = isAdmin(username);
+        const nameColor = isAdm ? '#ffcc00' : 'white';
+        const crown = isAdm ? ' 👑' : '';
+        const parts = username.split('#');
+
+        document.getElementById('mp-pfp').src = pfpSrc;
+        document.getElementById('mp-name').innerHTML = `<span style="color:${nameColor}">${parts[0]}${crown}</span>`;
+        document.getElementById('mp-hash').innerText = '#' + (parts[1] || '0000');
+        
+        // Position intelligently
+        let top = event.clientY - 100;
+        let left = event.clientX - 320; 
+        if (top < 10) top = 10;
+        
+        card.style.top = top + 'px';
+        card.style.left = left + 'px';
+        
+        overlay.style.display = 'block';
+        card.style.display = 'flex';
+    }
+    function closeMiniProfile() {
+        document.getElementById('mp-overlay').style.display = 'none';
+        document.getElementById('mp-card').style.display = 'none';
+    }
+
+    // --- DB ACTIONS & AUTH ---
+    async function executeDelete(msgId, btnElement) {
+        const row = btnElement.closest('.msg-row');
+        row.style.display = 'none'; // Optimistically hide it instantly
+        
         const { error } = await db.from('Messages').delete().eq('id', msgId);
-        if (error) { console.error("Delete failed (Likely Supabase Permissions):", error.message); alert("Could not delete. Check Supabase RLS policies."); }
+        if (error) { 
+            row.style.display = 'flex'; // Bring back if failed
+            console.error("Delete failed:", error.message); 
+            alert("Delete blocked by database. Check Supabase RLS policies: " + error.message); 
+        }
     }
 
     async function addReaction(msgId, emoji) {
         const { data, error: fetchErr } = await db.from('Messages').select('reactions').eq('id', msgId).single();
-        if (fetchErr) return console.error("Reaction fetch failed:", fetchErr);
-        
+        if (fetchErr) return;
         let r = data.reactions || {};
         if (!r[emoji]) r[emoji] = [];
         const idx = r[emoji].indexOf(myUsername);
         if (idx > -1) r[emoji].splice(idx, 1); else r[emoji].push(myUsername);
         if (r[emoji].length === 0) delete r[emoji];
-        
-        const { error: updateErr } = await db.from('Messages').update({ reactions: r }).eq('id', msgId);
-        if (updateErr) { console.error("Reaction update failed:", updateErr); alert("Reaction failed to save. Check Supabase RLS."); }
+        const { error } = await db.from('Messages').update({ reactions: r }).eq('id', msgId);
+        if (error) alert("Reaction failed. Check Supabase RLS.");
     }
 
-    // --- REPLIES & ATTACHMENTS ---
     function setReply(id, name, pfp, text) {
         pendingReply = { id, name, pfp, text: text.substring(0, 40) };
         document.getElementById('reply-target').innerText = name;
@@ -185,11 +269,28 @@
     function cancelReply() { pendingReply = null; document.getElementById('reply-bar').style.display = 'none'; }
     function cancelAttachment() { pendingAttachment = null; document.getElementById('attach-bar').style.display = 'none'; }
 
-    // --- STAGE IMAGE FOR SENDING ---
+    // --- FILE UPLOADS ---
+    function handleAvatarUpload(input) {
+        const file = input.files[0];
+        if (!file) return;
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            const img = new Image();
+            img.onload = function() {
+                const canvas = document.createElement('canvas');
+                canvas.width = 32; canvas.height = 32;
+                const ctx = canvas.getContext('2d');
+                ctx.drawImage(img, 0, 0, 32, 32);
+                document.getElementById('modal-avatar').src = canvas.toDataURL('image/png', 0.8);
+            };
+            img.src = e.target.result;
+        };
+        reader.readAsDataURL(file);
+    }
+
     function handleFileAsBase64(input) {
         const file = input.files[0];
         if (!file) return;
-
         const reader = new FileReader();
         reader.onload = function(e) {
             const img = new Image();
@@ -197,20 +298,14 @@
                 const canvas = document.createElement('canvas');
                 const ctx = canvas.getContext('2d');
                 let width = img.width, height = img.height;
-                const MAX_DIMENSION = 1920; 
-
-                if (width > MAX_DIMENSION || height > MAX_DIMENSION) {
-                    const ratio = Math.min(MAX_DIMENSION / width, MAX_DIMENSION / height);
+                const MAX = 1920; 
+                if (width > MAX || height > MAX) {
+                    const ratio = Math.min(MAX / width, MAX / height);
                     width *= ratio; height *= ratio;
                 }
-
                 canvas.width = width; canvas.height = height;
                 ctx.drawImage(img, 0, 0, width, height);
-
-                const quality = file.size > 2 * 1024 * 1024 ? 0.6 : 0.9;
-                pendingAttachment = canvas.toDataURL('image/jpeg', quality);
-                
-                // Show preview
+                pendingAttachment = canvas.toDataURL('image/jpeg', file.size > 2000000 ? 0.6 : 0.9);
                 document.getElementById('attach-preview-img').src = pendingAttachment;
                 document.getElementById('attach-bar').style.display = 'flex';
                 document.getElementById('chat-input').focus();
@@ -221,16 +316,14 @@
         input.value = ""; 
     }
 
-    // --- RENDER MESSAGES ---
+    // --- MESSAGING ---
     function renderMessage(m) {
         const container = document.getElementById('message-container');
         const isFirst = (m.username !== lastUser || (new Date(m.created_at) - lastTime) > 300000);
-        const isAdmin = m.username.trim().toLowerCase() === ADMIN_USER.toLowerCase();
+        const isAdm = isAdmin(m.username);
         
         let content = m.content || "";
         let replyHtml = '';
-        
-        // Parse Reply
         if (content.startsWith('{"_reply"')) {
             try {
                 const p = JSON.parse(content);
@@ -239,18 +332,16 @@
             } catch(e){}
         }
 
-        // Parse Image embedded in content
         let imgSrc = null;
         if (content.includes('[IMG]')) {
             const parts = content.split('[IMG]');
             content = parts[0]; 
-            imgSrc = parts[1]; // The base64 string
+            imgSrc = parts[1]; 
         }
 
         const row = document.createElement('div');
         row.className = `msg-row ${isFirst || replyHtml ? 'first' : ''}`;
         
-        // Reactions
         let reactHtml = '<div class="react-bar">';
         if (m.reactions) {
             for (let [emoji, users] of Object.entries(m.reactions)) {
@@ -260,16 +351,15 @@
         reactHtml += '</div>';
 
         const textVisual = content.trim() ? `<div class="msg-text">${content}</div>` : '';
-        const imgVisual = imgSrc ? `<img src="${imgSrc}" class="chat-img">` : '';
+        const imgVisual = imgSrc ? `<img src="${imgSrc}" class="chat-img" onclick="openLightbox(this.src)">` : '';
 
-        // RESTORED CROWN LOGIC
         row.innerHTML = `
             ${replyHtml}
             <div class="msg-flex">
-                <div class="avatar-col">${(isFirst || replyHtml) ? `<img src="https://api.dicebear.com/7.x/pixel-art/svg?seed=${m.username}" class="msg-pfp">` : ''}</div>
+                <div class="avatar-col">${(isFirst || replyHtml) ? `<img src="https://api.dicebear.com/7.x/pixel-art/svg?seed=${m.username}" class="msg-pfp" onclick="showMiniProfile(event, '${m.username}', this.src)">` : ''}</div>
                 <div class="content-col">
                     ${(isFirst || replyHtml) ? `<div class="msg-header">
-                        <span class="username" style="color:${isAdmin?'#ffcc00':''}">${m.username.split('#')[0]}${isAdmin?' 👑':''}</span>
+                        <span class="username" style="color:${isAdm?'#ffcc00':''}" onclick="showMiniProfile(event, '${m.username}', 'https://api.dicebear.com/7.x/pixel-art/svg?seed=${m.username}')">${m.username.split('#')[0]}${isAdm?' 👑':''}</span>
                         <span class="timestamp">${new Date(m.created_at).toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'})}</span>
                     </div>` : ''}
                     ${textVisual}
@@ -280,7 +370,7 @@
             <div class="msg-actions">
                 <div class="action-btn" onclick="addReaction('${m.id}', '👍')">👍</div>
                 <div class="action-btn" onclick="setReply('${m.id}', '${m.username.split('#')[0]}', 'https://api.dicebear.com/7.x/pixel-art/svg?seed=${m.username}', '${content}')">↩️</div>
-                ${(m.username === myUsername || isAdmin) ? `<div class="action-btn" onclick="executeDelete('${m.id}')">🗑️</div>` : ''}
+                ${(m.username === myUsername || isAdm) ? `<div class="action-btn" onclick="executeDelete('${m.id}', this)">🗑️</div>` : ''}
             </div>`;
         container.appendChild(row);
         container.scrollTop = container.scrollHeight;
@@ -289,38 +379,34 @@
 
     async function sendMessage(val) {
         let finalVal = val;
-        
-        // Append image if staged
-        if (pendingAttachment) {
-            finalVal += "[IMG]" + pendingAttachment;
-        }
-
-        // Wrap in reply object if needed
-        if (pendingReply) {
-            finalVal = JSON.stringify({ _reply: pendingReply, content: finalVal });
-        }
+        if (pendingAttachment) finalVal += "[IMG]" + pendingAttachment;
+        if (pendingReply) finalVal = JSON.stringify({ _reply: pendingReply, content: finalVal });
         
         if (currentChannel === 'welcome') {
-            const pass = (myUsername.toLowerCase() === ADMIN_USER.toLowerCase()) ? null : prompt("Admin Passcode:");
+            const pass = isAdmin(myUsername) ? null : prompt("Admin Passcode:");
             await db.rpc('post_admin_message', { passcode: pass, p_username: myUsername, p_content: finalVal, p_channel: 'welcome' });
         } else {
             await db.from('Messages').insert([{ username: myUsername, content: finalVal, channel: currentChannel }]);
         }
-        
-        cancelReply();
-        cancelAttachment();
+        cancelReply(); cancelAttachment();
     }
 
-    // --- CHAT INPUT HANDLER ---
-    document.getElementById('chat-input').onkeypress = (e) => { 
+    document.getElementById('chat-input').onkeypress = async (e) => { 
         if(e.key === 'Enter') {
             const val = e.target.value.trim();
             
-            // LOCAL CLEAR COMMAND
+            // ADMIN DATABASE WIPE COMMAND
             if (val === '/clear') {
-                document.getElementById('message-container').innerHTML = '';
-                e.target.value = '';
-                return;
+                if (isAdmin(myUsername)) {
+                    const pass = prompt("WARNING: Enter admin passcode to WIPE the database channel:");
+                    if (pass !== null) {
+                        const { error } = await db.from('Messages').delete().eq('channel', currentChannel);
+                        if (error) alert("Clear blocked by Supabase RLS: " + error.message);
+                    }
+                } else {
+                    alert("Only the Admin can wipe the database.");
+                }
+                e.target.value = ''; return;
             }
 
             if(val || pendingAttachment) {
@@ -330,13 +416,13 @@
         } 
     };
 
-    // --- USER PROFILE & PRESENCE ---
+    // --- INITIALIZATION ---
     function openModal(isEdit = false) {
         document.getElementById('signup-overlay').style.display = 'flex';
         if (isEdit && myUsername) {
             document.getElementById('modal-title').innerText = "Edit Profile";
             document.getElementById('modal-username').value = myUsername.split('#')[0];
-            document.getElementById('modal-avatar').src = `https://api.dicebear.com/7.x/pixel-art/svg?seed=${myUsername}`;
+            document.getElementById('modal-avatar').src = myAvatar || `https://api.dicebear.com/7.x/pixel-art/svg?seed=${myUsername}`;
             document.getElementById('cancel-profile-btn').style.display = 'block';
         } else {
             document.getElementById('modal-avatar').src = `https://api.dicebear.com/7.x/pixel-art/svg?seed=${Math.random()}`;
@@ -346,17 +432,24 @@
     function saveProfile() {
         const u = document.getElementById('modal-username').value.trim();
         if(!u) return alert("Username required");
-        // Keep tag if editing, otherwise generate new one
+        
         const currentTag = myUsername ? myUsername.split('#')[1] : Math.floor(1000+Math.random()*9000);
         myUsername = u + "#" + currentTag;
+        
         localStorage.setItem('discordGuestName', myUsername);
+        localStorage.setItem('discordGuestPfp', document.getElementById('modal-avatar').src);
         location.reload();
     }
 
     if (!myUsername) openModal(false);
     else {
-        document.getElementById('my-name').innerText = myUsername.split('#')[0];
-        document.getElementById('my-pfp').src = `https://api.dicebear.com/7.x/pixel-art/svg?seed=${myUsername}`;
+        if (!myAvatar) myAvatar = `https://api.dicebear.com/7.x/pixel-art/svg?seed=${myUsername}`;
+        
+        // BOTTOM LEFT PROFILE POPULATION
+        const isMeAdmin = isAdmin(myUsername);
+        document.getElementById('my-name').innerHTML = `<span style="color:${isMeAdmin?'#ffcc00':'white'}">${myUsername.split('#')[0]}${isMeAdmin?' 👑':''}</span>`;
+        document.getElementById('my-hash').innerText = '#' + (myUsername.split('#')[1] || '0000');
+        document.getElementById('my-pfp').src = myAvatar;
         
         db.channel('msgs').on('postgres_changes', { event: '*', schema: 'public', table: 'Messages' }, () => loadMessages()).subscribe();
         loadMessages();
@@ -369,17 +462,23 @@
             const uniqueUsers = Object.keys(state);
             document.getElementById('online-count').innerText = uniqueUsers.length;
             uniqueUsers.forEach(userKey => {
-                // RESTORED HOVER & GREEN DOT & CLICKABLE STUB
-                list.innerHTML += `<div class="member-item" onclick="alert('Viewing profile for: ${userKey}')">
+                const isAdm = isAdmin(userKey);
+                const nameColor = isAdm ? '#ffcc00' : '#dbdee1';
+                const crown = isAdm ? ' 👑' : '';
+                // Pull custom avatar from presence state, otherwise fallback
+                const userPfp = state[userKey][0].pfp || `https://api.dicebear.com/7.x/pixel-art/svg?seed=${userKey}`;
+
+                list.innerHTML += `
+                <div class="member-item" onclick="showMiniProfile(event, '${userKey}', '${userPfp}')">
                     <div class="member-avatar-wrapper">
-                        <img src="https://api.dicebear.com/7.x/pixel-art/svg?seed=${userKey}">
+                        <img src="${userPfp}">
                         <div class="status-dot"></div>
                     </div>
-                    <span>${userKey.split('#')[0]}</span>
+                    <span style="color:${nameColor}">${userKey.split('#')[0]}${crown}</span>
                 </div>`;
             });
         }).subscribe(async (status) => {
-            if (status === 'SUBSCRIBED') await presence.track({ online_at: new Date().toISOString() });
+            if (status === 'SUBSCRIBED') await presence.track({ online_at: new Date().toISOString(), pfp: myAvatar });
         });
     }
 
