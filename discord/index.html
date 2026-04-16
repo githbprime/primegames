@@ -21,7 +21,7 @@
         .channel-item:hover { background: #35373c; color: #dbdee1; }
         .channel-item.active { background: #3f4147; color: white; }
 
-        /* USER PANEL (BOTTOM LEFT) */
+        /* USER PANEL */
         .user-panel { background: #232428; padding: 8px; display: flex; align-items: center; gap: 10px; cursor: pointer; transition: 0.1s; }
         .user-panel:hover { background: #35373c; }
         .user-avatar { width: 32px; height: 32px; border-radius: 50%; background: #1e1f22; object-fit: cover; }
@@ -46,12 +46,24 @@
         /* ACTION BAR & REACTIONS */
         .msg-actions { position: absolute; right: 16px; top: -16px; background: #313338; border: 1px solid #1e1f22; border-radius: 4px; display: none; z-index: 10; padding: 2px; }
         .msg-row:hover .msg-actions { display: flex; }
-        .action-btn { padding: 4px 8px; cursor: pointer; color: #b5bac1; font-size: 14px; border-radius: 4px; }
+        .action-btn { padding: 4px 8px; cursor: pointer; color: #b5bac1; font-size: 14px; border-radius: 4px; position: relative; }
         .action-btn:hover { background: #3f4147; color: white; }
         
+        /* EMOJI PICKER POPUP */
+        .emoji-picker { position: absolute; bottom: 100%; right: 0; background: #2b2d31; border: 1px solid #1e1f22; border-radius: 6px; padding: 6px; display: none; gap: 4px; box-shadow: 0 4px 8px rgba(0,0,0,0.3); margin-bottom: 4px; z-index: 20; }
+        .emoji-picker span { cursor: pointer; padding: 4px; border-radius: 4px; transition: 0.1s; font-size: 18px; }
+        .emoji-picker span:hover { background: #3f4147; transform: scale(1.1); }
+        .action-btn:hover .emoji-picker { display: flex; } /* Hover to show picker */
+
         .react-bar { display: flex; gap: 4px; margin-top: 4px; flex-wrap: wrap; }
-        .react-pill { background: #2b2d31; border: 1px solid transparent; border-radius: 6px; padding: 2px 6px; font-size: 12px; cursor: pointer; color: #b5bac1; }
+        .react-pill { background: #2b2d31; border: 1px solid transparent; border-radius: 6px; padding: 2px 6px; font-size: 12px; cursor: pointer; color: #b5bac1; position: relative; }
         .react-pill.active { background: rgba(88,101,242,0.15); border-color: #5865f2; color: #5865f2; }
+
+        /* REACTION HOVER TOOLTIP */
+        .react-tooltip { position: absolute; bottom: 100%; left: 50%; transform: translateX(-50%); background: #111214; padding: 8px; border-radius: 6px; display: none; flex-direction: column; gap: 6px; z-index: 100; min-width: max-content; box-shadow: 0 4px 12px rgba(0,0,0,0.5); margin-bottom: 6px; pointer-events: none; }
+        .react-pill:hover .react-tooltip { display: flex; }
+        .rt-user { display: flex; align-items: center; gap: 8px; font-size: 13px; color: #dbdee1; }
+        .rt-pfp { width: 20px; height: 20px; border-radius: 50%; object-fit: cover; }
 
         /* REPLIES */
         .reply-line { color: #b5bac1; font-size: 13px; display: flex; align-items: center; margin-left: 20px; margin-bottom: 4px; opacity: 0.8; }
@@ -121,7 +133,6 @@
 <div id="signup-overlay">
     <div class="signup-card">
         <h2 style="color:white" id="modal-title">Set Up Profile</h2>
-        
         <div style="display:flex; justify-content:center; gap:16px; margin-bottom:20px; align-items:center;">
             <img id="modal-avatar" style="width:80px; height:80px; border-radius:50%; object-fit:cover; border:2px solid #1e1f22;">
             <div style="display:flex; flex-direction:column; gap:8px;">
@@ -132,7 +143,6 @@
                 </label>
             </div>
         </div>
-
         <input type="text" id="modal-username" placeholder="Username (e.g. prime)" style="width:100%; padding:10px; margin-bottom:20px; background:#1e1f22; border:none; color:white; border-radius:4px; box-sizing:border-box;">
         <button onclick="saveProfile()" style="width:100%; padding:12px; background:#5865f2; border:none; color:white; border-radius:4px; font-weight:bold; cursor:pointer;">Save & Join</button>
         <div id="cancel-profile-btn" onclick="document.getElementById('signup-overlay').style.display='none'" style="display:none; color:#949ba4; margin-top:15px; cursor:pointer; font-size:13px;">Cancel</div>
@@ -140,9 +150,7 @@
 </div>
 
 <div class="app-container">
-    <div class="server-bar">
-        <div class="server-icon">P</div>
-    </div>
+    <div class="server-bar"><div class="server-icon">P</div></div>
     
     <div class="channel-bar">
         <div class="channel-header">Prime Server</div>
@@ -167,15 +175,12 @@
                 <span class="cancel-btn" onclick="cancelReply()">✕</span>
             </div>
             <div id="attach-bar" class="preview-bar">
-                <div class="preview-img-container">
-                    <img id="attach-preview-img" class="preview-img">
-                </div>
+                <div class="preview-img-container"><img id="attach-preview-img" class="preview-img"></div>
                 <span class="cancel-btn" onclick="cancelAttachment()">✕</span>
             </div>
             <div class="input-box" id="input-box-wrapper">
                 <label style="color:#b5bac1; cursor:pointer; font-size:20px; font-weight:bold;" title="Upload Image">
-                    +
-                    <input type="file" id="file-upload" accept="image/*" style="display:none;" onchange="handleFileAsBase64(this)">
+                    +<input type="file" id="file-upload" accept="image/*" style="display:none;" onchange="handleFileAsBase64(this)">
                 </label>
                 <input type="text" id="chat-input" placeholder="Message #welcome">
             </div>
@@ -205,96 +210,71 @@
     let lastTime = 0;
     let timeoutInterval = null;
 
+    // Live PFP Cache for Retroactive Updates
+    let livePfps = {}; 
+
     function isAdmin(user) { return user && user.toLowerCase() === ADMIN_USER.toLowerCase(); }
+    
+    // --- UTILS & UI ---
+    function getPfp(user) { return livePfps[user] || `https://api.dicebear.com/7.x/pixel-art/svg?seed=${user}`; }
+    function getUserClass(user) { return `avatar-${user.replace('#', '-')}`; }
 
-    // --- TIMEOUT LOGIC ---
-    async function checkTimeouts() {
-        const { data } = await db.from('Timeouts').select('expires_at').eq('target_user', myUsername).order('expires_at', { ascending: false }).limit(1);
-        if (data && data.length > 0) {
-            const expiresAt = new Date(data[0].expires_at).getTime();
-            if (expiresAt > Date.now()) {
-                applyTimeoutUI(expiresAt);
-                return;
-            }
-        }
-        clearTimeoutUI();
-    }
+    function openLightbox(src) { document.getElementById('lightbox-img').src = src; document.getElementById('lightbox').style.display = 'flex'; }
 
-    function applyTimeoutUI(expiresAt) {
-        const input = document.getElementById('chat-input');
-        const box = document.getElementById('input-box-wrapper');
-        box.classList.add('is-timeouted');
-        input.disabled = true;
-        
-        clearInterval(timeoutInterval);
-        timeoutInterval = setInterval(() => {
-            const now = Date.now();
-            const diff = expiresAt - now;
-            if (diff <= 0) {
-                clearTimeoutUI();
-            } else {
-                const mins = Math.ceil(diff / 60000);
-                input.placeholder = `You've been timeouted. ${mins} minute${mins>1?'s':''} left.`;
-            }
-        }, 1000);
-        
-        // Initial set to prevent 1s delay
-        const mins = Math.ceil((expiresAt - Date.now()) / 60000);
-        input.placeholder = `You've been timeouted. ${mins} minute${mins>1?'s':''} left.`;
-    }
-
-    function clearTimeoutUI() {
-        clearInterval(timeoutInterval);
-        const input = document.getElementById('chat-input');
-        const box = document.getElementById('input-box-wrapper');
-        box.classList.remove('is-timeouted');
-        input.disabled = false;
-        input.placeholder = `Message #${currentChannel}`;
-    }
-
-    // --- UI INTERACTIVITY ---
-    function openLightbox(src) {
-        document.getElementById('lightbox-img').src = src;
-        document.getElementById('lightbox').style.display = 'flex';
-    }
-
-    function showMiniProfile(event, username, pfpSrc) {
+    function showMiniProfile(event, username) {
         const card = document.getElementById('mp-card');
         const overlay = document.getElementById('mp-overlay');
         const isAdm = isAdmin(username);
         const parts = username.split('#');
-
-        document.getElementById('mp-pfp').src = pfpSrc;
+        document.getElementById('mp-pfp').src = getPfp(username);
         document.getElementById('mp-name').innerHTML = `<span style="color:${isAdm?'#ffcc00':'white'}">${parts[0]}${isAdm?' 👑':''}</span>`;
         document.getElementById('mp-hash').innerText = '#' + (parts[1] || '0000');
-        
-        let top = event.clientY - 100;
-        let left = event.clientX - 320; 
+        let top = event.clientY - 100, left = event.clientX - 320; 
         if (top < 10) top = 10;
-        
         card.style.top = top + 'px'; card.style.left = left + 'px';
         overlay.style.display = 'block'; card.style.display = 'flex';
     }
-    function closeMiniProfile() {
-        document.getElementById('mp-overlay').style.display = 'none';
-        document.getElementById('mp-card').style.display = 'none';
+    function closeMiniProfile() { document.getElementById('mp-overlay').style.display = 'none'; document.getElementById('mp-card').style.display = 'none'; }
+
+    // --- TIMEOUTS ---
+    async function checkTimeouts() {
+        const { data } = await db.from('Timeouts').select('expires_at').eq('target_user', myUsername).order('expires_at', { ascending: false }).limit(1);
+        if (data && data.length > 0) {
+            const expiresAt = new Date(data[0].expires_at).getTime();
+            if (expiresAt > Date.now()) { applyTimeoutUI(expiresAt); return; }
+        }
+        clearTimeoutUI();
+    }
+    function applyTimeoutUI(expiresAt) {
+        const input = document.getElementById('chat-input'), box = document.getElementById('input-box-wrapper');
+        box.classList.add('is-timeouted'); input.disabled = true;
+        clearInterval(timeoutInterval);
+        timeoutInterval = setInterval(() => {
+            const diff = expiresAt - Date.now();
+            if (diff <= 0) clearTimeoutUI();
+            else input.placeholder = `You've been timeouted. ${Math.ceil(diff / 60000)} min left.`;
+        }, 1000);
+    }
+    function clearTimeoutUI() {
+        clearInterval(timeoutInterval);
+        document.getElementById('input-box-wrapper').classList.remove('is-timeouted');
+        const input = document.getElementById('chat-input');
+        input.disabled = false; input.placeholder = `Message #${currentChannel}`;
     }
 
-    // --- REACTIONS DB ACTION ---
+    // --- REACTIONS ---
     async function addReaction(msgId, emoji) {
-        const { data, error: fetchErr } = await db.from('Messages').select('reactions').eq('id', msgId).single();
-        if (fetchErr) return;
+        const { data } = await db.from('Messages').select('reactions').eq('id', msgId).single();
         let r = data.reactions || {};
         if (!r[emoji]) r[emoji] = [];
         const idx = r[emoji].indexOf(myUsername);
         if (idx > -1) r[emoji].splice(idx, 1); else r[emoji].push(myUsername);
         if (r[emoji].length === 0) delete r[emoji];
-        const { error } = await db.from('Messages').update({ reactions: r }).eq('id', msgId);
-        if (error) alert("Reaction failed. Are your Supabase RLS policies active?");
+        await db.from('Messages').update({ reactions: r }).eq('id', msgId);
     }
 
-    function setReply(id, name, pfp, text) {
-        pendingReply = { id, name, pfp, text: text.substring(0, 40) };
+    function setReply(id, name, text) {
+        pendingReply = { id, name, pfp: getPfp(`${name}#0000`), text: text.substring(0, 40) }; // Fallback PFP for reply bar
         document.getElementById('reply-target').innerText = name;
         document.getElementById('reply-bar').style.display = 'flex';
         document.getElementById('chat-input').focus();
@@ -302,16 +282,14 @@
     function cancelReply() { pendingReply = null; document.getElementById('reply-bar').style.display = 'none'; }
     function cancelAttachment() { pendingAttachment = null; document.getElementById('attach-bar').style.display = 'none'; }
 
-    // --- FILE UPLOADS ---
+    // --- UPLOADS ---
     function handleAvatarUpload(input) {
-        const file = input.files[0];
-        if (!file) return;
+        const file = input.files[0]; if (!file) return;
         const reader = new FileReader();
-        reader.onload = function(e) {
+        reader.onload = e => {
             const img = new Image();
-            img.onload = function() {
-                const canvas = document.createElement('canvas');
-                canvas.width = 32; canvas.height = 32;
+            img.onload = () => {
+                const canvas = document.createElement('canvas'); canvas.width = 32; canvas.height = 32;
                 canvas.getContext('2d').drawImage(img, 0, 0, 32, 32);
                 document.getElementById('modal-avatar').src = canvas.toDataURL('image/png', 0.8);
             };
@@ -319,20 +297,15 @@
         };
         reader.readAsDataURL(file);
     }
-
     function handleFileAsBase64(input) {
-        const file = input.files[0];
-        if (!file) return;
+        const file = input.files[0]; if (!file) return;
         const reader = new FileReader();
-        reader.onload = function(e) {
+        reader.onload = e => {
             const img = new Image();
-            img.onload = function() {
+            img.onload = () => {
                 const canvas = document.createElement('canvas');
                 let w = img.width, h = img.height, MAX = 1920; 
-                if (w > MAX || h > MAX) {
-                    const r = Math.min(MAX / w, MAX / h);
-                    w *= r; h *= r;
-                }
+                if (w > MAX || h > MAX) { const r = Math.min(MAX/w, MAX/h); w *= r; h *= r; }
                 canvas.width = w; canvas.height = h;
                 canvas.getContext('2d').drawImage(img, 0, 0, w, h);
                 pendingAttachment = canvas.toDataURL('image/jpeg', file.size > 2000000 ? 0.6 : 0.9);
@@ -342,39 +315,39 @@
             };
             img.src = e.target.result;
         };
-        reader.readAsDataURL(file);
-        input.value = ""; 
+        reader.readAsDataURL(file); input.value = ""; 
     }
 
-    // --- MESSAGING ---
-    function renderMessage(m) {
+    // --- MESSAGES ---
+    function renderMessage(m, appendOnly = false) {
         const container = document.getElementById('message-container');
         const isFirst = (m.username !== lastUser || (new Date(m.created_at) - lastTime) > 300000);
         const isAdm = isAdmin(m.username);
+        const uClass = getUserClass(m.username);
         
         let content = m.content || "";
         let replyHtml = '';
         if (content.startsWith('{"_reply"')) {
             try {
-                const p = JSON.parse(content);
-                content = p.content;
-                replyHtml = `<div class="reply-line"><img style="width:16px;height:16px;border-radius:50%;margin-right:5px;" src="${p._reply.pfp}"><strong>${p._reply.name}</strong>: ${p._reply.text}</div>`;
+                const p = JSON.parse(content); content = p.content;
+                replyHtml = `<div class="reply-line"><img class="rt-pfp ${getUserClass(p._reply.name)}" src="${p._reply.pfp}"><strong>${p._reply.name}</strong>: ${p._reply.text}</div>`;
             } catch(e){}
         }
 
         let imgSrc = null;
         if (content.includes('[IMG]')) {
-            const parts = content.split('[IMG]');
-            content = parts[0]; imgSrc = parts[1]; 
+            const parts = content.split('[IMG]'); content = parts[0]; imgSrc = parts[1]; 
         }
 
         const row = document.createElement('div');
         row.className = `msg-row ${isFirst || replyHtml ? 'first' : ''}`;
         
+        // HOVER TOOLTIPS FOR REACTIONS
         let reactHtml = '<div class="react-bar">';
         if (m.reactions) {
             for (let [emoji, users] of Object.entries(m.reactions)) {
-                reactHtml += `<div class="react-pill ${users.includes(myUsername)?'active':''}" onclick="addReaction('${m.id}', '${emoji}')">${emoji} ${users.length}</div>`;
+                let tooltips = users.map(u => `<div class="rt-user"><img class="rt-pfp ${getUserClass(u)}" src="${getPfp(u)}"> ${u.split('#')[0]}</div>`).join('');
+                reactHtml += `<div class="react-pill ${users.includes(myUsername)?'active':''}" onclick="addReaction('${m.id}', '${emoji}')">${emoji} ${users.length}<div class="react-tooltip">${tooltips}</div></div>`;
             }
         }
         reactHtml += '</div>';
@@ -382,13 +355,29 @@
         const textVisual = content.trim() ? `<div class="msg-text">${content}</div>` : '';
         const imgVisual = imgSrc ? `<img src="${imgSrc}" class="chat-img" onclick="openLightbox(this.src)">` : '';
 
+        // EMOJI PICKER POPUP
+        const actionHtml = `
+            <div class="action-btn">
+                😀
+                <div class="emoji-picker">
+                    <span onclick="addReaction('${m.id}', '👍')">👍</span>
+                    <span onclick="addReaction('${m.id}', '😂')">😂</span>
+                    <span onclick="addReaction('${m.id}', '❤️')">❤️</span>
+                    <span onclick="addReaction('${m.id}', '💀')">💀</span>
+                    <span onclick="addReaction('${m.id}', '🔥')">🔥</span>
+                    <span onclick="addReaction('${m.id}', '👀')">👀</span>
+                </div>
+            </div>
+            <div class="action-btn" onclick="setReply('${m.id}', '${m.username.split('#')[0]}', '${content}')">↩️</div>
+        `;
+
         row.innerHTML = `
             ${replyHtml}
             <div class="msg-flex">
-                <div class="avatar-col">${(isFirst || replyHtml) ? `<img src="https://api.dicebear.com/7.x/pixel-art/svg?seed=${m.username}" class="msg-pfp" onclick="showMiniProfile(event, '${m.username}', this.src)">` : ''}</div>
+                <div class="avatar-col">${(isFirst || replyHtml) ? `<img src="${getPfp(m.username)}" class="msg-pfp ${uClass}" onclick="showMiniProfile(event, '${m.username}')">` : ''}</div>
                 <div class="content-col">
                     ${(isFirst || replyHtml) ? `<div class="msg-header">
-                        <span class="username" style="color:${isAdm?'#ffcc00':''}" onclick="showMiniProfile(event, '${m.username}', 'https://api.dicebear.com/7.x/pixel-art/svg?seed=${m.username}')">${m.username.split('#')[0]}${isAdm?' 👑':''}</span>
+                        <span class="username" style="color:${isAdm?'#ffcc00':''}" onclick="showMiniProfile(event, '${m.username}')">${m.username.split('#')[0]}${isAdm?' 👑':''}</span>
                         <span class="timestamp">${new Date(m.created_at).toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'})}</span>
                     </div>` : ''}
                     ${textVisual}
@@ -396,12 +385,10 @@
                     ${reactHtml === '<div class="react-bar"></div>' ? '' : reactHtml}
                 </div>
             </div>
-            <div class="msg-actions">
-                <div class="action-btn" onclick="addReaction('${m.id}', '👍')">👍</div>
-                <div class="action-btn" onclick="setReply('${m.id}', '${m.username.split('#')[0]}', 'https://api.dicebear.com/7.x/pixel-art/svg?seed=${m.username}', '${content}')">↩️</div>
-            </div>`;
+            <div class="msg-actions">${actionHtml}</div>`;
+        
         container.appendChild(row);
-        container.scrollTop = container.scrollHeight;
+        if (appendOnly) container.scrollTop = container.scrollHeight;
         lastUser = m.username; lastTime = new Date(m.created_at);
     }
 
@@ -422,66 +409,43 @@
     document.getElementById('chat-input').onkeypress = async (e) => { 
         if(e.key === 'Enter') {
             const val = e.target.value.trim();
-            
-            // TIMEOUT COMMAND LOGIC
             if (val.startsWith('/timeout ')) {
                 if (isAdmin(myUsername)) {
                     const parts = val.split(' ');
                     if (parts.length === 3) {
-                        const target = parts[1];
-                        const mins = parseInt(parts[2]);
+                        const target = parts[1]; const mins = parseInt(parts[2]);
                         const pass = prompt(`Admin Passcode to timeout ${target} for ${mins} minutes:`);
                         if (pass) {
                             const { error } = await db.rpc('apply_timeout', { pass: pass, target: target, minutes: mins });
-                            if (error) alert("Timeout failed: " + error.message);
-                            else alert(`${target} has been timed out.`);
+                            if (error) alert("Timeout failed: " + error.message); else alert(`${target} timed out.`);
                         }
-                    } else {
-                        alert("Usage: /timeout username#1234 5");
-                    }
-                } else {
-                    alert("Only the Admin can use this command.");
-                }
+                    } else alert("Usage: /timeout username#1234 5");
+                } else alert("Only the Admin can use this command.");
                 e.target.value = ''; return;
             }
-
-            if (val === '/clear') {
-                document.getElementById('message-container').innerHTML = ''; // Local wipe only
-                e.target.value = ''; return;
-            }
-
-            if(val || pendingAttachment) {
-                sendMessage(val); 
-                e.target.value = ''; 
-            }
+            if (val === '/clear') { document.getElementById('message-container').innerHTML = ''; e.target.value = ''; return; }
+            if(val || pendingAttachment) { sendMessage(val); e.target.value = ''; }
         } 
     };
 
-    // --- TYPING INDICATOR (REALTIME BROADCAST) ---
-    let typingUsers = new Map();
-    const typingStatusChannel = db.channel('typing_events')
-        .on('broadcast', { event: 'typing' }, payload => {
-            if (payload.payload.channel === currentChannel && payload.payload.user !== myUsername) {
-                const u = payload.payload.user.split('#')[0];
-                if (typingUsers.has(u)) clearTimeout(typingUsers.get(u));
-                typingUsers.set(u, setTimeout(() => {
-                    typingUsers.delete(u);
-                    updateTypingUI();
-                }, 3000));
-                updateTypingUI();
-            }
-        })
-        .subscribe();
+    // --- TYPING INDICATOR ---
+    let typingUsers = new Map(), lastTypingTime = 0;
+    const typingStatusChannel = db.channel('typing_events').on('broadcast', { event: 'typing' }, payload => {
+        if (payload.payload.channel === currentChannel && payload.payload.user !== myUsername) {
+            const u = payload.payload.user.split('#')[0];
+            if (typingUsers.has(u)) clearTimeout(typingUsers.get(u));
+            typingUsers.set(u, setTimeout(() => { typingUsers.delete(u); updateTypingUI(); }, 3000));
+            updateTypingUI();
+        }
+    }).subscribe();
 
     function updateTypingUI() {
-        const users = Array.from(typingUsers.keys());
-        const el = document.getElementById('typing-text');
+        const users = Array.from(typingUsers.keys()), el = document.getElementById('typing-text');
         if (users.length === 0) el.innerText = '';
         else if (users.length === 1) el.innerHTML = `<strong>${users[0]}</strong> is typing...`;
         else el.innerHTML = `<strong>${users[0]}</strong> and +${users.length - 1} others are typing...`;
     }
 
-    let lastTypingTime = 0;
     document.getElementById('chat-input').addEventListener('input', (e) => {
         if (e.target.value.trim().length > 0 && myUsername && !document.getElementById('input-box-wrapper').classList.contains('is-timeouted')) {
             const now = Date.now();
@@ -492,7 +456,7 @@
         }
     });
 
-    // --- INITIALIZATION ---
+    // --- INIT ---
     function openModal(isEdit = false) {
         document.getElementById('signup-overlay').style.display = 'flex';
         if (isEdit && myUsername) {
@@ -500,9 +464,7 @@
             document.getElementById('modal-username').value = myUsername.split('#')[0];
             document.getElementById('modal-avatar').src = myAvatar || `https://api.dicebear.com/7.x/pixel-art/svg?seed=${myUsername}`;
             document.getElementById('cancel-profile-btn').style.display = 'block';
-        } else {
-            document.getElementById('modal-avatar').src = `https://api.dicebear.com/7.x/pixel-art/svg?seed=${Math.random()}`;
-        }
+        } else document.getElementById('modal-avatar').src = `https://api.dicebear.com/7.x/pixel-art/svg?seed=${Math.random()}`;
     }
     
     function saveProfile() {
@@ -523,61 +485,61 @@
         document.getElementById('my-hash').innerText = '#' + (myUsername.split('#')[1] || '0000');
         document.getElementById('my-pfp').src = myAvatar;
         
-        // Listen to messages
         db.channel('msgs').on('postgres_changes', { event: '*', schema: 'public', table: 'Messages' }, () => loadMessages()).subscribe();
-        
-        // Listen to incoming timeouts directly via Realtime
-        db.channel('timeouts').on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'Timeouts', filter: `target_user=eq.${myUsername}` }, () => {
-            checkTimeouts();
-        }).subscribe();
-
-        // Initial fetch
-        loadMessages();
-        checkTimeouts();
+        db.channel('timeouts').on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'Timeouts', filter: `target_user=eq.${myUsername}` }, () => checkTimeouts()).subscribe();
 
         const presence = db.channel('online_users', { config: { presence: { key: myUsername } } });
         presence.on('presence', { event: 'sync' }, () => {
             const state = presence.presenceState();
-            const list = document.getElementById('member-list');
-            list.innerHTML = '';
+            const list = document.getElementById('member-list'); list.innerHTML = '';
             const uniqueUsers = Object.keys(state);
             document.getElementById('online-count').innerText = uniqueUsers.length;
+            
             uniqueUsers.forEach(userKey => {
-                const isAdm = isAdmin(userKey);
                 const userPfp = state[userKey][0].pfp || `https://api.dicebear.com/7.x/pixel-art/svg?seed=${userKey}`;
+                livePfps[userKey] = userPfp; // Cache it for retroactive updates
+                
+                // RETROACTIVE UPDATE TRICK: Update all avatars on screen instantly!
+                document.querySelectorAll(`.${getUserClass(userKey)}`).forEach(img => img.src = userPfp);
+
+                const isAdm = isAdmin(userKey);
                 list.innerHTML += `
-                <div class="member-item" onclick="showMiniProfile(event, '${userKey}', '${userPfp}')">
-                    <div class="member-avatar-wrapper">
-                        <img src="${userPfp}">
-                        <div class="status-dot"></div>
-                    </div>
+                <div class="member-item" onclick="showMiniProfile(event, '${userKey}')">
+                    <div class="member-avatar-wrapper"><img src="${userPfp}"><div class="status-dot"></div></div>
                     <span style="color:${isAdm?'#ffcc00':'#dbdee1'}">${userKey.split('#')[0]}${isAdm?' 👑':''}</span>
                 </div>`;
             });
         }).subscribe(async (status) => {
             if (status === 'SUBSCRIBED') await presence.track({ online_at: new Date().toISOString(), pfp: myAvatar });
         });
+
+        loadMessages(); checkTimeouts();
     }
 
     async function loadMessages() {
-        lastUser = null; document.getElementById('message-container').innerHTML = '';
+        // Fetch data FIRST to prevent flicker
         const { data } = await db.from('Messages').select('*').eq('channel', currentChannel).order('created_at', { ascending: true });
-        if(data) data.forEach(renderMessage);
         
-        // Ensure input box placeholder resets correctly if not timeouted
-        if(!document.getElementById('input-box-wrapper').classList.contains('is-timeouted')) {
-            document.getElementById('chat-input').placeholder = `Message #${currentChannel}`;
+        // Wipe screen only after data is ready
+        document.getElementById('message-container').innerHTML = ''; 
+        lastUser = null; lastTime = 0;
+        
+        if(data) {
+            data.forEach(m => renderMessage(m, false));
+            const c = document.getElementById('message-container');
+            c.scrollTop = c.scrollHeight;
         }
+        
+        if(!document.getElementById('input-box-wrapper').classList.contains('is-timeouted')) 
+            document.getElementById('chat-input').placeholder = `Message #${currentChannel}`;
     }
     
     document.querySelectorAll('.channel-item').forEach(ci => {
         ci.onclick = () => {
             document.querySelectorAll('.channel-item').forEach(i => i.classList.remove('active'));
-            ci.classList.add('active');
-            currentChannel = ci.dataset.channel;
-            loadMessages();
+            ci.classList.add('active'); currentChannel = ci.dataset.channel; loadMessages();
         };
     });
 </script>
 </body>
-</html>
+</html>>
