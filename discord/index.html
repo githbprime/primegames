@@ -10,11 +10,7 @@
         
         /* SERVER BAR */
         .server-bar { width: 72px; background: #1e1f22; display: flex; flex-direction: column; align-items: center; padding-top: 12px; gap: 8px; flex-shrink: 0; }
-        .server-icon { 
-            width: 48px; height: 48px; border-radius: 50%; overflow: hidden; display: flex; 
-            align-items: center; justify-content: center; background: #2b2d31; cursor: pointer;
-            transition: all 0.2s ease-in-out;
-        }
+        .server-icon { width: 48px; height: 48px; border-radius: 50%; overflow: hidden; display: flex; align-items: center; justify-content: center; background: #2b2d31; cursor: pointer; transition: all 0.2s ease-in-out; }
         .server-icon:hover { border-radius: 12px; background: #5865f2; }
         .server-icon img { width: 100%; height: 100%; object-fit: cover; pointer-events: none; }
         
@@ -36,29 +32,52 @@
         .user-panel-username { color: #b5bac1; font-size: 12px; white-space: nowrap; text-overflow: ellipsis; overflow: hidden; }
 
         /* CHAT AREA */
-        .chat-area { flex-grow: 1; display: flex; flex-direction: column; background: #313338; }
+        .chat-area { flex-grow: 1; display: flex; flex-direction: column; background: #313338; min-width: 0; }
         .chat-messages { flex-grow: 1; padding: 20px; overflow-y: auto; display: flex; flex-direction: column; gap: 18px; }
-        .message { display: flex; gap: 16px; align-items: flex-start; }
-        .avatar { width: 40px; height: 40px; border-radius: 50%; background: #4e5058; flex-shrink: 0; image-rendering: pixelated; object-fit: cover; }
-        .msg-content { display: flex; flex-direction: column; max-width: 80%; }
+        
+        .message { display: flex; gap: 16px; align-items: flex-start; position: relative; padding-right: 20px;}
+        .message:hover { background: #2e3035; border-radius: 4px; }
+        .avatar { width: 40px; height: 40px; border-radius: 50%; background: #4e5058; flex-shrink: 0; image-rendering: pixelated; object-fit: cover; margin-top: 2px;}
+        .msg-content { display: flex; flex-direction: column; max-width: 100%; min-width: 0; flex-grow: 1; }
+        .msg-content-inner { display: flex; flex-direction: column; gap: 4px; }
         .username { font-weight: 500; font-size: 16px; }
         .timestamp { color: #949ba4; font-size: 12px; margin-left: 8px; }
-        .text { color: #dbdee1; font-size: 15px; line-height: 1.3; white-space: pre-wrap; }
-        .chat-img { max-width: 100%; max-height: 300px; border-radius: 8px; margin-top: 4px; border: 1px solid #1e1f22; object-fit: contain; }
         
+        /* FIX: Deep Text Wrap */
+        .text { color: #dbdee1; font-size: 15px; line-height: 1.3; white-space: pre-wrap; word-break: break-word; overflow-wrap: break-word; }
+        .chat-img { max-width: 100%; max-height: 300px; border-radius: 8px; margin-top: 4px; border: 1px solid #1e1f22; object-fit: contain; cursor: zoom-in; }
+        
+        /* REPLIES & REACTIONS */
+        .reply-banner { color: #b5bac1; font-size: 12px; display: flex; align-items: center; margin-bottom: 4px; margin-left: -42px; cursor: pointer; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;}
+        .reply-banner::before { content: ''; width: 30px; height: 12px; border-top: 2px solid #4e5058; border-left: 2px solid #4e5058; border-top-left-radius: 6px; margin-right: 8px; margin-top: 8px; flex-shrink: 0; }
+        .reply-avatar { width: 16px; height: 16px; border-radius: 50%; display: inline-block; vertical-align: middle; margin-right: 4px; image-rendering: pixelated;}
+        
+        .reaction-bar { display: flex; gap: 4px; margin-top: 4px; flex-wrap: wrap; }
+        .reaction-pill { background: #2b2d31; border: 1px solid #1e1f22; border-radius: 8px; padding: 2px 6px; font-size: 14px; color: #b5bac1; cursor: pointer; display: flex; align-items: center; gap: 4px; }
+        .reaction-pill:hover, .reaction-pill.active { background: #3c3e45; border-color: #5865f2; }
+
+        /* MESSAGE HOVER ACTIONS */
+        .msg-actions { position: absolute; right: 16px; top: -16px; background: #313338; border: 1px solid #1e1f22; border-radius: 4px; display: none; overflow: hidden; box-shadow: 0 4px 8px rgba(0,0,0,0.2); }
+        .message:hover .msg-actions { display: flex; }
+        .msg-btn { padding: 6px 10px; cursor: pointer; color: #b5bac1; font-size: 16px; transition: 0.2s; user-select: none; }
+        .msg-btn:hover { background: #3f4147; color: white; }
+        .msg-btn.delete { color: #da373c; }
+        .msg-btn.delete:hover { background: #da373c; color: white; }
+
         /* INPUT AREA + UPLOAD BUTTON */
         .chat-input-wrapper { padding: 0 16px 24px; display: flex; flex-direction: column; }
         
-        /* NEW: Attachment Preview Area */
-        .attachment-preview { display: none; background: #2b2d31; padding: 12px; border-radius: 8px 8px 0 0; position: relative; width: max-content; margin-bottom: -8px; margin-left: 10px; z-index: 10;}
+        .attachment-preview, .active-reply-bar { display: none; background: #2b2d31; padding: 12px; border-radius: 8px 8px 0 0; position: relative; width: max-content; margin-bottom: -8px; margin-left: 10px; z-index: 10;}
         .attachment-preview img { height: 80px; border-radius: 4px; object-fit: contain; }
-        .remove-attachment { position: absolute; top: -6px; right: -6px; background: #da373c; color: white; width: 22px; height: 22px; border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; font-size: 12px; font-weight: bold; box-shadow: 0 2px 4px rgba(0,0,0,0.4); }
-        .remove-attachment:hover { background: #c92b30; }
+        .active-reply-bar { width: calc(100% - 44px); justify-content: space-between; align-items: center; color: #b5bac1; font-size: 13px; }
+        
+        .remove-icon { position: absolute; top: -6px; right: -6px; background: #da373c; color: white; width: 22px; height: 22px; border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; font-size: 12px; font-weight: bold; box-shadow: 0 2px 4px rgba(0,0,0,0.4); }
+        .remove-icon:hover { background: #c92b30; }
 
         .chat-input-row { display: flex; gap: 12px; align-items: center; width: 100%; }
         .upload-btn { background: #4e5058; color: #dbdee1; border-radius: 50%; width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 20px; cursor: pointer; transition: 0.2s; flex-shrink: 0; }
         .upload-btn:hover { background: #dbdee1; color: #313338; }
-        .chat-input { background: #383a40; padding: 12px 16px; border-radius: 8px; color: #dcddde; font-size: 15px; border: none; flex-grow: 1; outline: none; z-index: 11;}
+        .chat-input { background: #383a40; padding: 12px 16px; border-radius: 8px; color: #dcddde; font-size: 15px; border: none; flex-grow: 1; outline: none; z-index: 11; min-width: 0;}
 
         /* MEMBER SIDEBAR */
         .members-bar { width: 240px; background: #2b2d31; display: flex; flex-direction: column; flex-shrink: 0; border-left: 1px solid #1e1f22; position: relative; }
@@ -69,11 +88,8 @@
         .member-avatar { width: 32px; height: 32px; border-radius: 50%; image-rendering: pixelated; object-fit: cover; }
         .member-name { font-size: 15px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 
-        /* --- USER POPOUT --- */
-        #user-popout {
-            position: absolute; right: 250px; top: 100px; width: 300px; background: #111214; border-radius: 8px; 
-            box-shadow: 0 8px 24px rgba(0,0,0,0.5); display: none; flex-direction: column; z-index: 500; overflow: hidden;
-        }
+        /* OVERLAYS */
+        #user-popout { position: absolute; right: 250px; top: 100px; width: 300px; background: #111214; border-radius: 8px; box-shadow: 0 8px 24px rgba(0,0,0,0.5); display: none; flex-direction: column; z-index: 500; overflow: hidden; }
         .popout-banner { height: 60px; background: #5865f2; }
         .popout-avatar-wrapper { margin-top: -30px; margin-left: 16px; border: 6px solid #111214; border-radius: 50%; width: 80px; height: 80px; background: #111214; }
         .popout-avatar { width: 100%; height: 100%; border-radius: 50%; image-rendering: pixelated; object-fit: cover; }
@@ -81,12 +97,7 @@
         .popout-display { color: white; font-size: 20px; font-weight: bold; margin-bottom: 2px; }
         .popout-user { color: #dbdee1; font-size: 14px; margin-bottom: 12px; }
 
-        /* --- MODAL --- */
-        #signup-overlay {
-            position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
-            background: rgba(0, 0, 0, 0.85); display: none; 
-            justify-content: center; align-items: center; z-index: 1000;
-        }
+        #signup-overlay { position: fixed; inset: 0; background: rgba(0, 0, 0, 0.85); display: none; justify-content: center; align-items: center; z-index: 1000; }
         .signup-card { background: #313338; padding: 32px; border-radius: 8px; width: 320px; display: flex; flex-direction: column; align-items: center; box-shadow: 0 8px 24px rgba(0,0,0,0.5); }
         .signup-card h2 { color: white; margin: 0 0 20px 0; font-size: 24px; }
         .preview-avatar { width: 80px; height: 80px; border-radius: 50%; background: #2b2d31; margin-bottom: 12px; image-rendering: pixelated; border: 2px solid #5865f2; object-fit: cover; }
@@ -100,9 +111,17 @@
         .input-group input { flex: 1; background: transparent; border: none; color: white; padding: 12px; font-size: 16px; outline: none; }
         .input-group .hash { background: transparent; color: #949ba4; padding: 12px 12px 12px 0; font-size: 16px; user-select: none; }
         .hidden-file-input { display: none; }
+
+        /* FULLSCREEN IMAGE MODAL */
+        #fullscreen-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.9); z-index: 9999; display: none; align-items: center; justify-content: center; cursor: zoom-out; }
+        #fullscreen-img { max-width: 90vw; max-height: 90vh; object-fit: contain; }
     </style>
 </head>
 <body>
+
+<div id="fullscreen-overlay" onclick="this.style.display='none'">
+    <img id="fullscreen-img" src="">
+</div>
 
 <div id="signup-overlay">
     <div class="signup-card">
@@ -110,19 +129,14 @@
         <img id="modal-avatar" class="preview-avatar" src="">
         <div class="btn-group">
             <button class="btn btn-secondary" onclick="generateRandomAvatar()">Random Icon</button>
-            <button class="btn btn-secondary" onclick="document.getElementById('profile-upload').click()">Upload 16x16</button>
+            <button class="btn btn-secondary" onclick="document.getElementById('profile-upload').click()">Upload</button>
         </div>
         <input type="file" id="profile-upload" class="hidden-file-input" accept="image/png, image/jpeg">
-
-        <div class="input-group">
-            <input type="text" id="modal-displayname" placeholder="Display Name (e.g. Sector Prime)" maxlength="20">
-        </div>
-
+        <div class="input-group"><input type="text" id="modal-displayname" placeholder="Display Name (e.g. Sector Prime)" maxlength="20"></div>
         <div class="input-group" id="username-container">
             <input type="text" id="modal-username" placeholder="Unique Username" maxlength="16">
             <div class="hash" id="modal-hash">#0000</div>
         </div>
-
         <button class="btn btn-primary" style="width: 100%; padding: 12px;" onclick="saveProfile()">Save & Continue</button>
     </div>
 </div>
@@ -159,8 +173,13 @@
         <div class="chat-messages" id="message-container"></div>
         
         <div class="chat-input-wrapper">
+            <div id="active-reply-bar" class="active-reply-bar">
+                <span>Replying to <strong id="reply-target-name"></strong></span>
+                <div class="remove-icon" onclick="clearReply()" style="position:relative; right:0; top:0;">✕</div>
+            </div>
+
             <div id="attachment-preview" class="attachment-preview">
-                <div class="remove-attachment" onclick="clearAttachment()">✕</div>
+                <div class="remove-icon" onclick="clearAttachment()">✕</div>
                 <img id="preview-img" src="">
             </div>
 
@@ -189,27 +208,28 @@
     const input = document.getElementById('chat-box');
     const memberContainer = document.getElementById('members-container');
 
-    // --- STATE VARIABLES ---
     let myUsername = localStorage.getItem('discordGuestName');
     let myDisplayName = localStorage.getItem('discordDisplayName');
     let myAvatar = localStorage.getItem('discordAvatar'); 
     let generatedHash = "";
     let onlineUsersData = {}; 
     let livePresenceChannel = null;
-    let pendingChatImage = null; // NEW: Holds the image before sending
+    let pendingChatImage = null; 
+    let pendingReply = null; 
+    let lastRenderedMsg = { user: null, time: 0, div: null };
+    let isTimedOut = false;
 
-    // --- MODAL LOGIC (SIGNUP vs EDIT) ---
+    // --- MODAL LOGIC ---
     function openModal(mode) {
         document.getElementById('signup-overlay').style.display = 'flex';
         const userContainer = document.getElementById('username-container');
-        
         if (mode === 'signup') {
             document.getElementById('modal-title').innerText = "Welcome! Create Profile";
             userContainer.style.display = 'flex';
             generatedHash = '#' + Math.floor(1000 + Math.random() * 9000);
             document.getElementById('modal-hash').innerText = generatedHash;
             generateRandomAvatar();
-        } else if (mode === 'edit') {
+        } else {
             document.getElementById('modal-title').innerText = "User Settings";
             userContainer.style.display = 'none'; 
             document.getElementById('modal-displayname').value = myDisplayName || myUsername.split('#')[0];
@@ -218,13 +238,11 @@
     }
 
     function generateRandomAvatar() {
-        const randomSeed = Math.random().toString(36).substring(7);
-        const url = `https://api.dicebear.com/7.x/pixel-art/svg?seed=${randomSeed}`;
+        const url = `https://api.dicebear.com/7.x/pixel-art/svg?seed=${Math.random().toString(36).substring(7)}`;
         document.getElementById('modal-avatar').src = url;
         myAvatar = url;
     }
 
-    // PROFILE PICTURE UPLOAD
     document.getElementById('profile-upload').addEventListener('change', function(e) {
         const file = e.target.files[0];
         if (!file) return;
@@ -233,12 +251,11 @@
             const img = new Image();
             img.onload = function() {
                 const canvas = document.createElement('canvas');
-                canvas.width = 16; canvas.height = 16;
+                canvas.width = 32; canvas.height = 32; // Upgrade to 32x32 per request
                 const ctx = canvas.getContext('2d');
-                ctx.drawImage(img, 0, 0, 16, 16);
-                const base64String = canvas.toDataURL('image/png');
-                document.getElementById('modal-avatar').src = base64String;
-                myAvatar = base64String; 
+                ctx.drawImage(img, 0, 0, 32, 32);
+                myAvatar = canvas.toDataURL('image/png'); 
+                document.getElementById('modal-avatar').src = myAvatar;
             };
             img.src = event.target.result;
         };
@@ -278,31 +295,42 @@
         document.getElementById('panel-avatar').src = myAvatar;
     }
 
-    // --- POPOUT LOGIC ---
-    function showPopout(username, element) {
-        const popout = document.getElementById('user-popout');
-        const data = onlineUsersData[username] || { displayName: username.split('#')[0], avatar: `https://api.dicebear.com/7.x/pixel-art/svg?seed=${username}` };
+    // --- TIMEOUT LOGIC ---
+    function applyTimeoutUI(expires_at) {
+        isTimedOut = true;
+        input.disabled = true;
+        input.placeholder = "You are timed out from speaking.";
+        input.style.cursor = "not-allowed";
         
-        document.getElementById('popout-img').src = data.avatar;
-        document.getElementById('popout-displayname').innerText = data.displayName;
-        document.getElementById('popout-username').innerText = username;
-
-        const rect = element.getBoundingClientRect();
-        popout.style.top = Math.max(20, rect.top - 20) + 'px'; 
-        popout.style.display = 'flex';
+        const interval = setInterval(() => {
+            if (new Date() > new Date(expires_at)) {
+                isTimedOut = false;
+                input.disabled = false;
+                input.placeholder = `Message #${currentChannel}`;
+                input.style.cursor = "text";
+                clearInterval(interval);
+            }
+        }, 5000);
     }
 
-    document.addEventListener('click', (e) => {
-        if (!e.target.closest('#user-popout') && !e.target.closest('.member-item')) {
-            document.getElementById('user-popout').style.display = 'none';
-        }
-    });
+    async function checkActiveTimeout() {
+        const { data } = await db.from('Timeouts').select('*').eq('username', myUsername).single();
+        if (data && new Date(data.expires_at) > new Date()) applyTimeoutUI(data.expires_at);
+    }
 
-    // --- CHAT IMAGE PREVIEW LOGIC ---
-    function clearAttachment() {
-        pendingChatImage = null;
-        document.getElementById('attachment-preview').style.display = 'none';
-        document.getElementById('chat-image-upload').value = '';
+    // --- CHAT LOGIC ---
+    function clearAttachment() { pendingChatImage = null; document.getElementById('attachment-preview').style.display = 'none'; document.getElementById('chat-image-upload').value = ''; }
+    function clearReply() { pendingReply = null; document.getElementById('active-reply-bar').style.display = 'none'; }
+    function startReply(id, username, dName, av, textPreview) {
+        pendingReply = { id, username, dName, av, text: textPreview };
+        document.getElementById('reply-target-name').innerText = dName;
+        document.getElementById('active-reply-bar').style.display = 'flex';
+        input.focus();
+    }
+    
+    function enlargeImage(src) {
+        document.getElementById('fullscreen-img').src = src;
+        document.getElementById('fullscreen-overlay').style.display = 'flex';
     }
 
     document.getElementById('chat-image-upload').addEventListener('change', function(e) {
@@ -313,23 +341,13 @@
             const img = new Image();
             img.onload = function() {
                 const canvas = document.createElement('canvas');
-                // Drop to 300 to ensure we safely clear real-time payload limits
                 const MAX_SIZE = 300; 
-                let width = img.width;
-                let height = img.height;
-
-                if (width > height) {
-                    if (width > MAX_SIZE) { height *= MAX_SIZE / width; width = MAX_SIZE; }
-                } else {
-                    if (height > MAX_SIZE) { width *= MAX_SIZE / height; height = MAX_SIZE; }
-                }
-
-                canvas.width = width;
-                canvas.height = height;
+                let w = img.width, h = img.height;
+                if (w > h) { if (w > MAX_SIZE) { h *= MAX_SIZE / w; w = MAX_SIZE; } } 
+                else { if (h > MAX_SIZE) { w *= MAX_SIZE / h; h = MAX_SIZE; } }
+                canvas.width = w; canvas.height = h;
                 const ctx = canvas.getContext('2d');
-                ctx.drawImage(img, 0, 0, width, height);
-                
-                // Store in memory, show preview, and refocus chat box
+                ctx.drawImage(img, 0, 0, w, h);
                 pendingChatImage = canvas.toDataURL('image/jpeg', 0.8); 
                 document.getElementById('preview-img').src = pendingChatImage;
                 document.getElementById('attachment-preview').style.display = 'block';
@@ -340,7 +358,6 @@
         reader.readAsDataURL(file);
     });
 
-    // --- CORE APP LOGIC ---
     const checkAdmin = (name) => name === 'githbprime#3932';
 
     function getUserVisuals(user) {
@@ -349,41 +366,123 @@
         return { dName: user.split('#')[0], av: `https://api.dicebear.com/7.x/pixel-art/svg?seed=${encodeURIComponent(user)}` };
     }
 
-    function addMessageToScreen(user, text, timestamp) {
+    async function toggleReaction(msgId, emoji) {
+        const { data } = await db.from('Messages').select('reactions').eq('id', msgId).single();
+        let reacts = data?.reactions || {};
+        if (!reacts[emoji]) reacts[emoji] = [];
+        
+        const uIndex = reacts[emoji].indexOf(myUsername);
+        if (uIndex > -1) reacts[emoji].splice(uIndex, 1);
+        else reacts[emoji].push(myUsername);
+        
+        if (reacts[emoji].length === 0) delete reacts[emoji];
+        await db.from('Messages').update({ reactions: reacts }).eq('id', msgId);
+    }
+
+    async function deleteMessage(msgId) {
+        if (!confirm("Delete this message?")) return;
+        await db.from('Messages').delete().eq('id', msgId);
+    }
+
+    function renderReactionsHTML(reactions) {
+        if (!reactions || Object.keys(reactions).length === 0) return '';
+        let html = '<div class="reaction-bar">';
+        for (const [emoji, users] of Object.entries(reactions)) {
+            const isActive = users.includes(myUsername) ? 'active' : '';
+            html += `<div class="reaction-pill ${isActive}" title="${users.join(', ')}">${emoji} ${users.length}</div>`;
+        }
+        html += '</div>';
+        return html;
+    }
+
+    function addMessageToScreen(id, user, rawText, timestamp, reactions) {
         if (container.innerText.includes("Establishing") || container.innerText.includes("No messages")) container.innerHTML = '';
         
         const isAdmin = checkAdmin(user);
         const visuals = getUserVisuals(user);
+        const msgTime = new Date(timestamp).getTime();
         
-        // Check if message is an Image or Text
         let contentHTML = '';
-        if (text.startsWith('[IMG]')) {
-            const imgSrc = text.replace('[IMG]', '');
-            contentHTML = `<img src="${imgSrc}" class="chat-img" alt="Chat Image">`;
-        } else {
-            contentHTML = `<div class="text">${text}</div>`;
+        let replyHTML = '';
+        let textData = rawText;
+        let isReply = false;
+
+        // Parse JSON if it's a Reply
+        if (rawText.startsWith('{"_reply":')) {
+            try {
+                const parsed = JSON.parse(rawText);
+                textData = parsed.content;
+                isReply = true;
+                replyHTML = `<div class="reply-banner">
+                    <img src="${parsed._reply.av}" class="reply-avatar"> 
+                    <strong>${parsed._reply.dName}</strong> &nbsp; ${parsed._reply.text}
+                </div>`;
+            } catch(e) {}
         }
-        
-        const html = `
-            <div class="message">
-                <img src="${visuals.av}" class="avatar">
-                <div class="msg-content">
-                    <div>
-                        <span class="username" style="color: ${isAdmin ? '#ffcc00' : '#f2f3f5'}">${visuals.dName}${isAdmin ? ' 👑' : ''}</span>
-                        <span class="timestamp">${new Date(timestamp).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}</span>
+
+        // Check if Image or Text
+        let safeTextPreview = textData.startsWith('[IMG]') ? '[Image]' : textData.substring(0, 30);
+        if (textData.startsWith('[IMG]')) {
+            const imgSrc = textData.replace('[IMG]', '');
+            contentHTML = `<img src="${imgSrc}" class="chat-img" onclick="enlargeImage('${imgSrc}')" alt="Chat Image">`;
+        } else {
+            contentHTML = `<div class="text">${textData.replace(/</g, "&lt;").replace(/>/g, "&gt;")}</div>`;
+        }
+
+        const isSameUser = lastRenderedMsg.user === user;
+        const isWithin10Mins = (msgTime - lastRenderedMsg.time) < 600000;
+
+        // MERGE LOGIC
+        if (isSameUser && isWithin10Mins && !isReply && lastRenderedMsg.div) {
+            const innerDiv = lastRenderedMsg.div.querySelector('.msg-content-inner');
+            innerDiv.insertAdjacentHTML('beforeend', contentHTML);
+            
+            // Re-render reactions at the bottom of the group
+            let reactDiv = lastRenderedMsg.div.querySelector('.reaction-bar');
+            if (reactDiv) reactDiv.remove();
+            if (reactions && Object.keys(reactions).length > 0) {
+                innerDiv.insertAdjacentHTML('beforeend', renderReactionsHTML(reactions));
+            }
+            
+            lastRenderedMsg.time = msgTime; // Extend merge window
+        } else {
+            // NEW MESSAGE BLOCK
+            const actionsHTML = `
+                <div class="msg-actions">
+                    <div class="msg-btn" onclick="toggleReaction('${id}', '👍')">👍</div>
+                    <div class="msg-btn" onclick="toggleReaction('${id}', '❤️')">❤️</div>
+                    <div class="msg-btn" onclick="startReply('${id}', '${user}', '${visuals.dName}', '${visuals.av}', '${safeTextPreview}')">↩️</div>
+                    ${checkAdmin(myUsername) ? `<div class="msg-btn delete" onclick="deleteMessage('${id}')">🗑️</div>` : ''}
+                </div>`;
+
+            const html = `
+                <div class="message" id="msg-${id}">
+                    ${actionsHTML}
+                    <img src="${visuals.av}" class="avatar">
+                    <div class="msg-content">
+                        ${replyHTML}
+                        <div>
+                            <span class="username" style="color: ${isAdmin ? '#ffcc00' : '#f2f3f5'}">${visuals.dName}${isAdmin ? ' 👑' : ''}</span>
+                            <span class="timestamp">${new Date(timestamp).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}</span>
+                        </div>
+                        <div class="msg-content-inner">
+                            ${contentHTML}
+                            ${renderReactionsHTML(reactions)}
+                        </div>
                     </div>
-                    ${contentHTML}
-                </div>
-            </div>`;
-        container.insertAdjacentHTML('beforeend', html);
+                </div>`;
+            container.insertAdjacentHTML('beforeend', html);
+            lastRenderedMsg = { user: user, time: msgTime, div: container.lastElementChild };
+        }
         container.scrollTop = container.scrollHeight;
     }
 
     async function loadOldMessages() {
+        lastRenderedMsg = { user: null, time: 0, div: null };
         container.innerHTML = `<div style="color: #949ba4; text-align: center; margin-top: 20px;">Loading #${currentChannel}...</div>`;
         const { data, error } = await db.from('Messages').select('*').eq('channel', currentChannel).order('created_at', { ascending: true });
         container.innerHTML = (data && data.length > 0) ? '' : `<div style="color: #949ba4; text-align: center; margin-top: 20px;">Welcome to #${currentChannel}!</div>`;
-        if (data) data.forEach(m => addMessageToScreen(m.username, m.content, m.created_at));
+        if (data) data.forEach(m => addMessageToScreen(m.id, m.username, m.content, m.created_at, m.reactions));
     }
 
     document.querySelectorAll('.channel-item').forEach(btn => {
@@ -396,60 +495,84 @@
         };
     });
 
-    // UPDATED SEND LOGIC
     input.onkeypress = async (e) => {
         if (e.key === 'Enter') {
+            if (isTimedOut) return;
             const val = input.value.trim();
             const hasText = val !== '';
             const hasImage = pendingChatImage !== null;
 
-            if (!hasText && !hasImage) return; // Prevent empty sends
+            if (!hasText && !hasImage) return;
 
-            // Handle Admin clear command (text only)
-            if (hasText && val === '/clear') {
-                const pass = prompt("Admin Passcode:");
-                const { data, error } = await db.rpc('clear_messages', { passcode: pass });
-                if (error || data !== 'Success') alert(error?.message || data);
-                input.value = '';
-                return;
+            // COMMAND: TIMEOUT
+            const timeoutMatch = val.match(/^\/timeout\s+(.+?#\d{4})\s+(\d+)$/);
+            if (hasText && timeoutMatch && checkAdmin(myUsername)) {
+                const targetUser = timeoutMatch[1];
+                const mins = parseInt(timeoutMatch[2]);
+                const expires = new Date(Date.now() + mins * 60000).toISOString();
+                await db.from('Timeouts').upsert({ username: targetUser, expires_at: expires });
+                input.value = ''; return;
             }
 
-            // Temporarily save states and clear UI instantly so it feels responsive
+            // COMMAND: CLEAR
+            if (hasText && val === '/clear') {
+                let pass = null;
+                if (!checkAdmin(myUsername)) pass = prompt("Admin Passcode:");
+                const { data, error } = await db.rpc('clear_messages', { passcode: pass, p_channel: currentChannel, p_username: myUsername });
+                if (error || data !== 'Success') alert(error?.message || data || "Unauthorized");
+                input.value = ''; return;
+            }
+
             const textToSend = val;
             const imgToSend = pendingChatImage;
+            const replyMeta = pendingReply ? `{"_reply": ${JSON.stringify(pendingReply)}, "content": ` : null;
+            
             input.value = '';
             clearAttachment();
+            clearReply();
 
-            if (currentChannel === 'welcome') {
-                const pass = prompt("Post to #welcome? Enter Admin Passcode:");
-                if (hasText) {
-                    const { data, error } = await db.rpc('post_admin_message', { passcode: pass, p_username: myUsername, p_content: textToSend, p_channel: 'welcome' });
-                    if (error || data !== 'Success') return alert(data || "Unauthorized");
+            const sendMessage = async (rawContent) => {
+                let finalContent = rawContent;
+                if (replyMeta) finalContent = `${replyMeta}"${rawContent}"}`;
+
+                if (currentChannel === 'welcome') {
+                    let pass = null;
+                    if (!checkAdmin(myUsername)) pass = prompt("Post to #welcome? Enter Admin Passcode:");
+                    const { data, error } = await db.rpc('post_admin_message', { passcode: pass, p_username: myUsername, p_content: finalContent, p_channel: 'welcome' });
+                    if (error || data !== 'Success') alert(data || "Unauthorized");
+                } else {
+                    await db.from('Messages').insert([{ username: myUsername, content: finalContent, channel: currentChannel }]);
                 }
-                if (hasImage) {
-                    const { data, error } = await db.rpc('post_admin_message', { passcode: pass, p_username: myUsername, p_content: '[IMG]' + imgToSend, p_channel: 'welcome' });
-                    if (error || data !== 'Success') return alert(data || "Unauthorized");
-                }
-            } else {
-                // If there is both text and an image, it sends them as two separate back-to-back messages (just like Discord!)
-                if (hasText) {
-                    await db.from('Messages').insert([{ username: myUsername, content: textToSend, channel: currentChannel }]);
-                }
-                if (hasImage) {
-                    await db.from('Messages').insert([{ username: myUsername, content: '[IMG]' + imgToSend, channel: currentChannel }]);
-                }
-            }
+            };
+
+            if (hasText) await sendMessage(textToSend);
+            if (hasImage) await sendMessage('[IMG]' + imgToSend);
         }
     };
 
     function initApp() {
         updateBottomPanel();
+        checkActiveTimeout();
         
+        // Listen for new messages, deletes, and reactions
         db.channel('chat').on('postgres_changes', { event: '*', schema: 'public', table: 'Messages' }, payload => {
-            if (payload.eventType === 'INSERT' && payload.new.channel === currentChannel) addMessageToScreen(payload.new.username, payload.new.content, payload.new.created_at);
-            if (payload.eventType === 'DELETE') loadOldMessages();
+            if (payload.eventType === 'INSERT' && payload.new.channel === currentChannel) {
+                addMessageToScreen(payload.new.id, payload.new.username, payload.new.content, payload.new.created_at, payload.new.reactions);
+            }
+            if (payload.eventType === 'DELETE' || payload.eventType === 'UPDATE') {
+                // Bruteforce refresh to ensure DOM stays clean during merges/deletions
+                loadOldMessages();
+            }
         }).subscribe();
 
+        // Listen for Timeouts
+        db.channel('timeouts').on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'Timeouts' }, payload => {
+            if (payload.new.username === myUsername && new Date(payload.new.expires_at) > new Date()) {
+                applyTimeoutUI(payload.new.expires_at);
+            }
+        }).subscribe();
+
+        // Presence Logic
         livePresenceChannel = db.channel('online-users', { config: { presence: { key: myUsername } } });
         livePresenceChannel.on('presence', { event: 'sync' }, () => {
             const state = livePresenceChannel.presenceState();
@@ -463,20 +586,15 @@
                 const presenceData = state[u][0]; 
                 const dName = presenceData.displayName || u.split('#')[0];
                 const av = presenceData.avatar || `https://api.dicebear.com/7.x/pixel-art/svg?seed=${encodeURIComponent(u)}`;
-                
                 onlineUsersData[u] = { displayName: dName, avatar: av };
 
                 const isAdmin = checkAdmin(u);
                 const el = document.createElement('div');
                 el.className = 'member-item';
                 el.onclick = (e) => showPopout(u, e.currentTarget);
-                el.innerHTML = `
-                    <img src="${av}" class="member-avatar">
-                    <div class="member-name" style="color: ${isAdmin ? '#ffcc00' : '#949ba4'}">${dName}${isAdmin ? ' 👑' : ''}</div>
-                `;
+                el.innerHTML = `<img src="${av}" class="member-avatar"><div class="member-name" style="color: ${isAdmin ? '#ffcc00' : '#949ba4'}">${dName}${isAdmin ? ' 👑' : ''}</div>`;
                 memberContainer.appendChild(el);
             });
-            
             if(container.innerHTML !== '') loadOldMessages(); 
         }).subscribe(async (s) => { 
             if (s === 'SUBSCRIBED') await livePresenceChannel.track({ online_at: new Date(), displayName: myDisplayName, avatar: myAvatar }); 
@@ -485,7 +603,6 @@
         loadOldMessages();
     }
 
-    // BOOT UP
     if (!myUsername) openModal('signup');
     else initApp();
 </script>
