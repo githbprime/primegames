@@ -8,22 +8,20 @@
         body, html { margin: 0; padding: 0; height: 100%; font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; overflow: hidden; background-color: #313338; }
         .app-container { display: flex; height: 100vh; width: 100vw; }
         
-        /* SIDEBARS */
+        /* SERVER BAR */
         .server-bar { width: 72px; background: #1e1f22; display: flex; flex-direction: column; align-items: center; padding-top: 12px; gap: 8px; flex-shrink: 0; }
-        
-        /* SQUIRCLE HOVER FIX */
         .server-icon { 
             width: 48px; height: 48px; border-radius: 50%; overflow: hidden; display: flex; 
             align-items: center; justify-content: center; background: #2b2d31; cursor: pointer;
-            transition: border-radius 0.2s ease, transform 0.1s ease;
+            transition: all 0.2s ease-in-out;
         }
-        .server-icon:hover { border-radius: 15px; transform: scale(1.05); }
-        .server-icon img { width: 100%; height: 100%; object-fit: cover; }
+        .server-icon:hover { border-radius: 12px; background: #5865f2; }
+        .server-icon img { width: 100%; height: 100%; object-fit: cover; pointer-events: none; }
         
+        /* CHANNEL SIDEBAR */
         .channel-bar { width: 240px; background: #2b2d31; display: flex; flex-direction: column; flex-shrink: 0; }
         .channel-header { padding: 15px; color: white; font-weight: bold; border-bottom: 1px solid #1e1f22; font-size: 15px; }
         .channel-list { padding: 10px; flex-grow: 1; }
-        
         .channel-item { padding: 8px 10px; border-radius: 4px; color: #949ba4; font-size: 15px; margin-bottom: 4px; cursor: pointer; display: flex; align-items: center; }
         .channel-item:before { content: "#"; margin-right: 8px; font-size: 20px; color: #5f636a; }
         .channel-item:hover { background: #35373c; color: #dbdee1; }
@@ -33,57 +31,97 @@
         .chat-area { flex-grow: 1; display: flex; flex-direction: column; background: #313338; }
         .chat-messages { flex-grow: 1; padding: 20px; overflow-y: auto; display: flex; flex-direction: column; gap: 18px; }
         .message { display: flex; gap: 16px; align-items: flex-start; }
-        .avatar { width: 40px; height: 40px; border-radius: 50%; background: #4e5058; flex-shrink: 0; }
+        .avatar { width: 40px; height: 40px; border-radius: 50%; background: #4e5058; flex-shrink: 0; image-rendering: pixelated; }
         .msg-content { display: flex; flex-direction: column; }
-        .username { color: #f2f3f5; font-weight: 500; font-size: 16px; }
+        .username { font-weight: 500; font-size: 16px; }
         .timestamp { color: #949ba4; font-size: 12px; margin-left: 8px; }
         .text { color: #dbdee1; font-size: 15px; line-height: 1.3; white-space: pre-wrap; }
         
+        /* INPUT AREA */
         .chat-input-wrapper { padding: 0 16px 24px; }
         .chat-input { background: #383a40; padding: 12px 16px; border-radius: 8px; color: #dcddde; font-size: 15px; border: none; width: calc(100% - 32px); outline: none; }
 
-        /* NEW: MEMBERS SIDEBAR */
+        /* MEMBER SIDEBAR */
         .members-bar { width: 240px; background: #2b2d31; display: flex; flex-direction: column; flex-shrink: 0; border-left: 1px solid #1e1f22; }
-        .members-header { padding: 15px; color: white; font-weight: bold; font-size: 13px; text-transform: uppercase; border-bottom: 1px solid #1e1f22; }
+        .members-header { padding: 20px 15px 10px; color: #949ba4; font-weight: bold; font-size: 12px; text-transform: uppercase; letter-spacing: 0.5px; }
         .members-list { padding: 10px; flex-grow: 1; overflow-y: auto; }
-        .member-item { display: flex; align-items: center; gap: 10px; padding: 8px; border-radius: 4px; color: #949ba4; font-size: 15px; }
-        .member-item:hover { background: #35373c; color: #dbdee1; cursor: pointer; }
-        .member-avatar { width: 32px; height: 32px; border-radius: 50%; background: #4e5058; }
-        .member-name { font-weight: 500; }
-        .owner-crown { margin-left: 4px; font-size: 14px; }
+        .member-item { display: flex; align-items: center; gap: 10px; padding: 6px 8px; border-radius: 4px; margin-bottom: 2px; }
+        .member-item:hover { background: #35373c; cursor: pointer; }
+        .member-avatar { width: 32px; height: 32px; border-radius: 50%; image-rendering: pixelated; }
+        .member-name { font-size: 15px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+        /* --- SIGNUP MODAL --- */
+        #signup-overlay {
+            position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
+            background: rgba(0, 0, 0, 0.85); display: none; 
+            justify-content: center; align-items: center; z-index: 1000;
+        }
+        .signup-card {
+            background: #313338; padding: 32px; border-radius: 8px; width: 320px;
+            display: flex; flex-direction: column; align-items: center; box-shadow: 0 8px 24px rgba(0,0,0,0.5);
+        }
+        .signup-card h2 { color: white; margin: 0 0 20px 0; font-size: 24px; }
+        .preview-avatar { width: 80px; height: 80px; border-radius: 50%; background: #2b2d31; margin-bottom: 12px; image-rendering: pixelated; border: 2px solid #5865f2; }
+        .btn-group { display: flex; gap: 8px; margin-bottom: 20px; width: 100%; }
+        .btn { flex: 1; padding: 8px; border: none; border-radius: 4px; cursor: pointer; font-weight: bold; font-size: 13px; color: white; transition: background 0.2s; }
+        .btn-primary { background: #5865f2; }
+        .btn-primary:hover { background: #4752c4; }
+        .btn-secondary { background: #4e5058; }
+        .btn-secondary:hover { background: #6d6f78; }
+        .input-group { display: flex; width: 100%; background: #1e1f22; border-radius: 4px; overflow: hidden; margin-bottom: 24px; }
+        .input-group input { flex: 1; background: transparent; border: none; color: white; padding: 12px; font-size: 16px; outline: none; }
+        .input-group .hash { background: transparent; color: #949ba4; padding: 12px 12px 12px 0; font-size: 16px; user-select: none; }
+        .hidden-file-input { display: none; }
     </style>
 </head>
 <body>
 
+<div id="signup-overlay">
+    <div class="signup-card">
+        <h2>Customize Profile</h2>
+        
+        <img id="modal-avatar" class="preview-avatar" src="">
+        
+        <div class="btn-group">
+            <button class="btn btn-secondary" onclick="generateRandomAvatar()">Generate Random</button>
+            <button class="btn btn-secondary" onclick="document.getElementById('file-upload').click()">Upload 16x16</button>
+        </div>
+        <input type="file" id="file-upload" class="hidden-file-input" accept="image/png, image/jpeg">
+
+        <div class="input-group">
+            <input type="text" id="modal-username" placeholder="Username" maxlength="16">
+            <div class="hash" id="modal-hash">#0000</div>
+        </div>
+
+        <button class="btn btn-primary" style="width: 100%; padding: 12px;" onclick="completeSignup()">Join Server</button>
+    </div>
+</div>
+
 <div class="app-container">
     <div class="server-bar">
-        <div class="server-icon">
-            <img src="fvicon.png" onerror="this.src='../fvicon.png'" alt="Prime Logo">
+        <div class="server-icon" title="Prime Server">
+            <img src="fvicon.png" onerror="this.src='../fvicon.png'" alt="P">
         </div>
     </div>
     
     <div class="channel-bar">
-        <div class="channel-header">Prime Server</div>
+        <div class="channel-header">Prime Games</div>
         <div class="channel-list">
-            <div class="channel-item" data-channel="general">general</div>
             <div class="channel-item active" data-channel="welcome">welcome</div>
+            <div class="channel-item" data-channel="general">general</div>
         </div>
     </div>
 
     <div class="chat-area">
-        <div class="chat-messages" id="message-container">
-            <div style="color: #949ba4; text-align: center; margin-top: 20px;">Loading...</div>
-        </div>
+        <div class="chat-messages" id="message-container"></div>
         <div class="chat-input-wrapper">
             <input type="text" class="chat-input" id="chat-box" placeholder="Message #welcome">
         </div>
     </div>
 
     <div class="members-bar">
-        <div class="members-header">Online - <span id="online-count">0</span></div>
-        <div class="members-list" id="members-container">
-            <div style="color: #949ba4; font-size: 13px; text-align: center;">Connecting...</div>
-        </div>
+        <div class="members-header">Online — <span id="online-count">0</span></div>
+        <div class="members-list" id="members-container"></div>
     </div>
 </div>
 
@@ -93,42 +131,96 @@
     const SUPABASE_KEY = 'sb_publishable_FUPgy9ZRC9hrNfMUborCdQ_WF-pD5UP';
     const db = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-    let currentChannel = 'welcome'; 
+    let currentChannel = 'welcome';
     const container = document.getElementById('message-container');
     const input = document.getElementById('chat-box');
-    input.placeholder = `Message #${currentChannel}`;
+    const memberContainer = document.getElementById('members-container');
 
-    // USERNAME LOGIC
+    // --- STATE VARIABLES ---
     let myUsername = localStorage.getItem('discordGuestName');
-    if (!myUsername) {
-        let chosenName = prompt("Welcome to the server! What username would you like?") || "Guest";
-        let hash = Math.floor(1000 + Math.random() * 9000);
-        myUsername = `${chosenName}#${hash}`;
-        localStorage.setItem('discordGuestName', myUsername);
-    }
+    let myAvatar = localStorage.getItem('discordAvatar'); 
+    let generatedHash = "";
 
-    function formatTime(dateString) {
-        if (!dateString) return "Just now";
-        const date = new Date(dateString);
-        return date.toLocaleDateString() + " " + date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-    }
-
-    // UPDATED: ADD CROWN TO CHAT MESSAGES
-    function addMessageToScreen(user, text, timestamp) {
-        if (container.innerText.includes("Loading") || container.innerText.includes("No messages")) {
-            container.innerHTML = '';
+    // --- SIGNUP MODAL LOGIC ---
+    function initSignup() {
+        if (!myUsername) {
+            document.getElementById('signup-overlay').style.display = 'flex';
+            generatedHash = '#' + Math.floor(1000 + Math.random() * 9000);
+            document.getElementById('modal-hash').innerText = generatedHash;
+            generateRandomAvatar();
+        } else {
+            initApp();
         }
-        const timeDisplay = formatTime(timestamp);
-        
-        // Check if user is the admin to add crown and gold color
-        const crown = user === 'githbprime#3932' ? '<span class="owner-crown">👑</span>' : '';
-        const nameColor = user === 'githbprime#3932' ? 'color: #ffcc00;' : '';
+    }
 
+    function generateRandomAvatar() {
+        const randomSeed = Math.random().toString(36).substring(7);
+        const url = `https://api.dicebear.com/7.x/pixel-art/svg?seed=${randomSeed}`;
+        document.getElementById('modal-avatar').src = url;
+        myAvatar = url; // Temporarily store URL
+    }
+
+    // BASE 64 ENCODING (The "Bit-rate" process)
+    document.getElementById('file-upload').addEventListener('change', function(e) {
+        const file = e.target.files[0];
+        if (!file) return;
+
+        const reader = new FileReader();
+        reader.onload = function(event) {
+            const img = new Image();
+            img.onload = function() {
+                // Force exactly 16x16 using a hidden canvas
+                const canvas = document.createElement('canvas');
+                canvas.width = 16;
+                canvas.height = 16;
+                const ctx = canvas.getContext('2d');
+                ctx.drawImage(img, 0, 0, 16, 16);
+                
+                // Convert to Base64 String
+                const base64String = canvas.toDataURL('image/png');
+                document.getElementById('modal-avatar').src = base64String;
+                myAvatar = base64String; // Update stored avatar to the Base64 data
+            };
+            img.src = event.target.result;
+        };
+        reader.readAsDataURL(file);
+    });
+
+    function completeSignup() {
+        const userInp = document.getElementById('modal-username').value.trim();
+        if (!userInp) { alert("Please enter a username!"); return; }
+        
+        myUsername = userInp + generatedHash;
+        localStorage.setItem('discordGuestName', myUsername);
+        localStorage.setItem('discordAvatar', myAvatar);
+        
+        document.getElementById('signup-overlay').style.display = 'none';
+        initApp();
+    }
+
+    // --- CORE APP LOGIC ---
+    const checkAdmin = (name) => name === 'githbprime#3932';
+
+    // Determines which avatar to show (Local upload vs generated)
+    function getAvatarForUser(user) {
+        if (user === myUsername && myAvatar) return myAvatar; 
+        return `https://api.dicebear.com/7.x/pixel-art/svg?seed=${encodeURIComponent(user)}`;
+    }
+
+    function addMessageToScreen(user, text, timestamp) {
+        if (container.innerText.includes("Establishing") || container.innerText.includes("No messages")) container.innerHTML = '';
+        
+        const isAdmin = checkAdmin(user);
+        const avatarSrc = getAvatarForUser(user);
+        
         const html = `
             <div class="message">
-                <div class="avatar"></div>
+                <img src="${avatarSrc}" class="avatar">
                 <div class="msg-content">
-                    <div><span class="username" style="${nameColor}">${user}${crown}</span><span class="timestamp">${timeDisplay}</span></div>
+                    <div>
+                        <span class="username" style="color: ${isAdmin ? '#ffcc00' : '#f2f3f5'}">${user}${isAdmin ? ' 👑' : ''}</span>
+                        <span class="timestamp">${new Date(timestamp).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}</span>
+                    </div>
                     <div class="text">${text}</div>
                 </div>
             </div>`;
@@ -139,105 +231,74 @@
     async function loadOldMessages() {
         container.innerHTML = `<div style="color: #949ba4; text-align: center; margin-top: 20px;">Loading #${currentChannel}...</div>`;
         const { data, error } = await db.from('Messages').select('*').eq('channel', currentChannel).order('created_at', { ascending: true });
-        
-        if (error) {
-            container.innerHTML = `<div style="color:red; text-align:center;">Error: ${error.message}</div>`;
-            return;
-        }
-        
-        container.innerHTML = '';
-        if (data.length === 0) {
-            container.innerHTML = `<div style="color: #949ba4; text-align: center; margin-top: 20px;">No messages yet in #${currentChannel}!</div>`;
-        } else {
-            data.forEach(m => addMessageToScreen(m.username, m.content, m.created_at));
-        }
+        container.innerHTML = (data && data.length > 0) ? '' : `<div style="color: #949ba4; text-align: center; margin-top: 20px;">Welcome to #${currentChannel}!</div>`;
+        if (data) data.forEach(m => addMessageToScreen(m.username, m.content, m.created_at));
     }
 
     document.querySelectorAll('.channel-item').forEach(btn => {
         btn.onclick = (e) => {
-            const item = e.currentTarget;
             document.querySelectorAll('.channel-item').forEach(i => i.classList.remove('active'));
-            item.classList.add('active');
-            currentChannel = item.getAttribute('data-channel');
+            e.target.classList.add('active');
+            currentChannel = e.target.getAttribute('data-channel');
             input.placeholder = `Message #${currentChannel}`;
             loadOldMessages();
         };
     });
 
-    input.addEventListener('keypress', async (e) => {
+    input.onkeypress = async (e) => {
         if (e.key === 'Enter' && input.value.trim() !== '') {
             const val = input.value.trim();
             input.value = '';
 
             if (val === '/clear') {
-                let attempt = prompt("Admin Passcode required:");
-                const { data, error } = await db.rpc('clear_messages', { passcode: attempt });
-                if (error) alert(error.message);
-                else if (data !== 'Success') alert(data);
-                return; 
+                const pass = prompt("Admin Passcode:");
+                const { data, error } = await db.rpc('clear_messages', { passcode: pass });
+                if (error || data !== 'Success') alert(error?.message || data);
+                return;
             }
 
             if (currentChannel === 'welcome') {
-                let attempt = prompt("Admin Passcode required for #welcome:");
-                const { data, error } = await db.rpc('post_admin_message', { 
-                    passcode: attempt, p_username: myUsername, p_content: val, p_channel: currentChannel 
-                });
-                if (error || data !== 'Success') alert(data || "Incorrect Passcode");
+                const pass = prompt("Post to #welcome? Enter Admin Passcode:");
+                const { data, error } = await db.rpc('post_admin_message', { passcode: pass, p_username: myUsername, p_content: val, p_channel: 'welcome' });
+                if (error || data !== 'Success') alert(data || "Unauthorized");
                 return;
             }
 
             await db.from('Messages').insert([{ username: myUsername, content: val, channel: currentChannel }]);
         }
-    });
+    };
 
-    // --- REALTIME CHAT MESSAGES ---
-    db.channel('any')
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'Messages' }, payload => {
-          if (payload.eventType === 'INSERT' && payload.new.channel === currentChannel) {
-              addMessageToScreen(payload.new.username, payload.new.content, payload.new.created_at);
-          }
-          if (payload.eventType === 'DELETE') loadOldMessages();
-      })
-      .subscribe();
+    function initApp() {
+        // Start Realtime Data
+        db.channel('chat').on('postgres_changes', { event: '*', schema: 'public', table: 'Messages' }, payload => {
+            if (payload.eventType === 'INSERT' && payload.new.channel === currentChannel) addMessageToScreen(payload.new.username, payload.new.content, payload.new.created_at);
+            if (payload.eventType === 'DELETE') loadOldMessages();
+        }).subscribe();
 
-    // --- NEW: REALTIME PRESENCE (MEMBERS BAR) ---
-    const presenceChannel = db.channel('online-users', {
-        config: { presence: { key: myUsername } },
-    });
-
-    presenceChannel.on('presence', { event: 'sync' }, () => {
-        const state = presenceChannel.presenceState();
-        const membersContainer = document.getElementById('members-container');
-        const countDisplay = document.getElementById('online-count');
-        
-        membersContainer.innerHTML = '';
-        let count = 0;
-
-        for (const [username, presences] of Object.entries(state)) {
-            count++;
+        // Start Presence
+        const presence = db.channel('online-users', { config: { presence: { key: myUsername } } });
+        presence.on('presence', { event: 'sync' }, () => {
+            const state = presence.presenceState();
+            memberContainer.innerHTML = '';
+            const users = Object.keys(state);
+            document.getElementById('online-count').innerText = users.length;
             
-            // Check if user is the admin to add crown in sidebar
-            const crown = username === 'githbprime#3932' ? '<span class="owner-crown">👑</span>' : '';
-            const nameColor = username === 'githbprime#3932' ? 'color: #ffcc00;' : '';
+            users.forEach(u => {
+                const isAdmin = checkAdmin(u);
+                const avatarSrc = getAvatarForUser(u);
+                memberContainer.insertAdjacentHTML('beforeend', `
+                    <div class="member-item">
+                        <img src="${avatarSrc}" class="member-avatar">
+                        <div class="member-name" style="color: ${isAdmin ? '#ffcc00' : '#949ba4'}">${u}${isAdmin ? ' 👑' : ''}</div>
+                    </div>`);
+            });
+        }).subscribe(async (s) => { if (s === 'SUBSCRIBED') await presence.track({ online_at: new Date() }); });
 
-            const html = `
-                <div class="member-item">
-                    <div class="member-avatar"></div>
-                    <div class="member-name" style="${nameColor}">${username}${crown}</div>
-                </div>`;
-            membersContainer.insertAdjacentHTML('beforeend', html);
-        }
-        countDisplay.innerText = count;
-    });
+        loadOldMessages();
+    }
 
-    presenceChannel.subscribe(async (status) => {
-        if (status === 'SUBSCRIBED') {
-            // Tell the database "I am here"
-            await presenceChannel.track({ online_at: new Date().toISOString() });
-        }
-    });
-
-    loadOldMessages();
+    // BOOT UP
+    initSignup();
 </script>
 </body>
 </html>
