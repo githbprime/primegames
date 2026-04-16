@@ -4,72 +4,85 @@
     <meta charset="UTF-8">
     <title>Discourse | Prime Server</title>
     <style>
-        /* CORE LAYOUT */
+        /* BASE STYLES */
         body, html { margin: 0; padding: 0; height: 100%; font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; background-color: #313338; color: #dbdee1; overflow: hidden; }
         .app-container { display: flex; height: 100vh; width: 100vw; }
         
-        /* SERVER BAR (Far Left) */
+        /* SIDEBARS */
         .server-bar { width: 72px; background: #1e1f22; display: flex; flex-direction: column; align-items: center; padding-top: 12px; gap: 8px; flex-shrink: 0; }
-        .server-icon { width: 48px; height: 48px; border-radius: 50%; background: #313338; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: 0.2s; color: white; font-weight: bold; }
+        .server-icon { width: 48px; height: 48px; border-radius: 50%; background: #313338; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: 0.2s; overflow: hidden; color: white; font-weight: bold; }
         .server-icon:hover { border-radius: 15px; background: #5865f2; }
 
-        /* CHANNEL BAR (Middle Left) */
         .channel-bar { width: 240px; background: #2b2d31; display: flex; flex-direction: column; flex-shrink: 0; }
         .channel-header { padding: 16px; font-weight: bold; color: white; border-bottom: 1px solid #1e1f22; }
         .channel-list { padding: 8px; flex-grow: 1; }
         .channel-item { padding: 8px 12px; border-radius: 4px; color: #949ba4; cursor: pointer; margin-bottom: 2px; display: flex; align-items: center; }
-        .channel-item:before { content: "#"; margin-right: 8px; font-size: 20px; color: #5f636a; }
-        .channel-item:hover { background: #35373c; color: #dbdee1; }
         .channel-item.active { background: #3f4147; color: white; }
+        .channel-item:before { content: "#"; margin-right: 8px; font-size: 20px; color: #5f636a; }
 
-        /* USER PANEL (Bottom Left) */
-        .user-panel { background: #232428; padding: 8px; display: flex; align-items: center; gap: 8px; }
-        .user-avatar { width: 32px; height: 32px; border-radius: 50%; }
-        .user-info { overflow: hidden; font-size: 13px; }
-        .user-name { color: white; font-weight: bold; display: block; }
-        .user-tag { color: #b5bac1; font-size: 11px; }
+        .user-panel { background: #232428; padding: 8px; display: flex; align-items: center; gap: 8px; cursor: pointer; }
+        .user-avatar { width: 32px; height: 32px; border-radius: 50%; background: #1e1f22; }
 
-        /* CHAT AREA (Center) */
-        .chat-area { flex-grow: 1; display: flex; flex-direction: column; min-width: 0; background: #313338; }
+        /* CHAT AREA */
+        .chat-area { flex-grow: 1; display: flex; flex-direction: column; min-width: 0; background: #313338; position: relative; }
         .chat-messages { flex-grow: 1; overflow-y: auto; padding: 10px 0; }
         
-        /* MESSAGE BLOCK LAYOUT */
-        .msg-row { display: flex; padding: 2px 16px; width: 100%; box-sizing: border-box; }
+        /* MESSAGE BLOCK */
+        .msg-row { display: flex; padding: 2px 16px; width: 100%; box-sizing: border-box; position: relative; flex-direction: column; }
         .msg-row:hover { background: rgba(0,0,0,0.05); }
         .msg-row.first { margin-top: 14px; }
         
+        .msg-flex { display: flex; width: 100%; }
         .avatar-col { width: 50px; flex-shrink: 0; }
-        .msg-pfp { width: 40px; height: 40px; border-radius: 50%; margin-top: 4px; cursor: pointer; }
-        
+        .msg-pfp { width: 40px; height: 40px; border-radius: 50%; margin-top: 4px; }
         .content-col { flex-grow: 1; min-width: 0; padding-left: 10px; }
-        .msg-header { margin-bottom: 4px; display: flex; align-items: center; gap: 8px; }
+        
+        /* ACTION BAR */
+        .msg-actions { position: absolute; right: 16px; top: -16px; background: #313338; border: 1px solid #1e1f22; border-radius: 4px; display: none; z-index: 10; padding: 2px; }
+        .msg-row:hover .msg-actions { display: flex; }
+        .action-btn { padding: 4px 8px; cursor: pointer; color: #b5bac1; font-size: 14px; border-radius: 4px; }
+        .action-btn:hover { background: #3f4147; color: white; }
+
+        /* REPLIES & REACTIONS */
+        .reply-line { color: #b5bac1; font-size: 13px; display: flex; align-items: center; margin-left: 20px; margin-bottom: 4px; opacity: 0.8; }
+        .reply-line:before { content: ""; width: 30px; height: 10px; border-left: 2px solid #4e5058; border-top: 2px solid #4e5058; border-top-left-radius: 6px; margin-right: 6px; margin-top: 10px; }
+        .react-bar { display: flex; gap: 4px; margin-top: 4px; flex-wrap: wrap; }
+        .react-pill { background: #2b2d31; border: 1px solid transparent; border-radius: 6px; padding: 2px 6px; font-size: 12px; cursor: pointer; color: #b5bac1; }
+        .react-pill.active { background: rgba(88,101,242,0.15); border-color: #5865f2; color: #5865f2; }
+
+        .msg-header { margin-bottom: 2px; display: flex; align-items: center; gap: 8px; }
         .username { color: white; font-weight: 500; font-size: 16px; }
         .timestamp { color: #949ba4; font-size: 12px; }
         .msg-text { color: #dbdee1; font-size: 15px; line-height: 1.4; word-break: break-word; }
-
-        /* IMAGE FIX: Prevents fullscreen stretching */
-        .chat-img { 
-            max-width: 550px; 
-            max-height: 400px; 
-            border-radius: 8px; 
-            margin: 6px 0; 
-            display: block; 
-            cursor: pointer;
-            object-fit: contain;
-            background: #2b2d31;
-        }
+        .chat-img { max-width: 100%; max-height: 350px; border-radius: 8px; margin: 6px 0; display: block; background: #2b2d31; }
 
         /* INPUT AREA */
         .input-wrapper { padding: 0 16px 24px; }
-        .input-box { background: #383a40; padding: 12px 16px; border-radius: 8px; display: flex; }
-        .input-box input { background: transparent; border: none; color: #dcddde; flex-grow: 1; outline: none; font-size: 15px; }
+        .reply-preview { background: #2b2d31; padding: 8px 16px; border-radius: 8px 8px 0 0; display: none; justify-content: space-between; font-size: 13px; color: #b5bac1; }
+        .input-box { background: #383a40; padding: 10px 16px; border-radius: 8px; display: flex; align-items: center; gap: 12px; }
+        .input-box input[type="text"] { background: transparent; border: none; color: #dcddde; flex-grow: 1; outline: none; font-size: 15px; }
 
-        /* MEMBERS BAR (Right) */
+        /* MEMBERS BAR */
         .members-bar { width: 240px; background: #2b2d31; flex-shrink: 0; padding: 20px 8px; }
-        .member-header { color: #949ba4; text-transform: uppercase; font-size: 12px; font-weight: bold; margin-bottom: 10px; padding-left: 8px; }
+        .member-header { color: #949ba4; text-transform: uppercase; font-size: 12px; font-weight: bold; margin-bottom: 12px; padding-left: 8px; }
+        .member-item { display: flex; align-items: center; gap: 10px; padding: 6px 8px; border-radius: 4px; color: #949ba4; }
+
+        /* OVERLAYS */
+        #signup-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.85); display: none; justify-content: center; align-items: center; z-index: 2000; }
+        .signup-card { background: #313338; padding: 32px; border-radius: 8px; width: 320px; text-align: center; }
     </style>
 </head>
 <body>
+
+<div id="signup-overlay">
+    <div class="signup-card">
+        <h2 style="color:white">Set Up Profile</h2>
+        <img id="modal-avatar" style="width:80px; height:80px; border-radius:50%; margin-bottom:15px;">
+        <input type="text" id="modal-displayname" placeholder="Display Name" style="width:100%; padding:10px; margin-bottom:10px; background:#1e1f22; border:none; color:white; border-radius:4px;">
+        <input type="text" id="modal-username" placeholder="Username (e.g. prime)" style="width:100%; padding:10px; margin-bottom:20px; background:#1e1f22; border:none; color:white; border-radius:4px;">
+        <button onclick="saveProfile()" style="width:100%; padding:12px; background:#5865f2; border:none; color:white; border-radius:4px; font-weight:bold; cursor:pointer;">Join Server</button>
+    </div>
+</div>
 
 <div class="app-container">
     <div class="server-bar">
@@ -82,27 +95,33 @@
             <div class="channel-item active" data-channel="welcome">welcome</div>
             <div class="channel-item" data-channel="general">general</div>
         </div>
-        <div class="user-panel">
-            <img id="my-pfp" class="user-avatar" src="">
-            <div class="user-info">
-                <span id="my-name" class="user-name">Loading...</span>
-                <span id="my-tag" class="user-tag">#0000</span>
-            </div>
+        <div class="user-panel" onclick="openModal()">
+            <img id="my-pfp" class="user-avatar">
+            <div style="font-size:13px; font-weight:bold; color:white;" id="my-name">Guest</div>
         </div>
     </div>
 
     <div class="chat-area">
         <div class="chat-messages" id="message-container"></div>
         <div class="input-wrapper">
+            <div id="reply-bar" class="reply-preview">
+                <span>Replying to <strong id="reply-target"></strong></span>
+                <span onclick="cancelReply()" style="cursor:pointer">✕</span>
+            </div>
             <div class="input-box">
+                <label style="color:#b5bac1; cursor:pointer; font-size:20px; font-weight:bold;" title="Upload Image">
+                    +
+                    <input type="file" id="file-upload" accept="image/*" style="display:none;" onchange="handleFileAsBase64(this)">
+                </label>
                 <input type="text" id="chat-input" placeholder="Message #welcome">
             </div>
         </div>
     </div>
 
     <div class="members-bar">
-        <div class="member-header">Online — 1</div>
-        </div>
+        <div class="member-header">Online — <span id="online-count">0</span></div>
+        <div id="member-list"></div>
+    </div>
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -113,14 +132,74 @@
     const ADMIN_USER = 'githbprime#3951';
 
     let currentChannel = 'welcome';
-    let myUsername = localStorage.getItem('discordGuestName') || "Guest#" + Math.floor(Math.random()*9999);
+    let myUsername = localStorage.getItem('discordGuestName');
+    let pendingReply = null;
     let lastUser = null;
     let lastTime = 0;
 
-    // Set user panel
-    document.getElementById('my-name').innerText = myUsername.split('#')[0];
-    document.getElementById('my-tag').innerText = '#' + myUsername.split('#')[1];
-    document.getElementById('my-pfp').src = `https://api.dicebear.com/7.x/pixel-art/svg?seed=${myUsername}`;
+    // --- REPLIES & ACTIONS ---
+    function setReply(id, name, pfp, text) {
+        pendingReply = { id, name, pfp, text: text.substring(0, 40) };
+        document.getElementById('reply-target').innerText = name;
+        document.getElementById('reply-bar').style.display = 'flex';
+        document.getElementById('chat-input').focus();
+    }
+    function cancelReply() { pendingReply = null; document.getElementById('reply-bar').style.display = 'none'; }
+
+    async function addReaction(msgId, emoji) {
+        const { data } = await db.from('Messages').select('reactions').eq('id', msgId).single();
+        let r = data.reactions || {};
+        if (!r[emoji]) r[emoji] = [];
+        const idx = r[emoji].indexOf(myUsername);
+        if (idx > -1) r[emoji].splice(idx, 1); else r[emoji].push(myUsername);
+        if (r[emoji].length === 0) delete r[emoji];
+        await db.from('Messages').update({ reactions: r }).eq('id', msgId);
+    }
+
+    // --- AUTO-COMPRESSING BASE64 FILE UPLOAD ---
+    function handleFileAsBase64(input) {
+        const file = input.files[0];
+        if (!file) return;
+
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            const img = new Image();
+            img.onload = function() {
+                const canvas = document.createElement('canvas');
+                const ctx = canvas.getContext('2d');
+
+                let width = img.width;
+                let height = img.height;
+                const MAX_DIMENSION = 1920; // Scale down if larger than 1080p
+
+                if (width > MAX_DIMENSION || height > MAX_DIMENSION) {
+                    const ratio = Math.min(MAX_DIMENSION / width, MAX_DIMENSION / height);
+                    width *= ratio;
+                    height *= ratio;
+                }
+
+                canvas.width = width;
+                canvas.height = height;
+                ctx.drawImage(img, 0, 0, width, height);
+
+                // If file is > 2MB, compress it heavily (0.6), otherwise keep it high quality (0.9)
+                const quality = file.size > 2 * 1024 * 1024 ? 0.6 : 0.9;
+                
+                // Force convert to JPEG to ensure compression works (PNGs ignore quality parameter)
+                const base64String = canvas.toDataURL('image/jpeg', quality);
+
+                // Quick check to make sure the final string isn't STILL absurdly huge
+                if (base64String.length * 0.75 > 3 * 1024 * 1024) {
+                    alert("Image is still too large even after compression! Try a smaller image.");
+                } else {
+                    sendMessage("[IMG]" + base64String);
+                }
+            };
+            img.src = e.target.result;
+        };
+        reader.readAsDataURL(file);
+        input.value = ""; // reset input so you can upload the same file twice if needed
+    }
 
     function renderMessage(m) {
         const container = document.getElementById('message-container');
@@ -128,66 +207,120 @@
         const isAdmin = m.username.trim().toLowerCase() === ADMIN_USER.toLowerCase();
         
         let content = m.content;
-        // Clean up JSON strings if they appear
-        if (content.startsWith('{"')) {
-            try { content = JSON.parse(content).content; } catch(e) {}
+        let replyHtml = '';
+        if (content.startsWith('{"_reply"')) {
+            try {
+                const p = JSON.parse(content);
+                content = p.content;
+                replyHtml = `<div class="reply-line"><img style="width:16px;height:16px;border-radius:50%;margin-right:5px;" src="${p._reply.pfp}"><strong>${p._reply.name}</strong>: ${p._reply.text}</div>`;
+            } catch(e){}
         }
 
         const row = document.createElement('div');
-        row.className = `msg-row ${isFirst ? 'first' : ''}`;
+        row.className = `msg-row ${isFirst || replyHtml ? 'first' : ''}`;
         
-        const visualContent = content.startsWith('[IMG]') 
-            ? `<img src="${content.replace('[IMG]','')}" class="chat-img">` 
-            : `<div class="msg-text">${content}</div>`;
+        let reactHtml = '<div class="react-bar">';
+        if (m.reactions) {
+            for (let [emoji, users] of Object.entries(m.reactions)) {
+                reactHtml += `<div class="react-pill ${users.includes(myUsername)?'active':''}" onclick="addReaction('${m.id}', '${emoji}')">${emoji} ${users.length}</div>`;
+            }
+        }
+        reactHtml += '</div>';
+
+        const body = content.startsWith('[IMG]') ? `<img src="${content.replace('[IMG]','')}" class="chat-img">` : `<div class="msg-text">${content}</div>`;
 
         row.innerHTML = `
-            <div class="avatar-col">${isFirst ? `<img src="https://api.dicebear.com/7.x/pixel-art/svg?seed=${m.username}" class="msg-pfp">` : ''}</div>
-            <div class="content-col">
-                ${isFirst ? `<div class="msg-header">
-                    <span class="username" style="color:${isAdmin?'#ffcc00':''}">${m.username.split('#')[0]}${isAdmin?' 👑':''}</span>
-                    <span class="timestamp">${new Date(m.created_at).toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'})}</span>
-                </div>` : ''}
-                ${visualContent}
+            ${replyHtml}
+            <div class="msg-flex">
+                <div class="avatar-col">${(isFirst || replyHtml) ? `<img src="https://api.dicebear.com/7.x/pixel-art/svg?seed=${m.username}" class="msg-pfp">` : ''}</div>
+                <div class="content-col">
+                    ${(isFirst || replyHtml) ? `<div class="msg-header">
+                        <span class="username" style="color:${isAdmin?'#ffcc00':''}">${m.username.split('#')[0]}</span>
+                        <span class="timestamp">${new Date(m.created_at).toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'})}</span>
+                    </div>` : ''}
+                    ${body}
+                    ${reactHtml === '<div class="react-bar"></div>' ? '' : reactHtml}
+                </div>
             </div>
-        `;
+            <div class="msg-actions">
+                <div class="action-btn" onclick="addReaction('${m.id}', '👍')">👍</div>
+                <div class="action-btn" onclick="setReply('${m.id}', '${m.username.split('#')[0]}', 'https://api.dicebear.com/7.x/pixel-art/svg?seed=${m.username}', '${content}')">↩️</div>
+                ${(m.username === myUsername || myUsername.toLowerCase() === ADMIN_USER) ? `<div class="action-btn" onclick="db.from('Messages').delete().eq('id', '${m.id}')">🗑️</div>` : ''}
+            </div>`;
         container.appendChild(row);
         container.scrollTop = container.scrollHeight;
-        lastUser = m.username;
-        lastTime = new Date(m.created_at);
+        lastUser = m.username; lastTime = new Date(m.created_at);
+    }
+
+    async function sendMessage(val) {
+        let finalVal = val;
+        if (pendingReply) finalVal = JSON.stringify({ _reply: pendingReply, content: val });
+        
+        if (currentChannel === 'welcome') {
+            const pass = (myUsername.toLowerCase() === ADMIN_USER) ? null : prompt("Admin Passcode:");
+            await db.rpc('post_admin_message', { passcode: pass, p_username: myUsername, p_content: finalVal, p_channel: 'welcome' });
+        } else {
+            await db.from('Messages').insert([{ username: myUsername, content: finalVal, channel: currentChannel }]);
+        }
+        cancelReply();
+    }
+
+    // --- USER PROFILE & PRESENCE ---
+    function openModal() {
+        document.getElementById('signup-overlay').style.display = 'flex';
+        document.getElementById('modal-avatar').src = `https://api.dicebear.com/7.x/pixel-art/svg?seed=${Math.random()}`;
+    }
+    
+    function saveProfile() {
+        const u = document.getElementById('modal-username').value.trim();
+        if(!u) return alert("Username required");
+        myUsername = u + "#" + Math.floor(1000+Math.random()*9000);
+        localStorage.setItem('discordGuestName', myUsername);
+        location.reload();
+    }
+
+    if (!myUsername) openModal();
+    else {
+        document.getElementById('my-name').innerText = myUsername.split('#')[0];
+        document.getElementById('my-pfp').src = `https://api.dicebear.com/7.x/pixel-art/svg?seed=${myUsername}`;
+        
+        db.channel('msgs').on('postgres_changes', { event: '*', schema: 'public', table: 'Messages' }, () => loadMessages()).subscribe();
+        loadMessages();
+
+        const presence = db.channel('online_users', { config: { presence: { key: myUsername } } });
+        presence.on('presence', { event: 'sync' }, () => {
+            const state = presence.presenceState();
+            const list = document.getElementById('member-list');
+            list.innerHTML = '';
+            const uniqueUsers = Object.keys(state);
+            document.getElementById('online-count').innerText = uniqueUsers.length;
+            uniqueUsers.forEach(userKey => {
+                list.innerHTML += `<div class="member-item">
+                    <img style="width:32px; border-radius:50%;" src="https://api.dicebear.com/7.x/pixel-art/svg?seed=${userKey}">
+                    <span>${userKey.split('#')[0]}</span>
+                </div>`;
+            });
+        }).subscribe(async (status) => {
+            if (status === 'SUBSCRIBED') await presence.track({ online_at: new Date().toISOString() });
+        });
     }
 
     async function loadMessages() {
-        lastUser = null;
-        document.getElementById('message-container').innerHTML = '';
+        lastUser = null; document.getElementById('message-container').innerHTML = '';
         const { data } = await db.from('Messages').select('*').eq('channel', currentChannel).order('created_at', { ascending: true });
         if(data) data.forEach(renderMessage);
     }
 
-    document.getElementById('chat-input').onkeypress = async (e) => {
-        if (e.key === 'Enter' && e.target.value.trim()) {
-            const val = e.target.value.trim();
-            if (currentChannel === 'welcome') {
-                const pass = (myUsername.toLowerCase() === ADMIN_USER.toLowerCase()) ? null : prompt("Admin Passcode:");
-                await db.rpc('post_admin_message', { passcode: pass, p_username: myUsername, p_content: val, p_channel: 'welcome' });
-            } else {
-                await db.from('Messages').insert([{ username: myUsername, content: val, channel: currentChannel }]);
-            }
-            e.target.value = '';
-        }
-    };
-
+    document.getElementById('chat-input').onkeypress = (e) => { if(e.key==='Enter' && e.target.value.trim()){ sendMessage(e.target.value); e.target.value=''; } };
+    
     document.querySelectorAll('.channel-item').forEach(ci => {
         ci.onclick = () => {
             document.querySelectorAll('.channel-item').forEach(i => i.classList.remove('active'));
             ci.classList.add('active');
             currentChannel = ci.dataset.channel;
-            document.getElementById('chat-input').placeholder = `Message #${currentChannel}`;
             loadMessages();
         };
     });
-
-    db.channel('room1').on('postgres_changes', { event: '*', schema: 'public', table: 'Messages' }, () => loadMessages()).subscribe();
-    loadMessages();
 </script>
 </body>
 </html>
