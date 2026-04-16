@@ -10,9 +10,9 @@
         
         /* SERVER BAR */
         .server-bar { width: 72px; background: #1e1f22; display: flex; flex-direction: column; align-items: center; padding-top: 12px; gap: 8px; flex-shrink: 0; }
-        .server-icon { width: 48px; height: 48px; border-radius: 50%; overflow: hidden; display: flex; align-items: center; justify-content: center; background: #2b2d31; cursor: pointer; transition: all 0.2s ease-in-out; }
+        .server-icon { width: 48px; height: 48px; border-radius: 50%; overflow: hidden; display: flex; align-items: center; justify-content: center; background: #2b2d31; cursor: pointer; transition: all 0.2s; }
         .server-icon:hover { border-radius: 12px; background: #5865f2; }
-        .server-icon img { width: 100%; height: 100%; object-fit: cover; pointer-events: none; }
+        .server-icon img { width: 100%; height: 100%; object-fit: cover; }
         
         /* SIDEBARS */
         .channel-bar { width: 240px; background: #2b2d31; display: flex; flex-direction: column; flex-shrink: 0; }
@@ -24,137 +24,111 @@
         .channel-item.active { background: #3f4147; color: white; }
 
         /* USER PANEL */
-        .user-panel { background: #232428; padding: 8px; display: flex; align-items: center; gap: 8px; margin-top: auto; cursor: pointer; border-radius: 4px; margin: 0 8px 8px 8px; transition: background 0.2s; }
+        .user-panel { background: #232428; padding: 8px; display: flex; align-items: center; gap: 8px; border-radius: 4px; margin: 0 8px 8px 8px; cursor: pointer; }
         .user-panel:hover { background: #3f4147; }
-        .user-panel-avatar { width: 32px; height: 32px; border-radius: 50%; image-rendering: pixelated; object-fit: cover; }
+        .user-panel-avatar { width: 32px; height: 32px; border-radius: 50%; object-fit: cover; }
         .user-panel-info { display: flex; flex-direction: column; flex-grow: 1; overflow: hidden; }
-        .user-panel-display { color: #f2f3f5; font-size: 14px; font-weight: bold; white-space: nowrap; text-overflow: ellipsis; overflow: hidden; }
-        .user-panel-username { color: #b5bac1; font-size: 12px; white-space: nowrap; text-overflow: ellipsis; overflow: hidden; }
+        .user-panel-display { color: #f2f3f5; font-size: 14px; font-weight: bold; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .user-panel-username { color: #b5bac1; font-size: 12px; }
 
         /* CHAT AREA */
         .chat-area { flex-grow: 1; display: flex; flex-direction: column; background: #313338; min-width: 0; }
-        .chat-messages { flex-grow: 1; padding: 20px; overflow-y: auto; display: flex; flex-direction: column; gap: 18px; }
+        .chat-messages { flex-grow: 1; padding: 20px 0; overflow-y: auto; display: flex; flex-direction: column; }
         
-        .message { display: flex; gap: 16px; align-items: flex-start; position: relative; padding-right: 20px;}
-        .message:hover { background: #2e3035; border-radius: 4px; }
-        .avatar { width: 40px; height: 40px; border-radius: 50%; background: #4e5058; flex-shrink: 0; image-rendering: pixelated; object-fit: cover; margin-top: 2px;}
-        .msg-content { display: flex; flex-direction: column; max-width: 100%; min-width: 0; flex-grow: 1; }
-        .msg-content-inner { display: flex; flex-direction: column; gap: 4px; }
-        .username { font-weight: 500; font-size: 16px; }
-        .timestamp { color: #949ba4; font-size: 12px; margin-left: 8px; }
+        /* INDIVIDUAL MESSAGE STYLING */
+        .message { position: relative; padding: 2px 16px 2px 72px; min-height: 28px; }
+        .message:hover { background: #2e3035; }
+        .message.first-in-group { margin-top: 14px; padding-top: 6px; }
         
-        .text { color: #dbdee1; font-size: 15px; line-height: 1.3; white-space: pre-wrap; word-break: break-word; overflow-wrap: break-word; }
-        /* FIXED: Added align-self: flex-start to push it left, removed border */
-        .chat-img { max-width: 100%; max-height: 300px; border-radius: 8px; margin-top: 4px; object-fit: contain; cursor: zoom-in; align-self: flex-start; }
+        .message .avatar { position: absolute; left: 16px; top: 6px; width: 40px; height: 40px; border-radius: 50%; cursor: pointer; display: none; }
+        .message.first-in-group .avatar { display: block; }
         
-        /* REPLIES & REACTIONS */
-        .reply-banner { color: #b5bac1; font-size: 12px; display: flex; align-items: center; margin-bottom: 4px; margin-left: -42px; cursor: pointer; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;}
-        .reply-banner::before { content: ''; width: 30px; height: 12px; border-top: 2px solid #4e5058; border-left: 2px solid #4e5058; border-top-left-radius: 6px; margin-right: 8px; margin-top: 8px; flex-shrink: 0; }
-        .reply-avatar { width: 16px; height: 16px; border-radius: 50%; display: inline-block; vertical-align: middle; margin-right: 4px; image-rendering: pixelated;}
+        .msg-header { display: none; align-items: center; gap: 8px; margin-bottom: 2px; }
+        .message.first-in-group .msg-header { display: flex; }
         
-        .reaction-bar { display: flex; gap: 4px; margin-top: 4px; flex-wrap: wrap; }
-        .reaction-pill { background: #2b2d31; border: 1px solid #1e1f22; border-radius: 8px; padding: 2px 6px; font-size: 14px; color: #b5bac1; cursor: pointer; display: flex; align-items: center; gap: 4px; }
-        .reaction-pill:hover, .reaction-pill.active { background: #3c3e45; border-color: #5865f2; }
+        .username { font-weight: 500; font-size: 16px; color: #f2f3f5; cursor: pointer; }
+        .username:hover { text-decoration: underline; }
+        .timestamp { color: #949ba4; font-size: 12px; }
+        
+        .text { color: #dbdee1; font-size: 15px; line-height: 1.375; white-space: pre-wrap; word-wrap: break-word; }
+        .chat-img { max-width: 100%; max-height: 350px; border-radius: 8px; margin-top: 4px; cursor: zoom-in; align-self: flex-start; display: block;}
 
         /* MESSAGE HOVER ACTIONS */
-        .msg-actions { position: absolute; right: 16px; top: -16px; background: #313338; border: 1px solid #1e1f22; border-radius: 4px; display: none; overflow: hidden; box-shadow: 0 4px 8px rgba(0,0,0,0.2); }
+        .msg-actions { position: absolute; right: 16px; top: -18px; background: #313338; border: 1px solid #1e1f22; border-radius: 4px; display: none; z-index: 10; box-shadow: 0 2px 4px rgba(0,0,0,0.2); }
         .message:hover .msg-actions { display: flex; }
-        .msg-btn { padding: 6px 10px; cursor: pointer; color: #b5bac1; font-size: 16px; transition: 0.2s; user-select: none; }
+        .msg-btn { padding: 4px 8px; cursor: pointer; color: #b5bac1; font-size: 14px; }
         .msg-btn:hover { background: #3f4147; color: white; }
-        .msg-btn.delete { color: #da373c; }
-        .msg-btn.delete:hover { background: #da373c; color: white; }
+        .msg-btn.delete:hover { background: #da373c; }
 
-        /* INPUT AREA + UPLOAD BUTTON */
-        .chat-input-wrapper { padding: 0 16px 24px; display: flex; flex-direction: column; }
-        
-        .attachment-preview, .active-reply-bar { display: none; background: #2b2d31; padding: 12px; border-radius: 8px 8px 0 0; position: relative; width: max-content; margin-bottom: -8px; margin-left: 10px; z-index: 10;}
-        .attachment-preview img { height: 80px; border-radius: 4px; object-fit: contain; }
-        .active-reply-bar { width: calc(100% - 44px); justify-content: space-between; align-items: center; color: #b5bac1; font-size: 13px; }
-        
-        .remove-icon { position: absolute; top: -6px; right: -6px; background: #da373c; color: white; width: 22px; height: 22px; border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; font-size: 12px; font-weight: bold; box-shadow: 0 2px 4px rgba(0,0,0,0.4); }
-        .remove-icon:hover { background: #c92b30; }
+        /* REPLIES & REACTIONS */
+        .reply-context { color: #b5bac1; font-size: 13px; display: flex; align-items: center; margin-bottom: 4px; margin-left: -42px; opacity: 0.8; }
+        .reply-context::before { content: ''; width: 33px; height: 10px; border-top: 2px solid #4e5058; border-left: 2px solid #4e5058; border-top-left-radius: 6px; margin-right: 4px; margin-top: 10px; }
+        .reply-av { width: 16px; height: 16px; border-radius: 50%; margin-right: 4px; }
 
-        .chat-input-row { display: flex; gap: 12px; align-items: center; width: 100%; }
-        .upload-btn { background: #4e5058; color: #dbdee1; border-radius: 50%; width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 20px; cursor: pointer; transition: 0.2s; flex-shrink: 0; }
-        .upload-btn:hover { background: #dbdee1; color: #313338; }
-        .chat-input { background: #383a40; padding: 12px 16px; border-radius: 8px; color: #dcddde; font-size: 15px; border: none; flex-grow: 1; outline: none; z-index: 11; min-width: 0;}
+        .reaction-bar { display: flex; gap: 4px; margin-top: 4px; }
+        .reaction-pill { background: #2b2d31; border: 1px solid transparent; border-radius: 8px; padding: 2px 6px; font-size: 12px; color: #b5bac1; cursor: pointer; }
+        .reaction-pill.active { background: rgba(88,101,242,0.15); border-color: #5865f2; color: #5865f2; }
 
-        /* MEMBER SIDEBAR */
-        .members-bar { width: 240px; background: #2b2d31; display: flex; flex-direction: column; flex-shrink: 0; border-left: 1px solid #1e1f22; position: relative; }
-        .members-header { padding: 20px 15px 10px; color: #949ba4; font-weight: bold; font-size: 12px; text-transform: uppercase; letter-spacing: 0.5px; }
-        .members-list { padding: 10px; flex-grow: 1; overflow-y: auto; }
-        .member-item { display: flex; align-items: center; gap: 10px; padding: 6px 8px; border-radius: 4px; margin-bottom: 2px; }
-        .member-item:hover { background: #35373c; cursor: pointer; }
-        .member-avatar { width: 32px; height: 32px; border-radius: 50%; image-rendering: pixelated; object-fit: cover; }
-        .member-name { font-size: 15px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+        /* INPUT AREA */
+        .chat-input-wrapper { padding: 0 16px 24px; }
+        .active-reply-bar { display: none; background: #2b2d31; padding: 8px 12px; border-radius: 8px 8px 0 0; align-items: center; justify-content: space-between; color: #b5bac1; font-size: 13px; }
+        .chat-input-row { display: flex; gap: 12px; align-items: center; background: #383a40; padding: 10px 16px; border-radius: 8px; }
+        .chat-input { background: transparent; border: none; color: #dcddde; font-size: 15px; flex-grow: 1; outline: none; }
 
-        /* OVERLAYS */
-        #user-popout { position: absolute; right: 250px; top: 100px; width: 300px; background: #111214; border-radius: 8px; box-shadow: 0 8px 24px rgba(0,0,0,0.5); display: none; flex-direction: column; z-index: 500; overflow: hidden; }
+        /* MEMBERS BAR & STATUS */
+        .members-bar { width: 240px; background: #2b2d31; flex-shrink: 0; border-left: 1px solid #1e1f22; }
+        .members-header { padding: 20px 15px 10px; color: #949ba4; font-weight: bold; font-size: 12px; text-transform: uppercase; }
+        .member-item { display: flex; align-items: center; gap: 12px; padding: 6px 8px; margin: 1px 8px; border-radius: 4px; cursor: pointer; position: relative; }
+        .member-item:hover { background: #35373c; }
+        .avatar-container { position: relative; width: 32px; height: 32px; }
+        .member-avatar { width: 100%; height: 100%; border-radius: 50%; }
+        .status-dot { position: absolute; bottom: -2px; right: -2px; width: 10px; height: 10px; border-radius: 50%; border: 3px solid #2b2d31; background: #23a55a; }
+        .member-name { color: #949ba4; font-size: 15px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+        /* POPOUT */
+        #user-popout { position: fixed; width: 300px; background: #111214; border-radius: 8px; box-shadow: 0 8px 24px rgba(0,0,0,0.5); display: none; z-index: 1000; overflow: hidden; }
         .popout-banner { height: 60px; background: #5865f2; }
-        .popout-avatar-wrapper { margin-top: -30px; margin-left: 16px; border: 6px solid #111214; border-radius: 50%; width: 80px; height: 80px; background: #111214; }
-        .popout-avatar { width: 100%; height: 100%; border-radius: 50%; image-rendering: pixelated; object-fit: cover; }
-        .popout-body { padding: 12px 16px 16px; background: #111214; display: flex; flex-direction: column; }
-        .popout-display { color: white; font-size: 20px; font-weight: bold; margin-bottom: 2px; }
-        .popout-user { color: #dbdee1; font-size: 14px; margin-bottom: 12px; }
+        .popout-avatar-wrap { margin: -30px 0 0 16px; border: 6px solid #111214; border-radius: 50%; width: 80px; height: 80px; background: #111214; }
+        .popout-body { padding: 12px 16px 16px; color: white; }
 
-        #signup-overlay { position: fixed; inset: 0; background: rgba(0, 0, 0, 0.85); display: none; justify-content: center; align-items: center; z-index: 1000; }
-        .signup-card { background: #313338; padding: 32px; border-radius: 8px; width: 320px; display: flex; flex-direction: column; align-items: center; box-shadow: 0 8px 24px rgba(0,0,0,0.5); }
-        .signup-card h2 { color: white; margin: 0 0 20px 0; font-size: 24px; }
-        .preview-avatar { width: 80px; height: 80px; border-radius: 50%; background: #2b2d31; margin-bottom: 12px; image-rendering: pixelated; border: 2px solid #5865f2; object-fit: cover; }
-        .btn-group { display: flex; gap: 8px; margin-bottom: 20px; width: 100%; }
-        .btn { flex: 1; padding: 8px; border: none; border-radius: 4px; cursor: pointer; font-weight: bold; font-size: 13px; color: white; transition: background 0.2s; }
-        .btn-primary { background: #5865f2; }
-        .btn-primary:hover { background: #4752c4; }
-        .btn-secondary { background: #4e5058; }
-        .btn-secondary:hover { background: #6d6f78; }
-        .input-group { display: flex; width: 100%; background: #1e1f22; border-radius: 4px; overflow: hidden; margin-bottom: 12px; }
-        .input-group input { flex: 1; background: transparent; border: none; color: white; padding: 12px; font-size: 16px; outline: none; }
-        .input-group .hash { background: transparent; color: #949ba4; padding: 12px 12px 12px 0; font-size: 16px; user-select: none; }
-        .hidden-file-input { display: none; }
-
-        /* FULLSCREEN IMAGE MODAL */
-        #fullscreen-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.9); z-index: 9999; display: none; align-items: center; justify-content: center; cursor: zoom-out; }
-        #fullscreen-img { max-width: 90vw; max-height: 90vh; object-fit: contain; }
+        #fullscreen-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.9); z-index: 9999; display: none; align-items: center; justify-content: center; }
+        #signup-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.8); display: none; justify-content: center; align-items: center; z-index: 2000; }
+        .signup-card { background: #313338; padding: 32px; border-radius: 8px; width: 320px; text-align: center; }
+        .btn { padding: 10px; border-radius: 4px; border: none; cursor: pointer; font-weight: bold; background: #5865f2; color: white; width: 100%; margin-top: 10px; }
+        input[type="text"] { width: 100%; padding: 10px; background: #1e1f22; border: none; color: white; border-radius: 4px; margin: 10px 0; box-sizing: border-box; }
     </style>
 </head>
 <body>
 
-<div id="fullscreen-overlay" onclick="this.style.display='none'">
-    <img id="fullscreen-img" src="">
-</div>
+<div id="fullscreen-overlay" onclick="this.style.display='none'"><img id="fullscreen-img" style="max-width:90%; max-height:90%;"></div>
 
 <div id="signup-overlay">
     <div class="signup-card">
-        <h2 id="modal-title">Customize Profile</h2>
-        <img id="modal-avatar" class="preview-avatar" src="">
-        <div class="btn-group">
-            <button class="btn btn-secondary" onclick="generateRandomAvatar()">Random Icon</button>
-            <button class="btn btn-secondary" onclick="document.getElementById('profile-upload').click()">Upload</button>
-        </div>
-        <input type="file" id="profile-upload" class="hidden-file-input" accept="image/png, image/jpeg">
-        <div class="input-group"><input type="text" id="modal-displayname" placeholder="Display Name (e.g. Sector Prime)" maxlength="20"></div>
-        <div class="input-group" id="username-container">
-            <input type="text" id="modal-username" placeholder="Unique Username" maxlength="16">
-            <div class="hash" id="modal-hash">#0000</div>
-        </div>
-        <button class="btn btn-primary" style="width: 100%; padding: 12px;" onclick="saveProfile()">Save & Continue</button>
+        <h2 style="color:white">Create Profile</h2>
+        <img id="modal-avatar" style="width:80px; height:80px; border-radius:50%; background:#2b2d31; margin-bottom:10px;">
+        <button class="btn" style="background:#4e5058" onclick="generateRandomAvatar()">Random Icon</button>
+        <input type="text" id="modal-displayname" placeholder="Display Name">
+        <input type="text" id="modal-username" placeholder="Username (e.g. prime)">
+        <button class="btn" onclick="saveProfile()">Start Chatting</button>
     </div>
 </div>
 
 <div id="user-popout">
     <div class="popout-banner"></div>
-    <div class="popout-avatar-wrapper"><img src="" class="popout-avatar" id="popout-img"></div>
+    <div class="popout-avatar-wrap"><img id="popout-img" style="width:100%; height:100%; border-radius:50%;"></div>
     <div class="popout-body">
-        <div class="popout-display" id="popout-displayname">User</div>
-        <div class="popout-user" id="popout-username">user#0000</div>
+        <div id="popout-displayname" style="font-size:20px; font-weight:bold;"></div>
+        <div id="popout-username" style="color:#b5bac1; font-size:14px;"></div>
     </div>
 </div>
 
 <div class="app-container">
-    <div class="server-bar"><div class="server-icon" title="Prime Server"><img src="fvicon.png" onerror="this.src='../fvicon.png'" alt="P"></div></div>
+    <div class="server-bar">
+        <div class="server-icon"><img src="fvicon.png" onerror="this.src='https://via.placeholder.com/48?text=P'"></div>
+    </div>
     
     <div class="channel-bar">
-        <div class="channel-header">Prime Games</div>
+        <div class="channel-header">Prime Server</div>
         <div class="channel-list">
             <div class="channel-item active" data-channel="welcome">welcome</div>
             <div class="channel-item" data-channel="general">general</div>
@@ -162,10 +136,9 @@
         <div class="user-panel" onclick="openModal('edit')">
             <img src="" id="panel-avatar" class="user-panel-avatar">
             <div class="user-panel-info">
-                <div class="user-panel-display" id="panel-displayname">Loading...</div>
-                <div class="user-panel-username" id="panel-username">loading#0000</div>
+                <div class="user-panel-display" id="panel-displayname">User</div>
+                <div class="user-panel-username" id="panel-username">#0000</div>
             </div>
-            <div style="color: #949ba4; font-size: 18px;">⚙️</div>
         </div>
     </div>
 
@@ -175,17 +148,9 @@
         <div class="chat-input-wrapper">
             <div id="active-reply-bar" class="active-reply-bar">
                 <span>Replying to <strong id="reply-target-name"></strong></span>
-                <div class="remove-icon" onclick="clearReply()" style="position:relative; right:0; top:0;">✕</div>
+                <span onclick="clearReply()" style="cursor:pointer">✕</span>
             </div>
-
-            <div id="attachment-preview" class="attachment-preview">
-                <div class="remove-icon" onclick="clearAttachment()">✕</div>
-                <img id="preview-img" src="">
-            </div>
-
             <div class="chat-input-row">
-                <div class="upload-btn" title="Upload Image" onclick="document.getElementById('chat-image-upload').click()">+</div>
-                <input type="file" id="chat-image-upload" class="hidden-file-input" accept="image/*">
                 <input type="text" class="chat-input" id="chat-box" placeholder="Message #welcome">
             </div>
         </div>
@@ -193,7 +158,7 @@
 
     <div class="members-bar">
         <div class="members-header">Online — <span id="online-count">0</span></div>
-        <div class="members-list" id="members-container"></div>
+        <div id="members-container"></div>
     </div>
 </div>
 
@@ -203,167 +168,55 @@
     const SUPABASE_KEY = 'sb_publishable_FUPgy9ZRC9hrNfMUborCdQ_WF-pD5UP';
     const db = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-    let currentChannel = 'welcome';
-    const container = document.getElementById('message-container');
-    const input = document.getElementById('chat-box');
-    const memberContainer = document.getElementById('members-container');
+    const ADMIN_USER = 'githbprime#3951'; // Updated to your new account
 
+    let currentChannel = 'welcome';
     let myUsername = localStorage.getItem('discordGuestName');
     let myDisplayName = localStorage.getItem('discordDisplayName');
-    let myAvatar = localStorage.getItem('discordAvatar'); 
-    let generatedHash = "";
-    let onlineUsersData = {}; 
-    let livePresenceChannel = null;
-    let pendingChatImage = null; 
-    let pendingReply = null; 
-    let lastRenderedMsg = { user: null, time: 0, div: null };
-    let isTimedOut = false;
+    let myAvatar = localStorage.getItem('discordAvatar');
+    let onlineUsersData = {};
+    let pendingReply = null;
+    let lastUser = null;
+    let lastTime = 0;
 
-    // --- MODAL LOGIC ---
+    // --- PROFILE LOGIC ---
     function openModal(mode) {
         document.getElementById('signup-overlay').style.display = 'flex';
-        const userContainer = document.getElementById('username-container');
-        if (mode === 'signup') {
-            document.getElementById('modal-title').innerText = "Welcome! Create Profile";
-            userContainer.style.display = 'flex';
-            generatedHash = '#' + Math.floor(1000 + Math.random() * 9000);
-            document.getElementById('modal-hash').innerText = generatedHash;
-            generateRandomAvatar();
-        } else {
-            document.getElementById('modal-title').innerText = "User Settings";
-            userContainer.style.display = 'none'; 
-            document.getElementById('modal-displayname').value = myDisplayName || myUsername.split('#')[0];
+        if (mode === 'signup') generateRandomAvatar();
+        else {
+            document.getElementById('modal-displayname').value = myDisplayName;
             document.getElementById('modal-avatar').src = myAvatar;
         }
     }
 
     function generateRandomAvatar() {
-        const url = `https://api.dicebear.com/7.x/pixel-art/svg?seed=${Math.random().toString(36).substring(7)}`;
+        const url = `https://api.dicebear.com/7.x/pixel-art/svg?seed=${Math.random()}`;
         document.getElementById('modal-avatar').src = url;
         myAvatar = url;
     }
 
-    document.getElementById('profile-upload').addEventListener('change', function(e) {
-        const file = e.target.files[0];
-        if (!file) return;
-        const reader = new FileReader();
-        reader.onload = function(event) {
-            const img = new Image();
-            img.onload = function() {
-                const canvas = document.createElement('canvas');
-                canvas.width = 32; canvas.height = 32; 
-                const ctx = canvas.getContext('2d');
-                ctx.drawImage(img, 0, 0, 32, 32);
-                myAvatar = canvas.toDataURL('image/png'); 
-                document.getElementById('modal-avatar').src = myAvatar;
-            };
-            img.src = event.target.result;
-        };
-        reader.readAsDataURL(file);
-    });
-
     async function saveProfile() {
-        const isSignup = !myUsername;
-        let inputDisplay = document.getElementById('modal-displayname').value.trim();
+        const disp = document.getElementById('modal-displayname').value.trim();
+        const user = document.getElementById('modal-username').value.trim();
+        if(!myUsername) myUsername = user + '#' + Math.floor(1000+Math.random()*9000);
+        myDisplayName = disp || myUsername.split('#')[0];
         
-        if (isSignup) {
-            const userInp = document.getElementById('modal-username').value.trim();
-            if (!userInp) return alert("Please enter a username!");
-            myUsername = userInp + generatedHash;
-            myDisplayName = inputDisplay || userInp;
-        } else {
-            myDisplayName = inputDisplay || myUsername.split('#')[0];
-        }
-
         localStorage.setItem('discordGuestName', myUsername);
         localStorage.setItem('discordDisplayName', myDisplayName);
         localStorage.setItem('discordAvatar', myAvatar);
         
         document.getElementById('signup-overlay').style.display = 'none';
-        updateBottomPanel();
-
-        if (!isSignup && livePresenceChannel) {
-            await livePresenceChannel.track({ online_at: new Date(), displayName: myDisplayName, avatar: myAvatar });
-        } else {
-            initApp();
-        }
-    }
-
-    function updateBottomPanel() {
-        document.getElementById('panel-displayname').innerText = myDisplayName;
-        document.getElementById('panel-username').innerText = myUsername;
-        document.getElementById('panel-avatar').src = myAvatar;
-    }
-
-    // --- TIMEOUT LOGIC ---
-    function applyTimeoutUI(expires_at) {
-        isTimedOut = true;
-        input.disabled = true;
-        input.placeholder = "You are timed out from speaking.";
-        input.style.cursor = "not-allowed";
-        
-        const interval = setInterval(() => {
-            if (new Date() > new Date(expires_at)) {
-                isTimedOut = false;
-                input.disabled = false;
-                input.placeholder = `Message #${currentChannel}`;
-                input.style.cursor = "text";
-                clearInterval(interval);
-            }
-        }, 5000);
-    }
-
-    async function checkActiveTimeout() {
-        const { data } = await db.from('Timeouts').select('*').eq('username', myUsername).single();
-        if (data && new Date(data.expires_at) > new Date()) applyTimeoutUI(data.expires_at);
+        location.reload(); 
     }
 
     // --- CHAT LOGIC ---
-    function clearAttachment() { pendingChatImage = null; document.getElementById('attachment-preview').style.display = 'none'; document.getElementById('chat-image-upload').value = ''; }
     function clearReply() { pendingReply = null; document.getElementById('active-reply-bar').style.display = 'none'; }
-    function startReply(id, username, dName, av, textPreview) {
-        pendingReply = { id, username, dName, av, text: textPreview };
+    
+    function startReply(id, dName, av, text) {
+        pendingReply = { id, dName, av, text: text.substring(0, 50) };
         document.getElementById('reply-target-name').innerText = dName;
         document.getElementById('active-reply-bar').style.display = 'flex';
-        input.focus();
-    }
-    
-    function enlargeImage(src) {
-        document.getElementById('fullscreen-img').src = src;
-        document.getElementById('fullscreen-overlay').style.display = 'flex';
-    }
-
-    document.getElementById('chat-image-upload').addEventListener('change', function(e) {
-        const file = e.target.files[0];
-        if (!file) return;
-        const reader = new FileReader();
-        reader.onload = function(event) {
-            const img = new Image();
-            img.onload = function() {
-                const canvas = document.createElement('canvas');
-                const MAX_SIZE = 300; 
-                let w = img.width, h = img.height;
-                if (w > h) { if (w > MAX_SIZE) { h *= MAX_SIZE / w; w = MAX_SIZE; } } 
-                else { if (h > MAX_SIZE) { w *= MAX_SIZE / h; h = MAX_SIZE; } }
-                canvas.width = w; canvas.height = h;
-                const ctx = canvas.getContext('2d');
-                ctx.drawImage(img, 0, 0, w, h);
-                pendingChatImage = canvas.toDataURL('image/jpeg', 0.8); 
-                document.getElementById('preview-img').src = pendingChatImage;
-                document.getElementById('attachment-preview').style.display = 'block';
-                input.focus();
-            };
-            img.src = event.target.result;
-        };
-        reader.readAsDataURL(file);
-    });
-
-    const checkAdmin = (name) => name === 'githbprime#3951';
-
-    function getUserVisuals(user) {
-        if (user === myUsername) return { dName: myDisplayName, av: myAvatar };
-        if (onlineUsersData[user]) return { dName: onlineUsersData[user].displayName, av: onlineUsersData[user].avatar };
-        return { dName: user.split('#')[0], av: `https://api.dicebear.com/7.x/pixel-art/svg?seed=${encodeURIComponent(user)}` };
+        document.getElementById('chat-box').focus();
     }
 
     async function toggleReaction(msgId, emoji) {
@@ -371,8 +224,8 @@
         let reacts = data?.reactions || {};
         if (!reacts[emoji]) reacts[emoji] = [];
         
-        const uIndex = reacts[emoji].indexOf(myUsername);
-        if (uIndex > -1) reacts[emoji].splice(uIndex, 1);
+        const idx = reacts[emoji].indexOf(myUsername);
+        if (idx > -1) reacts[emoji].splice(idx, 1);
         else reacts[emoji].push(myUsername);
         
         if (reacts[emoji].length === 0) delete reacts[emoji];
@@ -380,225 +233,172 @@
     }
 
     async function deleteMessage(msgId) {
-        if (!confirm("Delete this message?")) return;
-        await db.from('Messages').delete().eq('id', msgId);
-    }
-
-    function renderReactionsHTML(reactions) {
-        if (!reactions || Object.keys(reactions).length === 0) return '';
-        let html = '<div class="reaction-bar">';
-        for (const [emoji, users] of Object.entries(reactions)) {
-            const isActive = users.includes(myUsername) ? 'active' : '';
-            html += `<div class="reaction-pill ${isActive}" title="${users.join(', ')}">${emoji} ${users.length}</div>`;
+        if (confirm("Delete this message?")) {
+            await db.from('Messages').delete().eq('id', msgId);
         }
-        html += '</div>';
-        return html;
     }
 
-    // FIXED: Text escaping function so single quotes don't break the onclick handler
-    const escapeQuote = (str) => str ? str.replace(/'/g, "&#39;").replace(/"/g, "&quot;") : '';
-
-    function addMessageToScreen(id, user, rawText, timestamp, reactions) {
-        if (container.innerText.includes("Establishing") || container.innerText.includes("No messages")) container.innerHTML = '';
+    function showPopout(user, el) {
+        const data = onlineUsersData[user] || { displayName: user.split('#')[0], avatar: `https://api.dicebear.com/7.x/pixel-art/svg?seed=${user}` };
+        const pop = document.getElementById('user-popout');
+        document.getElementById('popout-img').src = data.avatar;
+        document.getElementById('popout-displayname').innerText = data.displayName;
+        document.getElementById('popout-username').innerText = user;
         
-        const isAdmin = checkAdmin(user);
-        const visuals = getUserVisuals(user);
-        const msgTime = new Date(timestamp).getTime();
-        
-        let contentHTML = '';
-        let replyHTML = '';
-        let textData = rawText;
-        let isReply = false;
+        const rect = el.getBoundingClientRect();
+        pop.style.display = 'block';
+        pop.style.top = Math.min(rect.top, window.innerHeight - 250) + 'px';
+        pop.style.right = '250px';
+    }
 
-        // Parse JSON if it's a Reply
-        if (rawText.startsWith('{"_reply":')) {
+    window.onclick = (e) => { if(!e.target.closest('.member-item') && !e.target.closest('#user-popout')) document.getElementById('user-popout').style.display='none'; };
+
+    function addMessageToScreen(m) {
+        const container = document.getElementById('message-container');
+        const isFirst = (m.username !== lastUser || (new Date(m.created_at) - lastTime) > 300000);
+        let content = m.content;
+        let replyHeader = '';
+
+        if (content.startsWith('{"_reply":')) {
             try {
-                const parsed = JSON.parse(rawText);
-                textData = parsed.content;
-                isReply = true;
-                replyHTML = `<div class="reply-banner">
-                    <img src="${parsed._reply.av}" class="reply-avatar"> 
-                    <strong>${parsed._reply.dName}</strong> &nbsp; ${parsed._reply.text}
-                </div>`;
-            } catch(e) {}
+                const p = JSON.parse(content);
+                content = p.content;
+                replyHeader = `<div class="reply-context"><img src="${p._reply.av}" class="reply-av"><strong>${p._reply.dName}</strong> ${p._reply.text}</div>`;
+            } catch(e){}
         }
 
-        // Check if Image or Text
-        let safeTextPreview = textData.startsWith('[IMG]') ? '[Image]' : textData.substring(0, 30);
-        if (textData.startsWith('[IMG]')) {
-            const imgSrc = textData.replace('[IMG]', '');
-            contentHTML = `<img src="${imgSrc}" class="chat-img" onclick="enlargeImage('${imgSrc}')" alt="Chat Image">`;
-        } else {
-            contentHTML = `<div class="text">${textData.replace(/</g, "&lt;").replace(/>/g, "&gt;")}</div>`;
-        }
+        const isAdmin = m.username === ADMIN_USER;
+        const visuals = onlineUsersData[m.username] || { displayName: m.username.split('#')[0], avatar: `https://api.dicebear.com/7.x/pixel-art/svg?seed=${m.username}` };
+        
+        const msgDiv = document.createElement('div');
+        msgDiv.className = `message ${isFirst || replyHeader ? 'first-in-group' : ''}`;
+        msgDiv.id = `msg-${m.id}`;
+        
+        const safeText = content.startsWith('[IMG]') ? '[Image]' : content.replace(/'/g, "\\'");
+        const actions = `
+            <div class="msg-actions">
+                <div class="msg-btn" onclick="toggleReaction('${m.id}', '👍')">👍</div>
+                <div class="msg-btn" onclick="startReply('${m.id}', '${visuals.displayName.replace(/'/g,"\\'")}', '${visuals.avatar}', '${safeText}')">↩️</div>
+                ${(m.username === myUsername || myUsername === ADMIN_USER) ? `<div class="msg-btn delete" onclick="deleteMessage('${m.id}')">🗑️</div>` : ''}
+            </div>`;
 
-        const isSameUser = lastRenderedMsg.user === user;
-        const isWithin10Mins = (msgTime - lastRenderedMsg.time) < 600000;
-
-        // MERGE LOGIC
-        if (isSameUser && isWithin10Mins && !isReply && lastRenderedMsg.div) {
-            const innerDiv = lastRenderedMsg.div.querySelector('.msg-content-inner');
-            innerDiv.insertAdjacentHTML('beforeend', contentHTML);
-            
-            let reactDiv = lastRenderedMsg.div.querySelector('.reaction-bar');
-            if (reactDiv) reactDiv.remove();
-            if (reactions && Object.keys(reactions).length > 0) {
-                innerDiv.insertAdjacentHTML('beforeend', renderReactionsHTML(reactions));
+        let reactHtml = '';
+        if (m.reactions && Object.keys(m.reactions).length > 0) {
+            reactHtml = '<div class="reaction-bar">';
+            for(const [emoji, users] of Object.entries(m.reactions)) {
+                const active = users.includes(myUsername) ? 'active' : '';
+                reactHtml += `<div class="reaction-pill ${active}" onclick="toggleReaction('${m.id}', '${emoji}')">${emoji} ${users.length}</div>`;
             }
-            
-            lastRenderedMsg.time = msgTime;
-        } else {
-            // FIXED: Using escapeQuote around variables injected into onclick
-            const actionsHTML = `
-                <div class="msg-actions">
-                    <div class="msg-btn" onclick="toggleReaction('${id}', '👍')">👍</div>
-                    <div class="msg-btn" onclick="toggleReaction('${id}', '❤️')">❤️</div>
-                    <div class="msg-btn" onclick="startReply('${id}', '${escapeQuote(user)}', '${escapeQuote(visuals.dName)}', '${visuals.av}', '${escapeQuote(safeTextPreview)}')">↩️</div>
-                    ${checkAdmin(myUsername) ? `<div class="msg-btn delete" onclick="deleteMessage('${id}')">🗑️</div>` : ''}
-                </div>`;
-
-            const html = `
-                <div class="message" id="msg-${id}">
-                    ${actionsHTML}
-                    <img src="${visuals.av}" class="avatar">
-                    <div class="msg-content">
-                        ${replyHTML}
-                        <div>
-                            <span class="username" style="color: ${isAdmin ? '#ffcc00' : '#f2f3f5'}">${visuals.dName}${isAdmin ? ' 👑' : ''}</span>
-                            <span class="timestamp">${new Date(timestamp).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}</span>
-                        </div>
-                        <div class="msg-content-inner">
-                            ${contentHTML}
-                            ${renderReactionsHTML(reactions)}
-                        </div>
-                    </div>
-                </div>`;
-            container.insertAdjacentHTML('beforeend', html);
-            lastRenderedMsg = { user: user, time: msgTime, div: container.lastElementChild };
+            reactHtml += '</div>';
         }
+
+        let body = content.startsWith('[IMG]') ? `<img src="${content.replace('[IMG]','')}" class="chat-img" onclick="document.getElementById('fullscreen-img').src=this.src; document.getElementById('fullscreen-overlay').style.display='flex'">` : `<div class="text">${content}</div>`;
+
+        msgDiv.innerHTML = `
+            ${actions}
+            ${replyHeader}
+            <img src="${visuals.avatar}" class="avatar" onclick="showPopout('${m.username}', this)">
+            <div class="msg-header">
+                <span class="username" style="color:${isAdmin?'#ffcc00':''}" onclick="showPopout('${m.username}', this)">${visuals.displayName}${isAdmin?' 👑':''}</span>
+                <span class="timestamp">${new Date(m.created_at).toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'})}</span>
+            </div>
+            ${body}
+            ${reactHtml}
+        `;
+
+        container.appendChild(msgDiv);
         container.scrollTop = container.scrollHeight;
+        lastUser = m.username;
+        lastTime = new Date(m.created_at);
     }
 
-    async function loadOldMessages() {
-        lastRenderedMsg = { user: null, time: 0, div: null };
-        container.innerHTML = `<div style="color: #949ba4; text-align: center; margin-top: 20px;">Loading #${currentChannel}...</div>`;
-        const { data, error } = await db.from('Messages').select('*').eq('channel', currentChannel).order('created_at', { ascending: true });
-        container.innerHTML = (data && data.length > 0) ? '' : `<div style="color: #949ba4; text-align: center; margin-top: 20px;">Welcome to #${currentChannel}!</div>`;
-        if (data) data.forEach(m => addMessageToScreen(m.id, m.username, m.content, m.created_at, m.reactions));
+    async function loadMessages() {
+        lastUser = null;
+        document.getElementById('message-container').innerHTML = '';
+        const { data } = await db.from('Messages').select('*').eq('channel', currentChannel).order('created_at', { ascending: true });
+        if(data) data.forEach(addMessageToScreen);
     }
 
-    document.querySelectorAll('.channel-item').forEach(btn => {
-        btn.onclick = (e) => {
-            document.querySelectorAll('.channel-item').forEach(i => i.classList.remove('active'));
-            e.target.classList.add('active');
-            currentChannel = e.target.getAttribute('data-channel');
-            input.placeholder = `Message #${currentChannel}`;
-            loadOldMessages();
-        };
-    });
-
-    input.onkeypress = async (e) => {
-        if (e.key === 'Enter') {
-            if (isTimedOut) return;
-            const val = input.value.trim();
-            const hasText = val !== '';
-            const hasImage = pendingChatImage !== null;
-
-            if (!hasText && !hasImage) return;
-
-            // COMMAND: TIMEOUT
-            const timeoutMatch = val.match(/^\/timeout\s+(.+?#\d{4})\s+(\d+)$/);
-            if (hasText && timeoutMatch && checkAdmin(myUsername)) {
-                const targetUser = timeoutMatch[1];
-                const mins = parseInt(timeoutMatch[2]);
-                const expires = new Date(Date.now() + mins * 60000).toISOString();
-                await db.from('Timeouts').upsert({ username: targetUser, expires_at: expires });
-                input.value = ''; return;
-            }
-
-            // COMMAND: CLEAR
-            if (hasText && val === '/clear') {
-                let pass = null;
-                if (!checkAdmin(myUsername)) pass = prompt("Admin Passcode:");
-                const { data, error } = await db.rpc('clear_messages', { passcode: pass, p_channel: currentChannel, p_username: myUsername });
-                if (error || data !== 'Success') alert(error?.message || data || "Unauthorized");
-                input.value = ''; return;
-            }
-
-            const textToSend = val;
-            const imgToSend = pendingChatImage;
-            const replyMeta = pendingReply ? `{"_reply": ${JSON.stringify(pendingReply)}, "content": ` : null;
+    document.getElementById('chat-box').onkeypress = async (e) => {
+        if (e.key === 'Enter' && e.target.value.trim()) {
+            const val = e.target.value.trim();
             
-            input.value = '';
-            clearAttachment();
-            clearReply();
-
-            const sendMessage = async (rawContent) => {
-                let finalContent = rawContent;
-                if (replyMeta) finalContent = `${replyMeta}"${rawContent.replace(/"/g, '\\"')}"}`;
-
-                if (currentChannel === 'welcome') {
-                    let pass = null;
-                    if (!checkAdmin(myUsername)) pass = prompt("Post to #welcome? Enter Admin Passcode:");
-                    const { data, error } = await db.rpc('post_admin_message', { passcode: pass, p_username: myUsername, p_content: finalContent, p_channel: 'welcome' });
+            // COMMAND: CLEAR
+            if (val === '/clear') {
+                if(confirm("Clear all messages in this channel?")) {
+                    let pass = (myUsername === ADMIN_USER) ? null : prompt("Admin Passcode:");
+                    const { data, error } = await db.rpc('clear_messages', { passcode: pass, p_channel: currentChannel, p_username: myUsername });
                     if (error || data !== 'Success') alert(data || "Unauthorized");
-                } else {
-                    await db.from('Messages').insert([{ username: myUsername, content: finalContent, channel: currentChannel }]);
                 }
-            };
+                e.target.value = ''; return;
+            }
 
-            if (hasText) await sendMessage(textToSend);
-            if (hasImage) await sendMessage('[IMG]' + imgToSend);
+            let finalContent = val;
+            if (pendingReply) {
+                finalContent = JSON.stringify({ _reply: pendingReply, content: val });
+            }
+
+            // POSTING LOGIC
+            if (currentChannel === 'welcome') {
+                let pass = (myUsername === ADMIN_USER) ? null : prompt("Post to #welcome? Enter Admin Passcode:");
+                const { data, error } = await db.rpc('post_admin_message', { passcode: pass, p_username: myUsername, p_content: finalContent, p_channel: 'welcome' });
+                if (error || data !== 'Success') alert(data || "Unauthorized");
+            } else {
+                await db.from('Messages').insert([{ username: myUsername, content: finalContent, channel: currentChannel }]);
+            }
+
+            e.target.value = '';
+            clearReply();
         }
     };
 
-    function initApp() {
-        updateBottomPanel();
-        checkActiveTimeout();
-        
-        db.channel('chat').on('postgres_changes', { event: '*', schema: 'public', table: 'Messages' }, payload => {
-            if (payload.eventType === 'INSERT' && payload.new.channel === currentChannel) {
-                addMessageToScreen(payload.new.id, payload.new.username, payload.new.content, payload.new.created_at, payload.new.reactions);
-            }
-            if (payload.eventType === 'DELETE' || payload.eventType === 'UPDATE') loadOldMessages();
-        }).subscribe();
+    // --- INIT ---
+    document.querySelectorAll('.channel-item').forEach(ci => {
+        ci.onclick = () => {
+            document.querySelectorAll('.channel-item').forEach(i => i.classList.remove('active'));
+            ci.classList.add('active');
+            currentChannel = ci.dataset.channel;
+            document.getElementById('chat-box').placeholder = `Message #${currentChannel}`;
+            loadMessages();
+        };
+    });
 
-        db.channel('timeouts').on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'Timeouts' }, payload => {
-            if (payload.new.username === myUsername && new Date(payload.new.expires_at) > new Date()) applyTimeoutUI(payload.new.expires_at);
-        }).subscribe();
+    if (!myUsername) openModal('signup');
+    else {
+        document.getElementById('panel-avatar').src = myAvatar;
+        document.getElementById('panel-displayname').innerText = myDisplayName;
+        document.getElementById('panel-username').innerText = myUsername;
 
-        livePresenceChannel = db.channel('online-users', { config: { presence: { key: myUsername } } });
-        livePresenceChannel.on('presence', { event: 'sync' }, () => {
-            const state = livePresenceChannel.presenceState();
-            memberContainer.innerHTML = '';
-            onlineUsersData = {}; 
-            
+        db.channel('room1').on('postgres_changes', { event: '*', schema: 'public', table: 'Messages' }, () => loadMessages()).subscribe();
+
+        const presence = db.channel('online-presence', { config: { presence: { key: myUsername } } });
+        presence.on('presence', { event: 'sync' }, () => {
+            const state = presence.presenceState();
+            const container = document.getElementById('members-container');
+            container.innerHTML = '';
             const users = Object.keys(state);
             document.getElementById('online-count').innerText = users.length;
             
             users.forEach(u => {
-                const presenceData = state[u][0]; 
-                const dName = presenceData.displayName || u.split('#')[0];
-                const av = presenceData.avatar || `https://api.dicebear.com/7.x/pixel-art/svg?seed=${encodeURIComponent(u)}`;
-                onlineUsersData[u] = { displayName: dName, avatar: av };
-
-                const isAdmin = checkAdmin(u);
-                const el = document.createElement('div');
-                el.className = 'member-item';
-                el.onclick = (e) => showPopout(u, e.currentTarget);
-                el.innerHTML = `<img src="${av}" class="member-avatar"><div class="member-name" style="color: ${isAdmin ? '#ffcc00' : '#949ba4'}">${dName}${isAdmin ? ' 👑' : ''}</div>`;
-                memberContainer.appendChild(el);
+                const info = state[u][0];
+                onlineUsersData[u] = info;
+                const isAdmin = u === ADMIN_USER;
+                container.innerHTML += `
+                    <div class="member-item" onclick="showPopout('${u}', this)">
+                        <div class="avatar-container">
+                            <img src="${info.avatar}" class="member-avatar">
+                            <div class="status-dot"></div>
+                        </div>
+                        <div class="member-name" style="color:${isAdmin?'#ffcc00':''}">${info.displayName}${isAdmin?' 👑':''}</div>
+                    </div>`;
             });
-            if(container.innerHTML !== '') loadOldMessages(); 
-        }).subscribe(async (s) => { 
-            if (s === 'SUBSCRIBED') await livePresenceChannel.track({ online_at: new Date(), displayName: myDisplayName, avatar: myAvatar }); 
+        }).subscribe(async (status) => {
+            if (status === 'SUBSCRIBED') {
+                await presence.track({ displayName: myDisplayName, avatar: myAvatar, online_at: new Date() });
+                loadMessages();
+            }
         });
-
-        loadOldMessages();
     }
-
-    if (!myUsername) openModal('signup');
-    else initApp();
 </script>
 </body>
 </html>
