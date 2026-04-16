@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Guest Discord</title>
+    <title>Discourse | Prime Server</title>
     <style>
         /* CORE LAYOUT */
         body, html { margin: 0; padding: 0; height: 100%; font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; overflow: hidden; background-color: #313338; }
@@ -34,15 +34,25 @@
         /* INPUT */
         .chat-input-wrapper { padding: 0 16px 24px; }
         .chat-input { background: #383a40; padding: 12px 16px; border-radius: 8px; color: #dcddde; font-size: 15px; border: none; width: calc(100% - 32px); outline: none; }
+
+        <div class="server-bar">
+        <div class="server-icon" style="background: none;">
+        <img src="fvicon.png" style="width: 48px; height: 48px; border-radius: 50%; object-fit: cover;" alt="Logo">
+        </div>
+        </div>
     </style>
 </head>
 <body>
 
 <div class="app-container">
-    <div class="server-bar"><div class="server-icon">G</div></div>
+    <div class="server-bar">
+    <div class="server-icon" style="background: none;">
+        <img src="fvicon.png" style="width: 48px; height: 48px; border-radius: 50%; object-fit: cover;" alt="Logo">
+    </div>
+    </div>
     
     <div class="channel-bar">
-        <div class="channel-header">Guest Server</div>
+        <div class="channel-header">Prime Server</div>
         <div class="channel-list">
             <div class="channel-item active" data-channel="general">general</div>
             <div class="channel-item" data-channel="welcome">welcome</div>
@@ -67,7 +77,8 @@
 
     const container = document.getElementById('message-container');
     const input = document.getElementById('chat-box');
-    let currentChannel = 'general';
+    input.placeholder = `Message #${currentChannel}`;
+    let currentChannel = 'welcome';
 
     // USERNAME LOGIC
     let myUsername = localStorage.getItem('discordGuestName');
