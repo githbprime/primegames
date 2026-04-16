@@ -49,23 +49,21 @@
         .action-btn { padding: 4px 8px; cursor: pointer; color: #b5bac1; font-size: 14px; border-radius: 4px; position: relative; }
         .action-btn:hover { background: #3f4147; color: white; }
         
-        /* EMOJI PICKER POPUP */
         .emoji-picker { position: absolute; bottom: 100%; right: 0; background: #2b2d31; border: 1px solid #1e1f22; border-radius: 6px; padding: 6px; display: none; gap: 4px; box-shadow: 0 4px 8px rgba(0,0,0,0.3); margin-bottom: 4px; z-index: 20; }
         .emoji-picker span { cursor: pointer; padding: 4px; border-radius: 4px; transition: 0.1s; font-size: 18px; }
         .emoji-picker span:hover { background: #3f4147; transform: scale(1.1); }
-        .action-btn:hover .emoji-picker { display: flex; } /* Hover to show picker */
+        .action-btn:hover .emoji-picker { display: flex; }
 
         .react-bar { display: flex; gap: 4px; margin-top: 4px; flex-wrap: wrap; }
         .react-pill { background: #2b2d31; border: 1px solid transparent; border-radius: 6px; padding: 2px 6px; font-size: 12px; cursor: pointer; color: #b5bac1; position: relative; }
         .react-pill.active { background: rgba(88,101,242,0.15); border-color: #5865f2; color: #5865f2; }
 
-        /* REACTION HOVER TOOLTIP */
         .react-tooltip { position: absolute; bottom: 100%; left: 50%; transform: translateX(-50%); background: #111214; padding: 8px; border-radius: 6px; display: none; flex-direction: column; gap: 6px; z-index: 100; min-width: max-content; box-shadow: 0 4px 12px rgba(0,0,0,0.5); margin-bottom: 6px; pointer-events: none; }
         .react-pill:hover .react-tooltip { display: flex; }
         .rt-user { display: flex; align-items: center; gap: 8px; font-size: 13px; color: #dbdee1; }
         .rt-pfp { width: 20px; height: 20px; border-radius: 50%; object-fit: cover; }
 
-        /* REPLIES */
+        /* REPLIES & MEDIA */
         .reply-line { color: #b5bac1; font-size: 13px; display: flex; align-items: center; margin-left: 20px; margin-bottom: 4px; opacity: 0.8; }
         .reply-line:before { content: ""; width: 30px; height: 10px; border-left: 2px solid #4e5058; border-top: 2px solid #4e5058; border-top-left-radius: 6px; margin-right: 6px; margin-top: 10px; }
 
@@ -85,20 +83,27 @@
         .input-box { background: #383a40; padding: 10px 16px; border-radius: 8px; display: flex; align-items: center; gap: 12px; transition: 0.2s; }
         .input-box input[type="text"] { background: transparent; border: none; color: #dcddde; flex-grow: 1; outline: none; font-size: 15px; }
         
-        /* TIMEOUT STATE */
         .input-box.is-timeouted { opacity: 0.5; pointer-events: none; background: #212226; border: 1px solid #f23f42; }
         .input-box.is-timeouted input[type="text"]::placeholder { color: #f23f42; font-weight: bold; }
 
         .typing-indicator { position: absolute; bottom: 4px; left: 16px; font-size: 13px; color: #b5bac1; font-weight: bold; height: 16px; }
 
         /* MEMBERS BAR */
-        .members-bar { width: 240px; background: #2b2d31; flex-shrink: 0; padding: 20px 8px; }
+        .members-bar { width: 240px; background: #2b2d31; flex-shrink: 0; padding: 20px 8px; overflow-y: auto; }
         .member-header { color: #949ba4; text-transform: uppercase; font-size: 12px; font-weight: bold; margin-bottom: 12px; padding-left: 8px; }
+        
         .member-item { display: flex; align-items: center; gap: 10px; padding: 6px 8px; border-radius: 4px; color: #949ba4; cursor: pointer; transition: 0.1s; }
         .member-item:hover { background: #35373c; color: #dbdee1; } 
+        
+        /* OFFLINE STYLES */
+        .member-item.offline { opacity: 0.5; }
+        .member-item.offline:hover { opacity: 1; }
+        
         .member-avatar-wrapper { position: relative; width: 32px; height: 32px; flex-shrink: 0; }
         .member-avatar-wrapper img { width: 100%; height: 100%; border-radius: 50%; object-fit: cover; }
+        
         .status-dot { position: absolute; bottom: -2px; right: -2px; width: 10px; height: 10px; background: #23a559; border-radius: 50%; border: 2px solid #2b2d31; } 
+        .status-dot.offline { background: #80848e; } /* Grey dot */
 
         /* OVERLAYS & MODALS */
         #signup-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.85); display: none; justify-content: center; align-items: center; z-index: 2000; }
@@ -190,7 +195,10 @@
 
     <div class="members-bar">
         <div class="member-header">Online — <span id="online-count">0</span></div>
-        <div id="member-list"></div>
+        <div id="member-list-online"></div>
+        
+        <div class="member-header" style="margin-top: 16px;">Offline — <span id="offline-count">0</span></div>
+        <div id="member-list-offline"></div>
     </div>
 </div>
 
@@ -210,7 +218,8 @@
     let lastTime = 0;
     let timeoutInterval = null;
 
-    // Live PFP Cache for Retroactive Updates
+    // Database of all users ever registered
+    let allGlobalUsers = [];
     let livePfps = {}; 
 
     function isAdmin(user) { return user && user.toLowerCase() === ADMIN_USER.toLowerCase(); }
@@ -274,7 +283,7 @@
     }
 
     function setReply(id, name, text) {
-        pendingReply = { id, name, pfp: getPfp(`${name}#0000`), text: text.substring(0, 40) }; // Fallback PFP for reply bar
+        pendingReply = { id, name, pfp: getPfp(`${name}#0000`), text: text.substring(0, 40) }; 
         document.getElementById('reply-target').innerText = name;
         document.getElementById('reply-bar').style.display = 'flex';
         document.getElementById('chat-input').focus();
@@ -342,7 +351,6 @@
         const row = document.createElement('div');
         row.className = `msg-row ${isFirst || replyHtml ? 'first' : ''}`;
         
-        // HOVER TOOLTIPS FOR REACTIONS
         let reactHtml = '<div class="react-bar">';
         if (m.reactions) {
             for (let [emoji, users] of Object.entries(m.reactions)) {
@@ -355,20 +363,13 @@
         const textVisual = content.trim() ? `<div class="msg-text">${content}</div>` : '';
         const imgVisual = imgSrc ? `<img src="${imgSrc}" class="chat-img" onclick="openLightbox(this.src)">` : '';
 
-        // EMOJI PICKER POPUP
         const actionHtml = `
-            <div class="action-btn">
-                😀
-                <div class="emoji-picker">
-                    <span onclick="addReaction('${m.id}', '👍')">👍</span>
-                    <span onclick="addReaction('${m.id}', '😂')">😂</span>
-                    <span onclick="addReaction('${m.id}', '❤️')">❤️</span>
-                    <span onclick="addReaction('${m.id}', '💀')">💀</span>
-                    <span onclick="addReaction('${m.id}', '🔥')">🔥</span>
-                    <span onclick="addReaction('${m.id}', '👀')">👀</span>
-                </div>
-            </div>
-            <div class="action-btn" onclick="setReply('${m.id}', '${m.username.split('#')[0]}', '${content}')">↩️</div>
+            <div class="action-btn">😀<div class="emoji-picker">
+                <span onclick="addReaction('${m.id}', '👍')">👍</span><span onclick="addReaction('${m.id}', '😂')">😂</span>
+                <span onclick="addReaction('${m.id}', '❤️')">❤️</span><span onclick="addReaction('${m.id}', '💀')">💀</span>
+                <span onclick="addReaction('${m.id}', '🔥')">🔥</span><span onclick="addReaction('${m.id}', '👀')">👀</span>
+            </div></div>
+            <div class="action-btn" onclick="setReply('${m.id}', '${m.username.split('#')[0]}', '${content.replace(/'/g,"\\'")}')">↩️</div>
         `;
 
         row.innerHTML = `
@@ -467,19 +468,41 @@
         } else document.getElementById('modal-avatar').src = `https://api.dicebear.com/7.x/pixel-art/svg?seed=${Math.random()}`;
     }
     
-    function saveProfile() {
+    async function saveProfile() {
         const u = document.getElementById('modal-username').value.trim();
         if(!u) return alert("Username required");
         const currentTag = myUsername ? myUsername.split('#')[1] : Math.floor(1000+Math.random()*9000);
         myUsername = u + "#" + currentTag;
+        myAvatar = document.getElementById('modal-avatar').src;
+        
         localStorage.setItem('discordGuestName', myUsername);
-        localStorage.setItem('discordGuestPfp', document.getElementById('modal-avatar').src);
+        localStorage.setItem('discordGuestPfp', myAvatar);
+        
+        // UPSERT INTO DATABASE
+        await db.from('Users').upsert({ username: myUsername, avatar_url: myAvatar });
+        
         location.reload();
     }
 
-    if (!myUsername) openModal(false);
-    else {
+    async function initApp() {
+        if (!myUsername) {
+            openModal(false);
+            return;
+        }
+
+        // 1. Fetch Global User List
+        const { data: usersData } = await db.from('Users').select('*');
+        if (usersData) {
+            allGlobalUsers = usersData;
+            usersData.forEach(u => livePfps[u.username] = u.avatar_url);
+        }
+
+        // 2. Ensure Current User is in DB (Upsert on load)
         if (!myAvatar) myAvatar = `https://api.dicebear.com/7.x/pixel-art/svg?seed=${myUsername}`;
+        await db.from('Users').upsert({ username: myUsername, avatar_url: myAvatar });
+        livePfps[myUsername] = myAvatar;
+
+        // 3. Setup UI
         const isMeAdmin = isAdmin(myUsername);
         document.getElementById('my-name').innerHTML = `<span style="color:${isMeAdmin?'#ffcc00':'white'}">${myUsername.split('#')[0]}${isMeAdmin?' 👑':''}</span>`;
         document.getElementById('my-hash').innerText = '#' + (myUsername.split('#')[1] || '0000');
@@ -488,27 +511,53 @@
         db.channel('msgs').on('postgres_changes', { event: '*', schema: 'public', table: 'Messages' }, () => loadMessages()).subscribe();
         db.channel('timeouts').on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'Timeouts', filter: `target_user=eq.${myUsername}` }, () => checkTimeouts()).subscribe();
 
+        // 4. Presence Sync (Handles Online AND Offline Lists)
         const presence = db.channel('online_users', { config: { presence: { key: myUsername } } });
         presence.on('presence', { event: 'sync' }, () => {
             const state = presence.presenceState();
-            const list = document.getElementById('member-list'); list.innerHTML = '';
             const uniqueUsers = Object.keys(state);
+            
+            // Render Online
+            const onlineList = document.getElementById('member-list-online');
+            onlineList.innerHTML = '';
             document.getElementById('online-count').innerText = uniqueUsers.length;
             
             uniqueUsers.forEach(userKey => {
                 const userPfp = state[userKey][0].pfp || `https://api.dicebear.com/7.x/pixel-art/svg?seed=${userKey}`;
-                livePfps[userKey] = userPfp; // Cache it for retroactive updates
-                
-                // RETROACTIVE UPDATE TRICK: Update all avatars on screen instantly!
+                livePfps[userKey] = userPfp; 
                 document.querySelectorAll(`.${getUserClass(userKey)}`).forEach(img => img.src = userPfp);
 
                 const isAdm = isAdmin(userKey);
-                list.innerHTML += `
+                onlineList.innerHTML += `
                 <div class="member-item" onclick="showMiniProfile(event, '${userKey}')">
                     <div class="member-avatar-wrapper"><img src="${userPfp}"><div class="status-dot"></div></div>
                     <span style="color:${isAdm?'#ffcc00':'#dbdee1'}">${userKey.split('#')[0]}${isAdm?' 👑':''}</span>
                 </div>`;
             });
+
+            // Render Offline
+            const offlineList = document.getElementById('member-list-offline');
+            offlineList.innerHTML = '';
+            let offlineCount = 0;
+
+            allGlobalUsers.forEach(dbUser => {
+                if (!uniqueUsers.includes(dbUser.username)) {
+                    offlineCount++;
+                    const isAdm = isAdmin(dbUser.username);
+                    const offlinePfp = livePfps[dbUser.username] || dbUser.avatar_url;
+                    
+                    offlineList.innerHTML += `
+                    <div class="member-item offline" onclick="showMiniProfile(event, '${dbUser.username}')">
+                        <div class="member-avatar-wrapper">
+                            <img src="${offlinePfp}">
+                            <div class="status-dot offline"></div>
+                        </div>
+                        <span style="color:${isAdm?'#b99500':'#80848e'}">${dbUser.username.split('#')[0]}${isAdm?' 👑':''}</span>
+                    </div>`;
+                }
+            });
+            document.getElementById('offline-count').innerText = offlineCount;
+
         }).subscribe(async (status) => {
             if (status === 'SUBSCRIBED') await presence.track({ online_at: new Date().toISOString(), pfp: myAvatar });
         });
@@ -517,10 +566,7 @@
     }
 
     async function loadMessages() {
-        // Fetch data FIRST to prevent flicker
         const { data } = await db.from('Messages').select('*').eq('channel', currentChannel).order('created_at', { ascending: true });
-        
-        // Wipe screen only after data is ready
         document.getElementById('message-container').innerHTML = ''; 
         lastUser = null; lastTime = 0;
         
@@ -540,6 +586,8 @@
             ci.classList.add('active'); currentChannel = ci.dataset.channel; loadMessages();
         };
     });
+
+    initApp();
 </script>
 </body>
-</html>>
+</html>
