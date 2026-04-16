@@ -27,48 +27,64 @@
         .channel-item:hover { background: #35373c; color: #dbdee1; }
         .channel-item.active { background: #3f4147; color: white; }
 
+        /* NEW: BOTTOM LEFT USER PANEL */
+        .user-panel { background: #232428; padding: 8px; display: flex; align-items: center; gap: 8px; margin-top: auto; cursor: pointer; border-radius: 4px; margin: 0 8px 8px 8px; transition: background 0.2s; }
+        .user-panel:hover { background: #3f4147; }
+        .user-panel-avatar { width: 32px; height: 32px; border-radius: 50%; image-rendering: pixelated; }
+        .user-panel-info { display: flex; flex-direction: column; flex-grow: 1; overflow: hidden; }
+        .user-panel-display { color: #f2f3f5; font-size: 14px; font-weight: bold; white-space: nowrap; text-overflow: ellipsis; overflow: hidden; }
+        .user-panel-username { color: #b5bac1; font-size: 12px; white-space: nowrap; text-overflow: ellipsis; overflow: hidden; }
+
         /* CHAT AREA */
         .chat-area { flex-grow: 1; display: flex; flex-direction: column; background: #313338; }
         .chat-messages { flex-grow: 1; padding: 20px; overflow-y: auto; display: flex; flex-direction: column; gap: 18px; }
         .message { display: flex; gap: 16px; align-items: flex-start; }
-        .avatar { width: 40px; height: 40px; border-radius: 50%; background: #4e5058; flex-shrink: 0; image-rendering: pixelated; }
+        .avatar { width: 40px; height: 40px; border-radius: 50%; background: #4e5058; flex-shrink: 0; image-rendering: pixelated; object-fit: cover;}
         .msg-content { display: flex; flex-direction: column; }
         .username { font-weight: 500; font-size: 16px; }
         .timestamp { color: #949ba4; font-size: 12px; margin-left: 8px; }
         .text { color: #dbdee1; font-size: 15px; line-height: 1.3; white-space: pre-wrap; }
         
-        /* INPUT AREA */
         .chat-input-wrapper { padding: 0 16px 24px; }
         .chat-input { background: #383a40; padding: 12px 16px; border-radius: 8px; color: #dcddde; font-size: 15px; border: none; width: calc(100% - 32px); outline: none; }
 
         /* MEMBER SIDEBAR */
-        .members-bar { width: 240px; background: #2b2d31; display: flex; flex-direction: column; flex-shrink: 0; border-left: 1px solid #1e1f22; }
+        .members-bar { width: 240px; background: #2b2d31; display: flex; flex-direction: column; flex-shrink: 0; border-left: 1px solid #1e1f22; position: relative; }
         .members-header { padding: 20px 15px 10px; color: #949ba4; font-weight: bold; font-size: 12px; text-transform: uppercase; letter-spacing: 0.5px; }
         .members-list { padding: 10px; flex-grow: 1; overflow-y: auto; }
         .member-item { display: flex; align-items: center; gap: 10px; padding: 6px 8px; border-radius: 4px; margin-bottom: 2px; }
         .member-item:hover { background: #35373c; cursor: pointer; }
-        .member-avatar { width: 32px; height: 32px; border-radius: 50%; image-rendering: pixelated; }
+        .member-avatar { width: 32px; height: 32px; border-radius: 50%; image-rendering: pixelated; object-fit: cover;}
         .member-name { font-size: 15px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 
-        /* --- SIGNUP MODAL --- */
+        /* --- NEW: USER POPOUT --- */
+        #user-popout {
+            position: absolute; right: 250px; top: 100px; width: 300px; background: #111214; border-radius: 8px; 
+            box-shadow: 0 8px 24px rgba(0,0,0,0.5); display: none; flex-direction: column; z-index: 500; overflow: hidden;
+        }
+        .popout-banner { height: 60px; background: #5865f2; }
+        .popout-avatar-wrapper { margin-top: -30px; margin-left: 16px; border: 6px solid #111214; border-radius: 50%; width: 80px; height: 80px; background: #111214; }
+        .popout-avatar { width: 100%; height: 100%; border-radius: 50%; image-rendering: pixelated; object-fit: cover;}
+        .popout-body { padding: 12px 16px 16px; background: #111214; display: flex; flex-direction: column; }
+        .popout-display { color: white; font-size: 20px; font-weight: bold; margin-bottom: 2px; }
+        .popout-user { color: #dbdee1; font-size: 14px; margin-bottom: 12px; }
+
+        /* --- MODAL --- */
         #signup-overlay {
             position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
             background: rgba(0, 0, 0, 0.85); display: none; 
             justify-content: center; align-items: center; z-index: 1000;
         }
-        .signup-card {
-            background: #313338; padding: 32px; border-radius: 8px; width: 320px;
-            display: flex; flex-direction: column; align-items: center; box-shadow: 0 8px 24px rgba(0,0,0,0.5);
-        }
+        .signup-card { background: #313338; padding: 32px; border-radius: 8px; width: 320px; display: flex; flex-direction: column; align-items: center; box-shadow: 0 8px 24px rgba(0,0,0,0.5); }
         .signup-card h2 { color: white; margin: 0 0 20px 0; font-size: 24px; }
-        .preview-avatar { width: 80px; height: 80px; border-radius: 50%; background: #2b2d31; margin-bottom: 12px; image-rendering: pixelated; border: 2px solid #5865f2; }
+        .preview-avatar { width: 80px; height: 80px; border-radius: 50%; background: #2b2d31; margin-bottom: 12px; image-rendering: pixelated; border: 2px solid #5865f2; object-fit: cover;}
         .btn-group { display: flex; gap: 8px; margin-bottom: 20px; width: 100%; }
         .btn { flex: 1; padding: 8px; border: none; border-radius: 4px; cursor: pointer; font-weight: bold; font-size: 13px; color: white; transition: background 0.2s; }
         .btn-primary { background: #5865f2; }
         .btn-primary:hover { background: #4752c4; }
         .btn-secondary { background: #4e5058; }
         .btn-secondary:hover { background: #6d6f78; }
-        .input-group { display: flex; width: 100%; background: #1e1f22; border-radius: 4px; overflow: hidden; margin-bottom: 24px; }
+        .input-group { display: flex; width: 100%; background: #1e1f22; border-radius: 4px; overflow: hidden; margin-bottom: 12px; }
         .input-group input { flex: 1; background: transparent; border: none; color: white; padding: 12px; font-size: 16px; outline: none; }
         .input-group .hash { background: transparent; color: #949ba4; padding: 12px 12px 12px 0; font-size: 16px; user-select: none; }
         .hidden-file-input { display: none; }
@@ -78,31 +94,38 @@
 
 <div id="signup-overlay">
     <div class="signup-card">
-        <h2>Customize Profile</h2>
-        
+        <h2 id="modal-title">Customize Profile</h2>
         <img id="modal-avatar" class="preview-avatar" src="">
-        
         <div class="btn-group">
-            <button class="btn btn-secondary" onclick="generateRandomAvatar()">Generate Random</button>
+            <button class="btn btn-secondary" onclick="generateRandomAvatar()">Random Icon</button>
             <button class="btn btn-secondary" onclick="document.getElementById('file-upload').click()">Upload 16x16</button>
         </div>
         <input type="file" id="file-upload" class="hidden-file-input" accept="image/png, image/jpeg">
 
         <div class="input-group">
-            <input type="text" id="modal-username" placeholder="Username" maxlength="16">
+            <input type="text" id="modal-displayname" placeholder="Display Name (e.g. Sector Prime)" maxlength="20">
+        </div>
+
+        <div class="input-group" id="username-container">
+            <input type="text" id="modal-username" placeholder="Unique Username" maxlength="16">
             <div class="hash" id="modal-hash">#0000</div>
         </div>
 
-        <button class="btn btn-primary" style="width: 100%; padding: 12px;" onclick="completeSignup()">Join Server</button>
+        <button class="btn btn-primary" style="width: 100%; padding: 12px;" onclick="saveProfile()">Save & Continue</button>
+    </div>
+</div>
+
+<div id="user-popout">
+    <div class="popout-banner"></div>
+    <div class="popout-avatar-wrapper"><img src="" class="popout-avatar" id="popout-img"></div>
+    <div class="popout-body">
+        <div class="popout-display" id="popout-displayname">User</div>
+        <div class="popout-user" id="popout-username">user#0000</div>
     </div>
 </div>
 
 <div class="app-container">
-    <div class="server-bar">
-        <div class="server-icon" title="Prime Server">
-            <img src="fvicon.png" onerror="this.src='../fvicon.png'" alt="P">
-        </div>
-    </div>
+    <div class="server-bar"><div class="server-icon" title="Prime Server"><img src="fvicon.png" onerror="this.src='../fvicon.png'" alt="P"></div></div>
     
     <div class="channel-bar">
         <div class="channel-header">Prime Games</div>
@@ -110,13 +133,19 @@
             <div class="channel-item active" data-channel="welcome">welcome</div>
             <div class="channel-item" data-channel="general">general</div>
         </div>
+        <div class="user-panel" onclick="openModal('edit')">
+            <img src="" id="panel-avatar" class="user-panel-avatar">
+            <div class="user-panel-info">
+                <div class="user-panel-display" id="panel-displayname">Loading...</div>
+                <div class="user-panel-username" id="panel-username">loading#0000</div>
+            </div>
+            <div style="color: #949ba4; font-size: 18px;">⚙️</div>
+        </div>
     </div>
 
     <div class="chat-area">
         <div class="chat-messages" id="message-container"></div>
-        <div class="chat-input-wrapper">
-            <input type="text" class="chat-input" id="chat-box" placeholder="Message #welcome">
-        </div>
+        <div class="chat-input-wrapper"><input type="text" class="chat-input" id="chat-box" placeholder="Message #welcome"></div>
     </div>
 
     <div class="members-bar">
@@ -138,18 +167,28 @@
 
     // --- STATE VARIABLES ---
     let myUsername = localStorage.getItem('discordGuestName');
+    let myDisplayName = localStorage.getItem('discordDisplayName');
     let myAvatar = localStorage.getItem('discordAvatar'); 
     let generatedHash = "";
+    let onlineUsersData = {}; // Tracks live presence metadata for popouts
+    let livePresenceChannel = null;
 
-    // --- SIGNUP MODAL LOGIC ---
-    function initSignup() {
-        if (!myUsername) {
-            document.getElementById('signup-overlay').style.display = 'flex';
+    // --- MODAL LOGIC (SIGNUP vs EDIT) ---
+    function openModal(mode) {
+        document.getElementById('signup-overlay').style.display = 'flex';
+        const userContainer = document.getElementById('username-container');
+        
+        if (mode === 'signup') {
+            document.getElementById('modal-title').innerText = "Welcome! Create Profile";
+            userContainer.style.display = 'flex';
             generatedHash = '#' + Math.floor(1000 + Math.random() * 9000);
             document.getElementById('modal-hash').innerText = generatedHash;
             generateRandomAvatar();
-        } else {
-            initApp();
+        } else if (mode === 'edit') {
+            document.getElementById('modal-title').innerText = "User Settings";
+            userContainer.style.display = 'none'; // Hide username input
+            document.getElementById('modal-displayname').value = myDisplayName || myUsername.split('#')[0];
+            document.getElementById('modal-avatar').src = myAvatar;
         }
     }
 
@@ -157,68 +196,111 @@
         const randomSeed = Math.random().toString(36).substring(7);
         const url = `https://api.dicebear.com/7.x/pixel-art/svg?seed=${randomSeed}`;
         document.getElementById('modal-avatar').src = url;
-        myAvatar = url; // Temporarily store URL
+        myAvatar = url;
     }
 
-    // BASE 64 ENCODING (The "Bit-rate" process)
+    // BASE 64 ENCODING
     document.getElementById('file-upload').addEventListener('change', function(e) {
         const file = e.target.files[0];
         if (!file) return;
-
         const reader = new FileReader();
         reader.onload = function(event) {
             const img = new Image();
             img.onload = function() {
-                // Force exactly 16x16 using a hidden canvas
                 const canvas = document.createElement('canvas');
-                canvas.width = 16;
-                canvas.height = 16;
+                canvas.width = 16; canvas.height = 16;
                 const ctx = canvas.getContext('2d');
                 ctx.drawImage(img, 0, 0, 16, 16);
-                
-                // Convert to Base64 String
                 const base64String = canvas.toDataURL('image/png');
                 document.getElementById('modal-avatar').src = base64String;
-                myAvatar = base64String; // Update stored avatar to the Base64 data
+                myAvatar = base64String; 
             };
             img.src = event.target.result;
         };
         reader.readAsDataURL(file);
     });
 
-    function completeSignup() {
-        const userInp = document.getElementById('modal-username').value.trim();
-        if (!userInp) { alert("Please enter a username!"); return; }
+    async function saveProfile() {
+        const isSignup = !myUsername;
         
-        myUsername = userInp + generatedHash;
+        // Handle Display Name
+        let inputDisplay = document.getElementById('modal-displayname').value.trim();
+        
+        if (isSignup) {
+            const userInp = document.getElementById('modal-username').value.trim();
+            if (!userInp) return alert("Please enter a username!");
+            myUsername = userInp + generatedHash;
+            myDisplayName = inputDisplay || userInp;
+        } else {
+            myDisplayName = inputDisplay || myUsername.split('#')[0];
+        }
+
+        // Save to LocalStorage
         localStorage.setItem('discordGuestName', myUsername);
+        localStorage.setItem('discordDisplayName', myDisplayName);
         localStorage.setItem('discordAvatar', myAvatar);
         
         document.getElementById('signup-overlay').style.display = 'none';
-        initApp();
+        updateBottomPanel();
+
+        // If editing while connected, broadcast new data instantly
+        if (!isSignup && livePresenceChannel) {
+            await livePresenceChannel.track({ online_at: new Date(), displayName: myDisplayName, avatar: myAvatar });
+        } else {
+            initApp();
+        }
     }
+
+    function updateBottomPanel() {
+        document.getElementById('panel-displayname').innerText = myDisplayName;
+        document.getElementById('panel-username').innerText = myUsername;
+        document.getElementById('panel-avatar').src = myAvatar;
+    }
+
+    // --- POPOUT LOGIC ---
+    function showPopout(username, element) {
+        const popout = document.getElementById('user-popout');
+        const data = onlineUsersData[username] || { displayName: username.split('#')[0], avatar: `https://api.dicebear.com/7.x/pixel-art/svg?seed=${username}` };
+        
+        document.getElementById('popout-img').src = data.avatar;
+        document.getElementById('popout-displayname').innerText = data.displayName;
+        document.getElementById('popout-username').innerText = username;
+
+        // Position it relative to the clicked item
+        const rect = element.getBoundingClientRect();
+        popout.style.top = Math.max(20, rect.top - 20) + 'px'; // Prevent going off-screen top
+        popout.style.display = 'flex';
+    }
+
+    // Close popout if clicking anywhere else
+    document.addEventListener('click', (e) => {
+        if (!e.target.closest('#user-popout') && !e.target.closest('.member-item')) {
+            document.getElementById('user-popout').style.display = 'none';
+        }
+    });
 
     // --- CORE APP LOGIC ---
     const checkAdmin = (name) => name === 'githbprime#3932';
 
-    // Determines which avatar to show (Local upload vs generated)
-    function getAvatarForUser(user) {
-        if (user === myUsername && myAvatar) return myAvatar; 
-        return `https://api.dicebear.com/7.x/pixel-art/svg?seed=${encodeURIComponent(user)}`;
+    // Determines visual data (Falls back to DB Username if offline)
+    function getUserVisuals(user) {
+        if (user === myUsername) return { dName: myDisplayName, av: myAvatar };
+        if (onlineUsersData[user]) return { dName: onlineUsersData[user].displayName, av: onlineUsersData[user].avatar };
+        return { dName: user.split('#')[0], av: `https://api.dicebear.com/7.x/pixel-art/svg?seed=${encodeURIComponent(user)}` };
     }
 
     function addMessageToScreen(user, text, timestamp) {
         if (container.innerText.includes("Establishing") || container.innerText.includes("No messages")) container.innerHTML = '';
         
         const isAdmin = checkAdmin(user);
-        const avatarSrc = getAvatarForUser(user);
+        const visuals = getUserVisuals(user);
         
         const html = `
             <div class="message">
-                <img src="${avatarSrc}" class="avatar">
+                <img src="${visuals.av}" class="avatar">
                 <div class="msg-content">
                     <div>
-                        <span class="username" style="color: ${isAdmin ? '#ffcc00' : '#f2f3f5'}">${user}${isAdmin ? ' 👑' : ''}</span>
+                        <span class="username" style="color: ${isAdmin ? '#ffcc00' : '#f2f3f5'}">${visuals.dName}${isAdmin ? ' 👑' : ''}</span>
                         <span class="timestamp">${new Date(timestamp).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}</span>
                     </div>
                     <div class="text">${text}</div>
@@ -231,17 +313,11 @@
     async function loadOldMessages() {
         container.innerHTML = `<div style="color: #949ba4; text-align: center; margin-top: 20px;">Loading #${currentChannel}...</div>`;
         const { data, error } = await db.from('Messages').select('*').eq('channel', currentChannel).order('created_at', { ascending: true });
-        
-        if (error) {
-            console.error("Supabase Error:", error);
-            container.innerHTML = `<div style="color:red; text-align:center;">Database Error: ${error.message}</div>`;
-            return;
-        }
-
         container.innerHTML = (data && data.length > 0) ? '' : `<div style="color: #949ba4; text-align: center; margin-top: 20px;">Welcome to #${currentChannel}!</div>`;
         if (data) data.forEach(m => addMessageToScreen(m.username, m.content, m.created_at));
     }
 
+    // Channel Switching & Inputs remain the same
     document.querySelectorAll('.channel-item').forEach(btn => {
         btn.onclick = (e) => {
             document.querySelectorAll('.channel-item').forEach(i => i.classList.remove('active'));
@@ -276,36 +352,58 @@
     };
 
     function initApp() {
-        // Start Realtime Data
+        updateBottomPanel();
+        
         db.channel('chat').on('postgres_changes', { event: '*', schema: 'public', table: 'Messages' }, payload => {
             if (payload.eventType === 'INSERT' && payload.new.channel === currentChannel) addMessageToScreen(payload.new.username, payload.new.content, payload.new.created_at);
             if (payload.eventType === 'DELETE') loadOldMessages();
         }).subscribe();
 
-        // Start Presence
-        const presence = db.channel('online-users', { config: { presence: { key: myUsername } } });
-        presence.on('presence', { event: 'sync' }, () => {
-            const state = presence.presenceState();
+        // START PRESENCE (Now broadcasts Avatar & Display Name)
+        livePresenceChannel = db.channel('online-users', { config: { presence: { key: myUsername } } });
+        
+        livePresenceChannel.on('presence', { event: 'sync' }, () => {
+            const state = livePresenceChannel.presenceState();
             memberContainer.innerHTML = '';
+            onlineUsersData = {}; 
+            
             const users = Object.keys(state);
             document.getElementById('online-count').innerText = users.length;
             
             users.forEach(u => {
+                // Read the metadata we broadcasted
+                const presenceData = state[u][0]; 
+                const dName = presenceData.displayName || u.split('#')[0];
+                const av = presenceData.avatar || `https://api.dicebear.com/7.x/pixel-art/svg?seed=${encodeURIComponent(u)}`;
+                
+                // Store in dictionary for chat mapping & popouts
+                onlineUsersData[u] = { displayName: dName, avatar: av };
+
                 const isAdmin = checkAdmin(u);
-                const avatarSrc = getAvatarForUser(u);
-                memberContainer.insertAdjacentHTML('beforeend', `
-                    <div class="member-item">
-                        <img src="${avatarSrc}" class="member-avatar">
-                        <div class="member-name" style="color: ${isAdmin ? '#ffcc00' : '#949ba4'}">${u}${isAdmin ? ' 👑' : ''}</div>
-                    </div>`);
+                
+                // Create Sidebar Element
+                const el = document.createElement('div');
+                el.className = 'member-item';
+                el.onclick = (e) => showPopout(u, e.currentTarget);
+                el.innerHTML = `
+                    <img src="${av}" class="member-avatar">
+                    <div class="member-name" style="color: ${isAdmin ? '#ffcc00' : '#949ba4'}">${dName}${isAdmin ? ' 👑' : ''}</div>
+                `;
+                memberContainer.appendChild(el);
             });
-        }).subscribe(async (s) => { if (s === 'SUBSCRIBED') await presence.track({ online_at: new Date() }); });
+            
+            // Re-render chat so past names update to current presence
+            if(container.innerHTML !== '') loadOldMessages(); 
+        }).subscribe(async (s) => { 
+            if (s === 'SUBSCRIBED') await livePresenceChannel.track({ online_at: new Date(), displayName: myDisplayName, avatar: myAvatar }); 
+        });
 
         loadOldMessages();
     }
 
     // BOOT UP
-    initSignup();
+    if (!myUsername) openModal('signup');
+    else initApp();
 </script>
 </body>
 </html>
