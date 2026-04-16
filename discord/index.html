@@ -4,76 +4,76 @@
     <meta charset="UTF-8">
     <title>Discourse | Prime Server</title>
     <style>
-        /* CORE */
+        /* CORE LAYOUT */
         body, html { margin: 0; padding: 0; height: 100%; font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; background-color: #313338; color: #dbdee1; overflow: hidden; }
         .app-container { display: flex; height: 100vh; width: 100vw; }
         
-        /* SIDEBARS */
+        /* SERVER BAR (Far Left) */
         .server-bar { width: 72px; background: #1e1f22; display: flex; flex-direction: column; align-items: center; padding-top: 12px; gap: 8px; flex-shrink: 0; }
+        .server-icon { width: 48px; height: 48px; border-radius: 50%; background: #313338; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: 0.2s; color: white; font-weight: bold; }
+        .server-icon:hover { border-radius: 15px; background: #5865f2; }
+
+        /* CHANNEL BAR (Middle Left) */
         .channel-bar { width: 240px; background: #2b2d31; display: flex; flex-direction: column; flex-shrink: 0; }
-        .channel-header { padding: 15px; color: white; font-weight: bold; border-bottom: 1px solid #1e1f22; }
-        .channel-list { padding: 10px; flex-grow: 1; }
-        .channel-item { padding: 8px 10px; border-radius: 4px; color: #949ba4; cursor: pointer; margin-bottom: 2px; }
+        .channel-header { padding: 16px; font-weight: bold; color: white; border-bottom: 1px solid #1e1f22; }
+        .channel-list { padding: 8px; flex-grow: 1; }
+        .channel-item { padding: 8px 12px; border-radius: 4px; color: #949ba4; cursor: pointer; margin-bottom: 2px; display: flex; align-items: center; }
+        .channel-item:before { content: "#"; margin-right: 8px; font-size: 20px; color: #5f636a; }
+        .channel-item:hover { background: #35373c; color: #dbdee1; }
         .channel-item.active { background: #3f4147; color: white; }
 
-        /* CHAT AREA - THE STABLE FLEX VERSION */
-        .chat-area { flex-grow: 1; display: flex; flex-direction: column; background: #313338; min-width: 0; }
-        .chat-messages { flex-grow: 1; overflow-y: auto; padding: 10px 0; display: flex; flex-direction: column; }
-        
-        /* Message Row */
-        .message-row { display: flex; padding: 2px 16px; width: 100%; box-sizing: border-box; }
-        .message-row:hover { background-color: #2e3035; }
-        .message-row.first-in-group { margin-top: 16px; }
+        /* USER PANEL (Bottom Left) */
+        .user-panel { background: #232428; padding: 8px; display: flex; align-items: center; gap: 8px; }
+        .user-avatar { width: 32px; height: 32px; border-radius: 50%; }
+        .user-info { overflow: hidden; font-size: 13px; }
+        .user-name { color: white; font-weight: bold; display: block; }
+        .user-tag { color: #b5bac1; font-size: 11px; }
 
-        /* Avatar Column (Fixed Width) */
-        .avatar-col { width: 48px; flex-shrink: 0; display: flex; justify-content: center; }
-        .msg-avatar { width: 40px; height: 40px; border-radius: 50%; cursor: pointer; margin-top: 4px; }
+        /* CHAT AREA (Center) */
+        .chat-area { flex-grow: 1; display: flex; flex-direction: column; min-width: 0; background: #313338; }
+        .chat-messages { flex-grow: 1; overflow-y: auto; padding: 10px 0; }
         
-        /* Content Column */
-        .content-col { flex-grow: 1; min-width: 0; padding-left: 8px; display: flex; flex-direction: column; }
+        /* MESSAGE BLOCK LAYOUT */
+        .msg-row { display: flex; padding: 2px 16px; width: 100%; box-sizing: border-box; }
+        .msg-row:hover { background: rgba(0,0,0,0.05); }
+        .msg-row.first { margin-top: 14px; }
         
-        .msg-header { display: flex; align-items: center; gap: 8px; margin-bottom: 2px; }
-        .username { font-weight: 600; font-size: 16px; color: #f2f3f5; cursor: pointer; }
+        .avatar-col { width: 50px; flex-shrink: 0; }
+        .msg-pfp { width: 40px; height: 40px; border-radius: 50%; margin-top: 4px; cursor: pointer; }
+        
+        .content-col { flex-grow: 1; min-width: 0; padding-left: 10px; }
+        .msg-header { margin-bottom: 4px; display: flex; align-items: center; gap: 8px; }
+        .username { color: white; font-weight: 500; font-size: 16px; }
         .timestamp { color: #949ba4; font-size: 12px; }
-        
-        .msg-text { 
-            font-size: 15px; 
-            line-height: 1.375; 
-            white-space: pre-wrap; 
-            word-break: break-word; /* Prevents long code strings from breaking layout */
-            overflow-wrap: break-word;
+        .msg-text { color: #dbdee1; font-size: 15px; line-height: 1.4; word-break: break-word; }
+
+        /* IMAGE FIX: Prevents fullscreen stretching */
+        .chat-img { 
+            max-width: 550px; 
+            max-height: 400px; 
+            border-radius: 8px; 
+            margin: 6px 0; 
+            display: block; 
+            cursor: pointer;
+            object-fit: contain;
+            background: #2b2d31;
         }
 
-        .chat-img { max-width: 100%; max-height: 400px; border-radius: 8px; margin: 6px 0; display: block; }
+        /* INPUT AREA */
+        .input-wrapper { padding: 0 16px 24px; }
+        .input-box { background: #383a40; padding: 12px 16px; border-radius: 8px; display: flex; }
+        .input-box input { background: transparent; border: none; color: #dcddde; flex-grow: 1; outline: none; font-size: 15px; }
 
-        /* INPUT */
-        .chat-input-wrapper { padding: 0 16px 24px; }
-        .chat-input-row { background: #383a40; padding: 10px 16px; border-radius: 8px; display: flex; }
-        .chat-input { background: transparent; border: none; color: #dcddde; font-size: 15px; flex-grow: 1; outline: none; }
-
-        /* MODALS */
-        #signup-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.85); display: none; justify-content: center; align-items: center; z-index: 2000; }
-        .signup-card { background: #313338; padding: 32px; border-radius: 8px; width: 320px; text-align: center; }
-        .btn { padding: 10px; border-radius: 4px; border: none; cursor: pointer; font-weight: bold; background: #5865f2; color: white; width: 100%; margin-top: 10px; }
-        input[type="text"] { width: 100%; padding: 10px; background: #1e1f22; border: none; color: white; border-radius: 4px; margin: 10px 0; box-sizing: border-box; }
+        /* MEMBERS BAR (Right) */
+        .members-bar { width: 240px; background: #2b2d31; flex-shrink: 0; padding: 20px 8px; }
+        .member-header { color: #949ba4; text-transform: uppercase; font-size: 12px; font-weight: bold; margin-bottom: 10px; padding-left: 8px; }
     </style>
 </head>
 <body>
 
-<div id="signup-overlay">
-    <div class="signup-card">
-        <h2 style="color:white">Setup Profile</h2>
-        <img id="modal-avatar" style="width:80px; height:80px; border-radius:50%; background:#2b2d31; margin-bottom:10px;">
-        <button class="btn" style="background:#4e5058" onclick="generateRandomAvatar()">Randomize</button>
-        <input type="text" id="modal-displayname" placeholder="Display Name">
-        <input type="text" id="modal-username" placeholder="Username (e.g. prime)">
-        <button class="btn" onclick="saveProfile()">Connect</button>
-    </div>
-</div>
-
 <div class="app-container">
     <div class="server-bar">
-        <div class="server-icon" style="background:#5865f2; color:white; font-weight:bold;">P</div>
+        <div class="server-icon">P</div>
     </div>
     
     <div class="channel-bar">
@@ -82,16 +82,27 @@
             <div class="channel-item active" data-channel="welcome">welcome</div>
             <div class="channel-item" data-channel="general">general</div>
         </div>
+        <div class="user-panel">
+            <img id="my-pfp" class="user-avatar" src="">
+            <div class="user-info">
+                <span id="my-name" class="user-name">Loading...</span>
+                <span id="my-tag" class="user-tag">#0000</span>
+            </div>
+        </div>
     </div>
 
     <div class="chat-area">
         <div class="chat-messages" id="message-container"></div>
-        <div class="chat-input-wrapper">
-            <div class="chat-input-row">
-                <input type="text" class="chat-input" id="chat-box" placeholder="Message #welcome">
+        <div class="input-wrapper">
+            <div class="input-box">
+                <input type="text" id="chat-input" placeholder="Message #welcome">
             </div>
         </div>
     </div>
+
+    <div class="members-bar">
+        <div class="member-header">Online — 1</div>
+        </div>
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -102,68 +113,43 @@
     const ADMIN_USER = 'githbprime#3951';
 
     let currentChannel = 'welcome';
-    let myUsername = localStorage.getItem('discordGuestName');
-    let myDisplayName = localStorage.getItem('discordDisplayName');
-    let myAvatar = localStorage.getItem('discordAvatar');
+    let myUsername = localStorage.getItem('discordGuestName') || "Guest#" + Math.floor(Math.random()*9999);
     let lastUser = null;
     let lastTime = 0;
 
-    function openModal() { document.getElementById('signup-overlay').style.display = 'flex'; generateRandomAvatar(); }
-    function generateRandomAvatar() {
-        const url = `https://api.dicebear.com/7.x/pixel-art/svg?seed=${Math.random()}`;
-        document.getElementById('modal-avatar').src = url;
-        myAvatar = url;
-    }
+    // Set user panel
+    document.getElementById('my-name').innerText = myUsername.split('#')[0];
+    document.getElementById('my-tag').innerText = '#' + myUsername.split('#')[1];
+    document.getElementById('my-pfp').src = `https://api.dicebear.com/7.x/pixel-art/svg?seed=${myUsername}`;
 
-    async function saveProfile() {
-        const user = document.getElementById('modal-username').value.trim();
-        if(!myUsername) myUsername = user + '#' + Math.floor(1000+Math.random()*9000);
-        myDisplayName = document.getElementById('modal-displayname').value.trim() || myUsername.split('#')[0];
-        localStorage.setItem('discordGuestName', myUsername);
-        localStorage.setItem('discordDisplayName', myDisplayName);
-        localStorage.setItem('discordAvatar', myAvatar);
-        location.reload(); 
-    }
-
-    function addMessageToScreen(m) {
+    function renderMessage(m) {
         const container = document.getElementById('message-container');
-        // Logic: New group if different user OR more than 5 mins gap
         const isFirst = (m.username !== lastUser || (new Date(m.created_at) - lastTime) > 300000);
+        const isAdmin = m.username.trim().toLowerCase() === ADMIN_USER.toLowerCase();
         
-        let displayContent = m.content;
-        // Attempt to parse JSON (replies)
-        if (displayContent.startsWith('{"')) {
-            try {
-                const parsed = JSON.parse(displayContent);
-                displayContent = parsed.content || displayContent;
-            } catch(e) {}
+        let content = m.content;
+        // Clean up JSON strings if they appear
+        if (content.startsWith('{"')) {
+            try { content = JSON.parse(content).content; } catch(e) {}
         }
 
-        const isAdmin = m.username.trim().toLowerCase() === ADMIN_USER.toLowerCase();
-        const avatarUrl = `https://api.dicebear.com/7.x/pixel-art/svg?seed=${m.username}`;
-        
         const row = document.createElement('div');
-        row.className = `message-row ${isFirst ? 'first-in-group' : ''}`;
+        row.className = `msg-row ${isFirst ? 'first' : ''}`;
         
-        let bodyHtml = displayContent.startsWith('[IMG]') 
-            ? `<img src="${displayContent.replace('[IMG]','')}" class="chat-img">` 
-            : `<div class="msg-text">${displayContent}</div>`;
+        const visualContent = content.startsWith('[IMG]') 
+            ? `<img src="${content.replace('[IMG]','')}" class="chat-img">` 
+            : `<div class="msg-text">${content}</div>`;
 
         row.innerHTML = `
-            <div class="avatar-col">
-                ${isFirst ? `<img src="${avatarUrl}" class="msg-avatar">` : ''}
-            </div>
+            <div class="avatar-col">${isFirst ? `<img src="https://api.dicebear.com/7.x/pixel-art/svg?seed=${m.username}" class="msg-pfp">` : ''}</div>
             <div class="content-col">
-                ${isFirst ? `
-                    <div class="msg-header">
-                        <span class="username" style="color:${isAdmin?'#ffcc00':''}">${m.username.split('#')[0]}${isAdmin?' 👑':''}</span>
-                        <span class="timestamp">${new Date(m.created_at).toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'})}</span>
-                    </div>
-                ` : ''}
-                ${bodyHtml}
+                ${isFirst ? `<div class="msg-header">
+                    <span class="username" style="color:${isAdmin?'#ffcc00':''}">${m.username.split('#')[0]}${isAdmin?' 👑':''}</span>
+                    <span class="timestamp">${new Date(m.created_at).toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'})}</span>
+                </div>` : ''}
+                ${visualContent}
             </div>
         `;
-
         container.appendChild(row);
         container.scrollTop = container.scrollHeight;
         lastUser = m.username;
@@ -171,23 +157,20 @@
     }
 
     async function loadMessages() {
-        lastUser = null; 
+        lastUser = null;
         document.getElementById('message-container').innerHTML = '';
         const { data } = await db.from('Messages').select('*').eq('channel', currentChannel).order('created_at', { ascending: true });
-        if(data) data.forEach(addMessageToScreen);
+        if(data) data.forEach(renderMessage);
     }
 
-    document.getElementById('chat-box').onkeypress = async (e) => {
+    document.getElementById('chat-input').onkeypress = async (e) => {
         if (e.key === 'Enter' && e.target.value.trim()) {
             const val = e.target.value.trim();
-            const u = myUsername.trim();
-
             if (currentChannel === 'welcome') {
-                let pass = (u.toLowerCase() === ADMIN_USER.toLowerCase()) ? null : prompt("Admin Passcode:");
-                const { data, error } = await db.rpc('post_admin_message', { passcode: pass, p_username: u, p_content: val, p_channel: 'welcome' });
-                if (error || data !== 'Success') alert("Access Denied: " + (data || error.message));
+                const pass = (myUsername.toLowerCase() === ADMIN_USER.toLowerCase()) ? null : prompt("Admin Passcode:");
+                await db.rpc('post_admin_message', { passcode: pass, p_username: myUsername, p_content: val, p_channel: 'welcome' });
             } else {
-                await db.from('Messages').insert([{ username: u, content: val, channel: currentChannel }]);
+                await db.from('Messages').insert([{ username: myUsername, content: val, channel: currentChannel }]);
             }
             e.target.value = '';
         }
@@ -198,15 +181,13 @@
             document.querySelectorAll('.channel-item').forEach(i => i.classList.remove('active'));
             ci.classList.add('active');
             currentChannel = ci.dataset.channel;
+            document.getElementById('chat-input').placeholder = `Message #${currentChannel}`;
             loadMessages();
         };
     });
 
-    if (!myUsername) openModal();
-    else {
-        db.channel('db-changes').on('postgres_changes', { event: '*', schema: 'public', table: 'Messages' }, () => loadMessages()).subscribe();
-        loadMessages();
-    }
+    db.channel('room1').on('postgres_changes', { event: '*', schema: 'public', table: 'Messages' }, () => loadMessages()).subscribe();
+    loadMessages();
 </script>
 </body>
 </html>
