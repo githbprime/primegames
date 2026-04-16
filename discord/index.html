@@ -231,6 +231,13 @@
     async function loadOldMessages() {
         container.innerHTML = `<div style="color: #949ba4; text-align: center; margin-top: 20px;">Loading #${currentChannel}...</div>`;
         const { data, error } = await db.from('Messages').select('*').eq('channel', currentChannel).order('created_at', { ascending: true });
+        
+        if (error) {
+            console.error("Supabase Error:", error);
+            container.innerHTML = `<div style="color:red; text-align:center;">Database Error: ${error.message}</div>`;
+            return;
+        }
+
         container.innerHTML = (data && data.length > 0) ? '' : `<div style="color: #949ba4; text-align: center; margin-top: 20px;">Welcome to #${currentChannel}!</div>`;
         if (data) data.forEach(m => addMessageToScreen(m.username, m.content, m.created_at));
     }
