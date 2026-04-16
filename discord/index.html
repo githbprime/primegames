@@ -8,13 +8,11 @@
         body, html { margin: 0; padding: 0; height: 100%; font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; overflow: hidden; background-color: #313338; }
         .app-container { display: flex; height: 100vh; width: 100vw; }
         
-        /* SERVER BAR */
         .server-bar { width: 72px; background: #1e1f22; display: flex; flex-direction: column; align-items: center; padding-top: 12px; gap: 8px; flex-shrink: 0; }
         .server-icon { width: 48px; height: 48px; border-radius: 50%; overflow: hidden; display: flex; align-items: center; justify-content: center; background: #2b2d31; cursor: pointer; transition: all 0.2s; }
         .server-icon:hover { border-radius: 12px; background: #5865f2; }
         .server-icon img { width: 100%; height: 100%; object-fit: cover; }
         
-        /* SIDEBARS */
         .channel-bar { width: 240px; background: #2b2d31; display: flex; flex-direction: column; flex-shrink: 0; }
         .channel-header { padding: 15px; color: white; font-weight: bold; border-bottom: 1px solid #1e1f22; font-size: 15px; }
         .channel-list { padding: 10px; flex-grow: 1; }
@@ -23,63 +21,50 @@
         .channel-item:hover { background: #35373c; color: #dbdee1; }
         .channel-item.active { background: #3f4147; color: white; }
 
-        /* USER PANEL */
         .user-panel { background: #232428; padding: 8px; display: flex; align-items: center; gap: 8px; border-radius: 4px; margin: 0 8px 8px 8px; cursor: pointer; }
-        .user-panel:hover { background: #3f4147; }
         .user-panel-avatar { width: 32px; height: 32px; border-radius: 50%; object-fit: cover; }
         .user-panel-info { display: flex; flex-direction: column; flex-grow: 1; overflow: hidden; }
         .user-panel-display { color: #f2f3f5; font-size: 14px; font-weight: bold; }
         .user-panel-username { color: #b5bac1; font-size: 12px; }
 
-        /* CHAT AREA */
+        /* CHAT AREA OVERHAUL */
         .chat-area { flex-grow: 1; display: flex; flex-direction: column; background: #313338; min-width: 0; }
         .chat-messages { flex-grow: 1; padding: 10px 0; overflow-y: auto; display: flex; flex-direction: column; }
         
-        /* SPACING FIX: Messages */
-        .message { position: relative; padding: 2px 16px 2px 72px; min-height: 24px; box-sizing: border-box; }
+        /* Message Grouping Fix */
+        .message { position: relative; padding: 2px 16px 2px 72px; min-height: 22px; }
         .message:hover { background: #2e3035; }
         
-        /* Spacing for new user chunks */
-        .message.first-in-group { margin-top: 22px; padding-top: 6px; }
+        /* The "First" message creates the space for the group */
+        .message.first-in-group { margin-top: 18px; padding-top: 6px; min-height: 44px; }
         
         .message .avatar { position: absolute; left: 16px; top: 6px; width: 40px; height: 40px; border-radius: 50%; cursor: pointer; display: none; }
         .message.first-in-group .avatar { display: block; }
         
-        .msg-header { display: none; align-items: center; gap: 8px; margin-bottom: 2px; }
+        .msg-header { display: none; align-items: center; gap: 8px; margin-bottom: 4px; }
         .message.first-in-group .msg-header { display: flex; }
         
         .username { font-weight: 500; font-size: 16px; color: #f2f3f5; cursor: pointer; }
         .username:hover { text-decoration: underline; }
         .timestamp { color: #949ba4; font-size: 12px; }
         
-        .text { color: #dbdee1; font-size: 15px; line-height: 1.375; white-space: pre-wrap; word-wrap: break-word; padding-bottom: 2px; }
+        .text { color: #dbdee1; font-size: 15px; line-height: 1.375; white-space: pre-wrap; word-wrap: break-word; }
 
-        /* SPACING FIX: Images */
-        .chat-img { max-width: 100%; max-height: 400px; border-radius: 8px; margin: 8px 0 10px 0; cursor: zoom-in; align-self: flex-start; display: block; clear: both; }
+        /* Image Handling */
+        .chat-img { max-width: 100%; max-height: 400px; border-radius: 8px; margin: 8px 0; cursor: zoom-in; display: block; }
 
-        /* MESSAGE HOVER ACTIONS */
-        .msg-actions { position: absolute; right: 16px; top: -14px; background: #313338; border: 1px solid #1e1f22; border-radius: 4px; display: none; z-index: 100; box-shadow: 0 2px 4px rgba(0,0,0,0.2); }
+        /* Actions Bar */
+        .msg-actions { position: absolute; right: 16px; top: -14px; background: #313338; border: 1px solid #1e1f22; border-radius: 4px; display: none; z-index: 100; box-shadow: 0 2px 4px rgba(0,0,0,0.5); }
         .message:hover .msg-actions { display: flex; }
         .msg-btn { padding: 4px 10px; cursor: pointer; color: #b5bac1; font-size: 14px; }
         .msg-btn:hover { background: #3f4147; color: white; }
-        .msg-btn.delete:hover { background: #da373c; }
 
-        /* REPLIES & REACTIONS */
-        .reply-context { color: #b5bac1; font-size: 13px; display: flex; align-items: center; margin-bottom: 6px; margin-left: -42px; opacity: 0.8; }
-        .reply-context::before { content: ''; width: 33px; height: 12px; border-top: 2px solid #4e5058; border-left: 2px solid #4e5058; border-top-left-radius: 6px; margin-right: 4px; margin-top: 10px; }
-        .reply-av { width: 16px; height: 16px; border-radius: 50%; margin-right: 4px; }
-
-        .reaction-bar { display: flex; gap: 4px; margin-top: 4px; margin-bottom: 6px; }
-        .reaction-pill { background: #2b2d31; border: 1px solid transparent; border-radius: 8px; padding: 2px 6px; font-size: 12px; color: #b5bac1; cursor: pointer; }
-        .reaction-pill.active { background: rgba(88,101,242,0.15); border-color: #5865f2; color: #5865f2; }
-
-        /* INPUT AREA */
+        /* Input Wrapper */
         .chat-input-wrapper { padding: 0 16px 24px; }
-        .active-reply-bar { display: none; background: #2b2d31; padding: 8px 12px; border-radius: 8px 8px 0 0; align-items: center; justify-content: space-between; color: #b5bac1; font-size: 13px; }
         .chat-input-row { display: flex; gap: 12px; align-items: center; background: #383a40; padding: 10px 16px; border-radius: 8px; }
         .chat-input { background: transparent; border: none; color: #dcddde; font-size: 15px; flex-grow: 1; outline: none; }
 
-        /* MEMBERS BAR */
+        /* Sidebars */
         .members-bar { width: 240px; background: #2b2d31; flex-shrink: 0; }
         .members-header { padding: 20px 15px 10px; color: #949ba4; font-weight: bold; font-size: 12px; text-transform: uppercase; }
         .member-item { display: flex; align-items: center; gap: 12px; padding: 6px 8px; margin: 1px 8px; border-radius: 4px; cursor: pointer; position: relative; }
@@ -89,21 +74,13 @@
         .status-dot { position: absolute; bottom: -2px; right: -2px; width: 10px; height: 10px; border-radius: 50%; border: 3px solid #2b2d31; background: #23a55a; }
         .member-name { color: #949ba4; font-size: 15px; }
 
-        #fullscreen-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.9); z-index: 9999; display: none; align-items: center; justify-content: center; }
         #signup-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.8); display: none; justify-content: center; align-items: center; z-index: 2000; }
         .signup-card { background: #313338; padding: 32px; border-radius: 8px; width: 320px; text-align: center; }
         .btn { padding: 10px; border-radius: 4px; border: none; cursor: pointer; font-weight: bold; background: #5865f2; color: white; width: 100%; margin-top: 10px; }
         input[type="text"] { width: 100%; padding: 10px; background: #1e1f22; border: none; color: white; border-radius: 4px; margin: 10px 0; box-sizing: border-box; }
-        
-        #user-popout { position: fixed; width: 300px; background: #111214; border-radius: 8px; box-shadow: 0 8px 24px rgba(0,0,0,0.5); display: none; z-index: 1000; overflow: hidden; }
-        .popout-banner { height: 60px; background: #5865f2; }
-        .popout-avatar-wrap { margin: -30px 0 0 16px; border: 6px solid #111214; border-radius: 50%; width: 80px; height: 80px; background: #111214; }
-        .popout-body { padding: 12px 16px 16px; color: white; }
     </style>
 </head>
 <body>
-
-<div id="fullscreen-overlay" onclick="this.style.display='none'"><img id="fullscreen-img" style="max-width:90%; max-height:90%;"></div>
 
 <div id="signup-overlay">
     <div class="signup-card">
@@ -116,18 +93,9 @@
     </div>
 </div>
 
-<div id="user-popout">
-    <div class="popout-banner"></div>
-    <div class="popout-avatar-wrap"><img id="popout-img" style="width:100%; height:100%; border-radius:50%;"></div>
-    <div class="popout-body">
-        <div id="popout-displayname" style="font-size:20px; font-weight:bold;"></div>
-        <div id="popout-username" style="color:#b5bac1; font-size:14px;"></div>
-    </div>
-</div>
-
 <div class="app-container">
     <div class="server-bar">
-        <div class="server-icon"><img src="fvicon.png" onerror="this.src='https://via.placeholder.com/48?text=P'"></div>
+        <div class="server-icon"><img src="fvicon.png"></div>
     </div>
     
     <div class="channel-bar">
@@ -136,7 +104,7 @@
             <div class="channel-item active" data-channel="welcome">welcome</div>
             <div class="channel-item" data-channel="general">general</div>
         </div>
-        <div class="user-panel" onclick="openModal('edit')">
+        <div class="user-panel">
             <img src="" id="panel-avatar" class="user-panel-avatar">
             <div class="user-panel-info">
                 <div class="user-panel-display" id="panel-displayname">User</div>
@@ -147,12 +115,7 @@
 
     <div class="chat-area">
         <div class="chat-messages" id="message-container"></div>
-        
         <div class="chat-input-wrapper">
-            <div id="active-reply-bar" class="active-reply-bar">
-                <span>Replying to <strong id="reply-target-name"></strong></span>
-                <span onclick="clearReply()" style="cursor:pointer">✕</span>
-            </div>
             <div class="chat-input-row">
                 <input type="text" class="chat-input" id="chat-box" placeholder="Message #welcome">
             </div>
@@ -177,21 +140,12 @@
     let myUsername = localStorage.getItem('discordGuestName');
     let myDisplayName = localStorage.getItem('discordDisplayName');
     let myAvatar = localStorage.getItem('discordAvatar');
-    let onlineUsersData = {};
-    let pendingReply = null;
     let lastUser = null;
     let lastTime = 0;
 
-    // --- UTILS ---
-    const checkAdmin = () => (myUsername || "").trim().toLowerCase() === ADMIN_USER.toLowerCase();
-
-    function openModal(mode) {
+    function openModal() {
         document.getElementById('signup-overlay').style.display = 'flex';
-        if (mode === 'signup') generateRandomAvatar();
-        else {
-            document.getElementById('modal-displayname').value = myDisplayName;
-            document.getElementById('modal-avatar').src = myAvatar;
-        }
+        generateRandomAvatar();
     }
 
     function generateRandomAvatar() {
@@ -205,105 +159,31 @@
         const user = document.getElementById('modal-username').value.trim();
         if(!myUsername) myUsername = user + '#' + Math.floor(1000+Math.random()*9000);
         myDisplayName = disp || myUsername.split('#')[0];
-        
         localStorage.setItem('discordGuestName', myUsername.trim());
         localStorage.setItem('discordDisplayName', myDisplayName);
         localStorage.setItem('discordAvatar', myAvatar);
         location.reload(); 
     }
 
-    // --- CHAT ACTIONS ---
-    function clearReply() { pendingReply = null; document.getElementById('active-reply-bar').style.display = 'none'; }
-    
-    function startReply(id, dName, av, text) {
-        pendingReply = { id, dName, av, text: text.substring(0, 50) };
-        document.getElementById('reply-target-name').innerText = dName;
-        document.getElementById('active-reply-bar').style.display = 'flex';
-        document.getElementById('chat-box').focus();
-    }
-
-    async function toggleReaction(msgId, emoji) {
-        const { data } = await db.from('Messages').select('reactions').eq('id', msgId).single();
-        let reacts = data?.reactions || {};
-        if (!reacts[emoji]) reacts[emoji] = [];
-        const idx = reacts[emoji].indexOf(myUsername);
-        if (idx > -1) reacts[emoji].splice(idx, 1);
-        else reacts[emoji].push(myUsername);
-        if (reacts[emoji].length === 0) delete reacts[emoji];
-        await db.from('Messages').update({ reactions: reacts }).eq('id', msgId);
-    }
-
-    async function deleteMessage(msgId) {
-        if (confirm("Delete this message?")) {
-            await db.from('Messages').delete().eq('id', msgId);
-        }
-    }
-
-    function showPopout(user, el) {
-        const data = onlineUsersData[user] || { displayName: user.split('#')[0], avatar: `https://api.dicebear.com/7.x/pixel-art/svg?seed=${user}` };
-        const pop = document.getElementById('user-popout');
-        document.getElementById('popout-img').src = data.avatar;
-        document.getElementById('popout-displayname').innerText = data.displayName;
-        document.getElementById('popout-username').innerText = user;
-        const rect = el.getBoundingClientRect();
-        pop.style.display = 'block';
-        pop.style.top = Math.min(rect.top, window.innerHeight - 250) + 'px';
-        pop.style.right = '250px';
-    }
-
-    window.onclick = (e) => { if(!e.target.closest('.member-item') && !e.target.closest('#user-popout')) document.getElementById('user-popout').style.display='none'; };
-
     function addMessageToScreen(m) {
         const container = document.getElementById('message-container');
         const isFirst = (m.username !== lastUser || (new Date(m.created_at) - lastTime) > 300000);
-        let content = m.content;
-        let replyHeader = '';
-
-        if (content.startsWith('{"_reply":')) {
-            try {
-                const p = JSON.parse(content);
-                content = p.content;
-                replyHeader = `<div class="reply-context"><img src="${p._reply.av}" class="reply-av"><strong>${p._reply.dName}</strong> ${p._reply.text}</div>`;
-            } catch(e){}
-        }
-
+        
         const isAdmin = m.username.trim().toLowerCase() === ADMIN_USER.toLowerCase();
-        const visuals = onlineUsersData[m.username] || { displayName: m.username.split('#')[0], avatar: `https://api.dicebear.com/7.x/pixel-art/svg?seed=${m.username}` };
+        const visuals = { displayName: m.username.split('#')[0], avatar: `https://api.dicebear.com/7.x/pixel-art/svg?seed=${m.username}` };
         
         const msgDiv = document.createElement('div');
-        msgDiv.className = `message ${isFirst || replyHeader ? 'first-in-group' : ''}`;
-        msgDiv.id = `msg-${m.id}`;
+        msgDiv.className = `message ${isFirst ? 'first-in-group' : ''}`;
         
-        const safeText = content.startsWith('[IMG]') ? '[Image]' : content.replace(/'/g, "\\'");
-        const actions = `
-            <div class="msg-actions">
-                <div class="msg-btn" onclick="toggleReaction('${m.id}', '👍')">👍</div>
-                <div class="msg-btn" onclick="startReply('${m.id}', '${visuals.displayName.replace(/'/g,"\\'")}', '${visuals.avatar}', '${safeText}')">↩️</div>
-                ${(m.username.trim() === myUsername.trim() || checkAdmin()) ? `<div class="msg-btn delete" onclick="deleteMessage('${m.id}')">🗑️</div>` : ''}
-            </div>`;
-
-        let reactHtml = '';
-        if (m.reactions && Object.keys(m.reactions).length > 0) {
-            reactHtml = '<div class="reaction-bar">';
-            for(const [emoji, users] of Object.entries(m.reactions)) {
-                const active = users.includes(myUsername) ? 'active' : '';
-                reactHtml += `<div class="reaction-pill ${active}" onclick="toggleReaction('${m.id}', '${emoji}')">${emoji} ${users.length}</div>`;
-            }
-            reactHtml += '</div>';
-        }
-
-        let body = content.startsWith('[IMG]') ? `<img src="${content.replace('[IMG]','')}" class="chat-img" onclick="document.getElementById('fullscreen-img').src=this.src; document.getElementById('fullscreen-overlay').style.display='flex'">` : `<div class="text">${content}</div>`;
+        let body = m.content.startsWith('[IMG]') ? `<img src="${m.content.replace('[IMG]','')}" class="chat-img">` : `<div class="text">${m.content}</div>`;
 
         msgDiv.innerHTML = `
-            ${actions}
-            ${replyHeader}
-            <img src="${visuals.avatar}" class="avatar" onclick="showPopout('${m.username}', this)">
+            <img src="${visuals.avatar}" class="avatar">
             <div class="msg-header">
-                <span class="username" style="color:${isAdmin?'#ffcc00':''}" onclick="showPopout('${m.username}', this)">${visuals.displayName}${isAdmin?' 👑':''}</span>
+                <span class="username" style="color:${isAdmin?'#ffcc00':''}">${visuals.displayName}${isAdmin?' 👑':''}</span>
                 <span class="timestamp">${new Date(m.created_at).toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'})}</span>
             </div>
             ${body}
-            ${reactHtml}
         `;
 
         container.appendChild(msgDiv);
@@ -322,90 +202,36 @@
     document.getElementById('chat-box').onkeypress = async (e) => {
         if (e.key === 'Enter' && e.target.value.trim()) {
             const val = e.target.value.trim();
-            
-            // COMMAND: CLEAR
-            if (val === '/clear') {
-                if(confirm("Clear channel?")) {
-                    let pass = checkAdmin() ? null : prompt("Admin Passcode Required:");
-                    const { data } = await db.rpc('clear_messages', { passcode: pass, p_channel: currentChannel, p_username: myUsername.trim() });
-                    if (data !== 'Success') alert(data || "Unauthorized");
-                }
-                e.target.value = ''; return;
-            }
+            const userTrim = myUsername.trim();
 
-            let finalContent = val;
-            if (pendingReply) {
-                finalContent = JSON.stringify({ _reply: pendingReply, content: val });
-            }
-
-            // WELCOME CHANNEL AUTH FIX
             if (currentChannel === 'welcome') {
-                let pass = checkAdmin() ? null : prompt("Posting to #welcome requires Admin Passcode:");
-                let { data, error } = await db.rpc('post_admin_message', { passcode: pass, p_username: myUsername.trim(), p_content: finalContent, p_channel: 'welcome' });
-                
-                // If the check failed, try one more time with a manual prompt to prevent loop
-                if (data === 'Unauthorized') {
-                    pass = prompt("Account not recognized. Enter Master Passcode:");
-                    const retry = await db.rpc('post_admin_message', { passcode: pass, p_username: myUsername.trim(), p_content: finalContent, p_channel: 'welcome' });
-                    if (retry.data !== 'Success') alert("Unauthorized");
-                } else if (error) {
-                    alert("Error: " + error.message);
-                }
+                let pass = (userTrim.toLowerCase() === ADMIN_USER.toLowerCase()) ? null : prompt("Admin Passcode:");
+                // Calling RPC which now has SECURITY DEFINER to bypass RLS
+                const { data, error } = await db.rpc('post_admin_message', { passcode: pass, p_username: userTrim, p_content: val, p_channel: 'welcome' });
+                if (error || data !== 'Success') alert("Unauthorized or RLS Blocked: " + (error?.message || data));
             } else {
-                await db.from('Messages').insert([{ username: myUsername.trim(), content: finalContent, channel: currentChannel }]);
+                await db.from('Messages').insert([{ username: userTrim, content: val, channel: currentChannel }]);
             }
-
             e.target.value = '';
-            clearReply();
         }
     };
 
-    // --- INIT ---
     document.querySelectorAll('.channel-item').forEach(ci => {
         ci.onclick = () => {
             document.querySelectorAll('.channel-item').forEach(i => i.classList.remove('active'));
             ci.classList.add('active');
             currentChannel = ci.dataset.channel;
-            document.getElementById('chat-box').placeholder = `Message #${currentChannel}`;
             loadMessages();
         };
     });
 
-    if (!myUsername) openModal('signup');
+    if (!myUsername) openModal();
     else {
         document.getElementById('panel-avatar').src = myAvatar;
         document.getElementById('panel-displayname').innerText = myDisplayName;
         document.getElementById('panel-username').innerText = myUsername;
-
-        db.channel('room1').on('postgres_changes', { event: '*', schema: 'public', table: 'Messages' }, () => loadMessages()).subscribe();
-
-        const presence = db.channel('online-presence', { config: { presence: { key: myUsername } } });
-        presence.on('presence', { event: 'sync' }, () => {
-            const state = presence.presenceState();
-            const container = document.getElementById('members-container');
-            container.innerHTML = '';
-            const users = Object.keys(state);
-            document.getElementById('online-count').innerText = users.length;
-            
-            users.forEach(u => {
-                const info = state[u][0];
-                onlineUsersData[u] = info;
-                const isAdmin = u.trim().toLowerCase() === ADMIN_USER.toLowerCase();
-                container.innerHTML += `
-                    <div class="member-item" onclick="showPopout('${u}', this)">
-                        <div class="avatar-container">
-                            <img src="${info.avatar}" class="member-avatar">
-                            <div class="status-dot"></div>
-                        </div>
-                        <div class="member-name" style="color:${isAdmin?'#ffcc00':''}">${info.displayName}${isAdmin?' 👑':''}</div>
-                    </div>`;
-            });
-        }).subscribe(async (status) => {
-            if (status === 'SUBSCRIBED') {
-                await presence.track({ displayName: myDisplayName, avatar: myAvatar, online_at: new Date() });
-                loadMessages();
-            }
-        });
+        db.channel('changes').on('postgres_changes', { event: '*', schema: 'public', table: 'Messages' }, () => loadMessages()).subscribe();
+        loadMessages();
     }
 </script>
 </body>
