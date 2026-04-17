@@ -384,7 +384,7 @@
                 <div class="content-col">
                     ${(isFirst || replyHtml) ? `<div class="msg-header">
                         <span class="username" style="color:${isAdm?'#ffcc00':''}" onclick="showMiniProfile(event, '${m.username}')">${m.username.split('#')[0]}${isAdm?' 👑':''}</span>
-                        <span class="timestamp">${new Date(m.created_at).toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'})}</span>
+                        <span class="timestamp">${new Date(m.created_at).toLocaleDateString()} ${new Date(m.created_at).toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'})}</span>
                     </div>` : ''}
                     ${textVisual}
                     ${imgVisual}
