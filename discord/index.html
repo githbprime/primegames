@@ -228,7 +228,7 @@
     function getPfp(user) { return livePfps[user] || `https://api.dicebear.com/7.x/pixel-art/svg?seed=${user}`; }
     function getUserClass(user) { return `avatar-${user.replace('#', '-')}`; }
 
-// --- NEW SEPARATE RENDER FUNCTION ---
+    // --- NEW SEPARATE RENDER FUNCTION ---
     async function refreshMemberLists(presenceState) {
         const onlineUsernames = Object.keys(presenceState);
         const onlineList = document.getElementById('member-list-online');
@@ -239,10 +239,19 @@
         onlineUsernames.forEach(userKey => {
             const userPfp = presenceState[userKey][0].pfp || getPfp(userKey);
             livePfps[userKey] = userPfp;
+
+            // --- THE FIX: Force update all PFPs in the chat for this user ---
+            document.querySelectorAll(`.${getUserClass(userKey)}`).forEach(img => {
+                if (img.src !== userPfp) img.src = userPfp;
+            });
+
             const isAdm = isAdmin(userKey);
             onlineList.innerHTML += `
                 <div class="member-item" onclick="showMiniProfile(event, '${userKey}')">
-                    <div class="member-avatar-wrapper"><img src="${userPfp}"><div class="status-dot"></div></div>
+                    <div class="member-avatar-wrapper">
+                        <img src="${userPfp}" class="${getUserClass(userKey)}">
+                        <div class="status-dot"></div>
+                    </div>
                     <span style="color:${isAdm?'#ffcc00':'#dbdee1'}">${userKey.split('#')[0]}${isAdm?' 👑':''}</span>
                 </div>`;
         });
@@ -269,7 +278,7 @@
                     offlineList.innerHTML += `
                         <div class="member-item offline" onclick="showMiniProfile(event, '${username}')">
                             <div class="member-avatar-wrapper">
-                                <img src="${avatar}" style="filter: grayscale(100%);">
+                                <img src="${avatar}" class="${getUserClass(username)}" style="filter: grayscale(100%);">
                                 <div class="status-dot offline"></div>
                             </div>
                             <span style="color:${isAdm?'#a89020':'#747f8d'}">${username.split('#')[0]}${isAdm?' 👑':''}</span>
@@ -380,7 +389,7 @@
         reader.readAsDataURL(file);
     }
 
-    function renderMessage(m, appendOnly = false) {
+function renderMessage(m, appendOnly = false) {
         const container = document.getElementById('message-container');
         const isFirst = (m.username !== lastUser || (new Date(m.created_at) - lastTime) > 300000);
         const isAdm = isAdmin(m.username);
@@ -405,7 +414,10 @@
             }
         }
         reactHtml += '</div>';
+        
+        // --- FIXED INNERHTML LINE ---
         row.innerHTML = `${replyHtml}<div class="msg-flex"><div class="avatar-col">${(isFirst || replyHtml) ? `<img src="${getPfp(m.username)}" class="msg-pfp ${uClass}" onclick="showMiniProfile(event, '${m.username}')">` : ''}</div><div class="content-col">${(isFirst || replyHtml) ? `<div class="msg-header"><span class="username" style="color:${isAdm?'#ffcc00':''}" onclick="showMiniProfile(event, '${m.username}')">${m.username.split('#')[0]}${isAdm?' 👑':''}</span><span class="timestamp">${new Date(m.created_at).toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'})}</span></div>` : ''}<div class="msg-text">${content}</div>${imgSrc ? `<img src="${imgSrc}" class="chat-img" onclick="openLightbox(this.src)">` : ''}${reactHtml === '<div class="react-bar"></div>' ? '' : reactHtml}</div></div><div class="msg-actions"><div class="action-btn">😀<div class="emoji-picker"><span onclick="addReaction('${m.id}', '👍')">👍</span><span onclick="addReaction('${m.id}', '❤️')">❤️</span><span onclick="addReaction('${m.id}', '💀')">💀</span></div></div><div class="action-btn" onclick="setReply('${m.id}', '${m.username.split('#')[0]}', '${content.replace(/'/g,"\\'")}')">↩️</div></div>`;
+        
         container.appendChild(row);
         if (appendOnly) container.scrollTop = container.scrollHeight;
         lastUser = m.username; lastTime = new Date(m.created_at);
@@ -466,8 +478,11 @@
         const isMeAdmin = isAdmin(myUsername);
         document.getElementById('my-name').innerHTML = `<span style="color:${isMeAdmin?'#ffcc00':'white'}">${myUsername.split('#')[0]}${isMeAdmin?' 👑':''}</span>`;
         document.getElementById('my-hash').innerText = '#' + (myUsername.split('#')[1] || '0000');
-        document.getElementById('my-pfp').src = myAvatar;
-
+        
+        const myPfpImg = document.getElementById('my-pfp');
+        myPfpImg.src = myAvatar;
+        myPfpImg.className = getUserClass(myUsername); // This makes sure the update loop finds it
+        
         // Presence Setup
         const presence = db.channel('online_users', { config: { presence: { key: myUsername } } });
         presence.on('presence', { event: 'sync' }, () => {
