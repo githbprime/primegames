@@ -228,7 +228,7 @@
     function getPfp(user) { return livePfps[user] || `https://api.dicebear.com/7.x/pixel-art/svg?seed=${user}`; }
     function getUserClass(user) { return `avatar-${user.replace('#', '-')}`; }
 
-    // --- NEW SEPARATE RENDER FUNCTION ---
+// --- NEW SEPARATE RENDER FUNCTION ---
     async function refreshMemberLists(presenceState) {
         const onlineUsernames = Object.keys(presenceState);
         const onlineList = document.getElementById('member-list-online');
@@ -248,23 +248,38 @@
         });
         document.getElementById('online-count').innerText = onlineUsernames.length;
 
-        // Fetch and Render Offline
-        const { data: allUsers } = await db.from('Users').select('*');
-        if (allUsers) {
-            offlineList.innerHTML = '';
-            const offlineUsers = allUsers.filter(u => !onlineUsernames.includes(u.username));
-            offlineUsers.forEach(user => {
-                const isAdm = isAdmin(user.username);
-                offlineList.innerHTML += `
-                    <div class="member-item offline" onclick="showMiniProfile(event, '${user.username}')">
-                        <div class="member-avatar-wrapper">
-                            <img src="${user.avatar_url}" style="filter: grayscale(100%);">
-                            <div class="status-dot offline"></div>
-                        </div>
-                        <span style="color:${isAdm?'#a89020':'#747f8d'}">${user.username.split('#')[0]}${isAdm?' 👑':''}</span>
-                    </div>`;
+        // Fetch and Render Offline (Smart Bank Logic)
+        try {
+            const { data: allUsers } = await db.from('Users').select('*');
+            const { data: msgHistory } = await db.from('Messages').select('username');
+
+            const bank = new Map();
+            if (allUsers) allUsers.forEach(u => bank.set(u.username, u.avatar_url));
+            if (msgHistory) msgHistory.forEach(m => {
+                if (!bank.has(m.username)) {
+                    bank.set(m.username, `https://api.dicebear.com/7.x/pixel-art/svg?seed=${m.username}`);
+                }
             });
-            document.getElementById('offline-count').innerText = offlineUsers.length;
+
+            offlineList.innerHTML = '';
+            let offlineCount = 0;
+            bank.forEach((avatar, username) => {
+                if (!onlineUsernames.includes(username)) {
+                    const isAdm = isAdmin(username);
+                    offlineList.innerHTML += `
+                        <div class="member-item offline" onclick="showMiniProfile(event, '${username}')">
+                            <div class="member-avatar-wrapper">
+                                <img src="${avatar}" style="filter: grayscale(100%);">
+                                <div class="status-dot offline"></div>
+                            </div>
+                            <span style="color:${isAdm?'#a89020':'#747f8d'}">${username.split('#')[0]}${isAdm?' 👑':''}</span>
+                        </div>`;
+                    offlineCount++;
+                }
+            });
+            document.getElementById('offline-count').innerText = offlineCount;
+        } catch (e) {
+            console.warn("Offline list sync pending...");
         }
     }
 
