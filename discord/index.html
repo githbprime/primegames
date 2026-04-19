@@ -222,19 +222,55 @@
     let lastUser = null;
     let lastTime = 0;
     let timeoutInterval = null;
-
-    // Database of all users ever registered
-    let allGlobalUsers = [];
     let livePfps = {}; 
 
     function isAdmin(user) { return user && user.toLowerCase() === ADMIN_USER.toLowerCase(); }
-    
-    // --- UTILS & UI ---
     function getPfp(user) { return livePfps[user] || `https://api.dicebear.com/7.x/pixel-art/svg?seed=${user}`; }
     function getUserClass(user) { return `avatar-${user.replace('#', '-')}`; }
 
-    function openLightbox(src) { document.getElementById('lightbox-img').src = src; document.getElementById('lightbox').style.display = 'flex'; }
+    // --- NEW SEPARATE RENDER FUNCTION ---
+    async function refreshMemberLists(presenceState) {
+        const onlineUsernames = Object.keys(presenceState);
+        const onlineList = document.getElementById('member-list-online');
+        const offlineList = document.getElementById('member-list-offline');
+        
+        // Render Online Immediately
+        onlineList.innerHTML = '';
+        onlineUsernames.forEach(userKey => {
+            const userPfp = presenceState[userKey][0].pfp || getPfp(userKey);
+            livePfps[userKey] = userPfp;
+            const isAdm = isAdmin(userKey);
+            onlineList.innerHTML += `
+                <div class="member-item" onclick="showMiniProfile(event, '${userKey}')">
+                    <div class="member-avatar-wrapper"><img src="${userPfp}"><div class="status-dot"></div></div>
+                    <span style="color:${isAdm?'#ffcc00':'#dbdee1'}">${userKey.split('#')[0]}${isAdm?' 👑':''}</span>
+                </div>`;
+        });
+        document.getElementById('online-count').innerText = onlineUsernames.length;
 
+        // Fetch and Render Offline
+        const { data: allUsers } = await db.from('Users').select('*');
+        if (allUsers) {
+            offlineList.innerHTML = '';
+            const offlineUsers = allUsers.filter(u => !onlineUsernames.includes(u.username));
+            offlineUsers.forEach(user => {
+                const isAdm = isAdmin(user.username);
+                offlineList.innerHTML += `
+                    <div class="member-item offline" onclick="showMiniProfile(event, '${user.username}')">
+                        <div class="member-avatar-wrapper">
+                            <img src="${user.avatar_url}" style="filter: grayscale(100%);">
+                            <div class="status-dot offline"></div>
+                        </div>
+                        <span style="color:${isAdm?'#a89020':'#747f8d'}">${user.username.split('#')[0]}${isAdm?' 👑':''}</span>
+                    </div>`;
+            });
+            document.getElementById('offline-count').innerText = offlineUsers.length;
+        }
+    }
+
+    // --- UI & UTILS ---
+    function openLightbox(src) { document.getElementById('lightbox-img').src = src; document.getElementById('lightbox').style.display = 'flex'; }
+    function closeMiniProfile() { document.getElementById('mp-overlay').style.display = 'none'; document.getElementById('mp-card').style.display = 'none'; }
     function showMiniProfile(event, username) {
         const card = document.getElementById('mp-card');
         const overlay = document.getElementById('mp-overlay');
@@ -248,9 +284,7 @@
         card.style.top = top + 'px'; card.style.left = left + 'px';
         overlay.style.display = 'block'; card.style.display = 'flex';
     }
-    function closeMiniProfile() { document.getElementById('mp-overlay').style.display = 'none'; document.getElementById('mp-card').style.display = 'none'; }
 
-    // --- TIMEOUTS ---
     async function checkTimeouts() {
         const { data } = await db.from('Timeouts').select('expires_at').eq('target_user', myUsername).order('expires_at', { ascending: false }).limit(1);
         if (data && data.length > 0) {
@@ -276,7 +310,6 @@
         input.disabled = false; input.placeholder = `Message #${currentChannel}`;
     }
 
-    // --- REACTIONS ---
     async function addReaction(msgId, emoji) {
         const { data } = await db.from('Messages').select('reactions').eq('id', msgId).single();
         let r = data.reactions || {};
@@ -296,7 +329,6 @@
     function cancelReply() { pendingReply = null; document.getElementById('reply-bar').style.display = 'none'; }
     function cancelAttachment() { pendingAttachment = null; document.getElementById('attach-bar').style.display = 'none'; }
 
-    // --- UPLOADS ---
     function handleAvatarUpload(input) {
         const file = input.files[0]; if (!file) return;
         const reader = new FileReader();
@@ -311,6 +343,7 @@
         };
         reader.readAsDataURL(file);
     }
+
     function handleFileAsBase64(input) {
         const file = input.files[0]; if (!file) return;
         const reader = new FileReader();
@@ -322,23 +355,21 @@
                 if (w > MAX || h > MAX) { const r = Math.min(MAX/w, MAX/h); w *= r; h *= r; }
                 canvas.width = w; canvas.height = h;
                 canvas.getContext('2d').drawImage(img, 0, 0, w, h);
-                pendingAttachment = canvas.toDataURL('image/jpeg', file.size > 2000000 ? 0.6 : 0.9);
+                pendingAttachment = canvas.toDataURL('image/jpeg', 0.6);
                 document.getElementById('attach-preview-img').src = pendingAttachment;
                 document.getElementById('attach-bar').style.display = 'flex';
                 document.getElementById('chat-input').focus();
             };
             img.src = e.target.result;
         };
-        reader.readAsDataURL(file); input.value = ""; 
+        reader.readAsDataURL(file);
     }
 
-    // --- MESSAGES ---
     function renderMessage(m, appendOnly = false) {
         const container = document.getElementById('message-container');
         const isFirst = (m.username !== lastUser || (new Date(m.created_at) - lastTime) > 300000);
         const isAdm = isAdmin(m.username);
         const uClass = getUserClass(m.username);
-        
         let content = m.content || "";
         let replyHtml = '';
         if (content.startsWith('{"_reply"')) {
@@ -347,15 +378,10 @@
                 replyHtml = `<div class="reply-line"><img class="rt-pfp ${getUserClass(p._reply.name)}" src="${p._reply.pfp}"><strong>${p._reply.name}</strong>: ${p._reply.text}</div>`;
             } catch(e){}
         }
-
         let imgSrc = null;
-        if (content.includes('[IMG]')) {
-            const parts = content.split('[IMG]'); content = parts[0]; imgSrc = parts[1]; 
-        }
-
+        if (content.includes('[IMG]')) { const parts = content.split('[IMG]'); content = parts[0]; imgSrc = parts[1]; }
         const row = document.createElement('div');
         row.className = `msg-row ${isFirst || replyHtml ? 'first' : ''}`;
-        
         let reactHtml = '<div class="react-bar">';
         if (m.reactions) {
             for (let [emoji, users] of Object.entries(m.reactions)) {
@@ -364,35 +390,7 @@
             }
         }
         reactHtml += '</div>';
-
-        const textVisual = content.trim() ? `<div class="msg-text">${content}</div>` : '';
-        const imgVisual = imgSrc ? `<img src="${imgSrc}" class="chat-img" onclick="openLightbox(this.src)">` : '';
-
-        const actionHtml = `
-            <div class="action-btn">😀<div class="emoji-picker">
-                <span onclick="addReaction('${m.id}', '👍')">👍</span><span onclick="addReaction('${m.id}', '😂')">😂</span>
-                <span onclick="addReaction('${m.id}', '❤️')">❤️</span><span onclick="addReaction('${m.id}', '💀')">💀</span>
-                <span onclick="addReaction('${m.id}', '🔥')">🔥</span><span onclick="addReaction('${m.id}', '👀')">👀</span>
-            </div></div>
-            <div class="action-btn" onclick="setReply('${m.id}', '${m.username.split('#')[0]}', '${content.replace(/'/g,"\\'")}')">↩️</div>
-        `;
-
-        row.innerHTML = `
-            ${replyHtml}
-            <div class="msg-flex">
-                <div class="avatar-col">${(isFirst || replyHtml) ? `<img src="${getPfp(m.username)}" class="msg-pfp ${uClass}" onclick="showMiniProfile(event, '${m.username}')">` : ''}</div>
-                <div class="content-col">
-                    ${(isFirst || replyHtml) ? `<div class="msg-header">
-                        <span class="username" style="color:${isAdm?'#ffcc00':''}" onclick="showMiniProfile(event, '${m.username}')">${m.username.split('#')[0]}${isAdm?' 👑':''}</span>
-                        <span class="timestamp">${new Date(m.created_at).toLocaleDateString()} ${new Date(m.created_at).toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'})}</span>
-                    </div>` : ''}
-                    ${textVisual}
-                    ${imgVisual}
-                    ${reactHtml === '<div class="react-bar"></div>' ? '' : reactHtml}
-                </div>
-            </div>
-            <div class="msg-actions">${actionHtml}</div>`;
-        
+        row.innerHTML = `${replyHtml}<div class="msg-flex"><div class="avatar-col">${(isFirst || replyHtml) ? `<img src="${getPfp(m.username)}" class="msg-pfp ${uClass}" onclick="showMiniProfile(event, '${m.username}')">` : ''}</div><div class="content-col">${(isFirst || replyHtml) ? `<div class="msg-header"><span class="username" style="color:${isAdm?'#ffcc00':''}" onclick="showMiniProfile(event, '${m.username}')">${m.username.split('#')[0]}${isAdm?' 👑':''}</span><span class="timestamp">${new Date(m.created_at).toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'})}</span></div>` : ''}<div class="msg-text">${content}</div>${imgSrc ? `<img src="${imgSrc}" class="chat-img" onclick="openLightbox(this.src)">` : ''}${reactHtml === '<div class="react-bar"></div>' ? '' : reactHtml}</div></div><div class="msg-actions"><div class="action-btn">😀<div class="emoji-picker"><span onclick="addReaction('${m.id}', '👍')">👍</span><span onclick="addReaction('${m.id}', '❤️')">❤️</span><span onclick="addReaction('${m.id}', '💀')">💀</span></div></div><div class="action-btn" onclick="setReply('${m.id}', '${m.username.split('#')[0]}', '${content.replace(/'/g,"\\'")}')">↩️</div></div>`;
         container.appendChild(row);
         if (appendOnly) container.scrollTop = container.scrollHeight;
         lastUser = m.username; lastTime = new Date(m.created_at);
@@ -402,7 +400,6 @@
         let finalVal = val;
         if (pendingAttachment) finalVal += "[IMG]" + pendingAttachment;
         if (pendingReply) finalVal = JSON.stringify({ _reply: pendingReply, content: finalVal });
-        
         if (currentChannel === 'welcome') {
             const pass = isAdmin(myUsername) ? null : prompt("Admin Passcode:");
             await db.rpc('post_admin_message', { passcode: pass, p_username: myUsername, p_content: finalVal, p_channel: 'welcome' });
@@ -415,218 +412,71 @@
     document.getElementById('chat-input').onkeypress = async (e) => { 
         if(e.key === 'Enter') {
             const val = e.target.value.trim();
-            if (val.startsWith('/timeout ')) {
-                if (isAdmin(myUsername)) {
-                    const parts = val.split(' ');
-                    if (parts.length === 3) {
-                        const target = parts[1]; const mins = parseInt(parts[2]);
-                        const pass = prompt(`Admin Passcode to timeout ${target} for ${mins} minutes:`);
-                        if (pass) {
-                            const { error } = await db.rpc('apply_timeout', { pass: pass, target: target, minutes: mins });
-                            if (error) alert("Timeout failed: " + error.message); else alert(`${target} timed out.`);
-                        }
-                    } else alert("Usage: /timeout username#1234 5");
-                } else alert("Only the Admin can use this command.");
-                e.target.value = ''; return;
-            }
             if (val === '/clear') { document.getElementById('message-container').innerHTML = ''; e.target.value = ''; return; }
             if(val || pendingAttachment) { sendMessage(val); e.target.value = ''; }
         } 
     };
 
-    // --- TYPING INDICATOR ---
-    let typingUsers = new Map(), lastTypingTime = 0;
-    const typingStatusChannel = db.channel('typing_events').on('broadcast', { event: 'typing' }, payload => {
-        if (payload.payload.channel === currentChannel && payload.payload.user !== myUsername) {
-            const u = payload.payload.user.split('#')[0];
-            if (typingUsers.has(u)) clearTimeout(typingUsers.get(u));
-            typingUsers.set(u, setTimeout(() => { typingUsers.delete(u); updateTypingUI(); }, 3000));
-            updateTypingUI();
-        }
-    }).subscribe();
-
-    function updateTypingUI() {
-        const users = Array.from(typingUsers.keys()), el = document.getElementById('typing-text');
-        if (users.length === 0) el.innerText = '';
-        else if (users.length === 1) el.innerHTML = `<strong>${users[0]}</strong> is typing...`;
-        else el.innerHTML = `<strong>${users[0]}</strong> and +${users.length - 1} others are typing...`;
+    async function loadMessages() {
+        const container = document.getElementById('message-container');
+        container.innerHTML = ''; lastUser = null; lastTime = 0;
+        const { data } = await db.from('Messages').select('*').eq('channel', currentChannel).order('created_at', { ascending: true });
+        if (data) data.forEach(m => renderMessage(m, true));
     }
 
-    document.getElementById('chat-input').addEventListener('input', (e) => {
-        if (e.target.value.trim().length > 0 && myUsername && !document.getElementById('input-box-wrapper').classList.contains('is-timeouted')) {
-            const now = Date.now();
-            if (now - lastTypingTime > 2000) {
-                typingStatusChannel.send({ type: 'broadcast', event: 'typing', payload: { user: myUsername, channel: currentChannel } });
-                lastTypingTime = now;
-            }
-        }
-    });
-
-    // --- INIT ---
     function openModal(isEdit = false) {
         document.getElementById('signup-overlay').style.display = 'flex';
         if (isEdit && myUsername) {
-            document.getElementById('modal-title').innerText = "Edit Profile";
             document.getElementById('modal-username').value = myUsername.split('#')[0];
-            document.getElementById('modal-avatar').src = myAvatar || `https://api.dicebear.com/7.x/pixel-art/svg?seed=${myUsername}`;
+            document.getElementById('modal-avatar').src = myAvatar;
             document.getElementById('cancel-profile-btn').style.display = 'block';
-        } else document.getElementById('modal-avatar').src = `https://api.dicebear.com/7.x/pixel-art/svg?seed=${Math.random()}`;
+        }
     }
-    
+
     async function saveProfile() {
         const u = document.getElementById('modal-username').value.trim();
-        if(!u) return alert("Username required");
-        const currentTag = myUsername ? myUsername.split('#')[1] : Math.floor(1000+Math.random()*9000);
-        myUsername = u + "#" + currentTag;
+        if(!u) return;
+        myUsername = u + "#" + (myUsername ? myUsername.split('#')[1] : Math.floor(1000+Math.random()*9000));
         myAvatar = document.getElementById('modal-avatar').src;
-        
         localStorage.setItem('discordGuestName', myUsername);
         localStorage.setItem('discordGuestPfp', myAvatar);
-        
-        // UPSERT INTO DATABASE
         await db.from('Users').upsert({ username: myUsername, avatar_url: myAvatar });
-        
         location.reload();
     }
 
     async function initApp() {
-        if (!myUsername) {
-            openModal(false);
-            return;
-        }
+        if (!myUsername) { openModal(false); return; }
 
-        // 1. Fetch Global User List
-        const { data: usersData } = await db.from('Users').select('*');
-        if (usersData) {
-            allGlobalUsers = usersData;
-            usersData.forEach(u => livePfps[u.username] = u.avatar_url);
-        }
-
-        // 2. Ensure Current User is in DB (Upsert on load)
-        if (!myAvatar) myAvatar = `https://api.dicebear.com/7.x/pixel-art/svg?seed=${myUsername}`;
-        await db.from('Users').upsert({ username: myUsername, avatar_url: myAvatar });
-        livePfps[myUsername] = myAvatar;
-
-        // 3. Setup UI
+        // Load Basic Profile UI
         const isMeAdmin = isAdmin(myUsername);
         document.getElementById('my-name').innerHTML = `<span style="color:${isMeAdmin?'#ffcc00':'white'}">${myUsername.split('#')[0]}${isMeAdmin?' 👑':''}</span>`;
         document.getElementById('my-hash').innerText = '#' + (myUsername.split('#')[1] || '0000');
         document.getElementById('my-pfp').src = myAvatar;
-        
-        db.channel('msgs').on('postgres_changes', { event: '*', schema: 'public', table: 'Messages' }, () => loadMessages()).subscribe();
-        db.channel('timeouts').on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'Timeouts', filter: `target_user=eq.${myUsername}` }, () => checkTimeouts()).subscribe();
 
-        // 4. Presence Sync (Handles Online AND Offline Lists)
-const presence = db.channel('online_users', { config: { presence: { key: myUsername } } });
-
-// Note: Added 'async' right here so we can fetch the offline users from the DB
-presence.on('presence', { event: 'sync' }, async () => {
-    const state = presence.presenceState();
-    const uniqueUsers = Object.keys(state);
-    
-    // -------------------------
-    // RENDER ONLINE
-    // -------------------------
-    const onlineList = document.getElementById('member-list-online');
-    onlineList.innerHTML = '';
-    document.getElementById('online-count').innerText = uniqueUsers.length;
-    
-    uniqueUsers.forEach(userKey => {
-        const userPfp = state[userKey][0].pfp || `https://api.dicebear.com/7.x/pixel-art/svg?seed=${userKey}`;
-        livePfps[userKey] = userPfp; 
-        document.querySelectorAll(`.${getUserClass(userKey)}`).forEach(img => img.src = userPfp);
-
-        const isAdm = isAdmin(userKey);
-        onlineList.innerHTML += `
-        <div class="member-item" onclick="showMiniProfile(event, '${userKey}')">
-            <div class="member-avatar-wrapper"><img src="${userPfp}"><div class="status-dot"></div></div>
-            <span style="color:${isAdm?'#ffcc00':'#dbdee1'}">${userKey.split('#')[0]}${isAdm?' 👑':''}</span>
-        </div>`;
-    });
-
-    // -------------------------
-    // RENDER OFFLINE
-    // -------------------------
-    const offlineList = document.getElementById('member-list-offline');
-    offlineList.innerHTML = '';
-    
-    // Fetch all users from the database
-    const { data: allUsers, error } = await db.from('Users').select('*');
-    if (error) {
-        console.error("Error fetching offline users:", error);
-        return;
-    }
-
-    // Filter out the users who are currently online
-    const offlineUsers = allUsers.filter(u => !uniqueUsers.includes(u.username));
-    
-    // Update the offline count (Assuming you have an element with id="offline-count")
-    const offlineCountEl = document.getElementById('offline-count');
-    if (offlineCountEl) offlineCountEl.innerText = offlineUsers.length;
-
-    offlineUsers.forEach(user => {
-        const userKey = user.username;
-        const userPfp = user.avatar_url || `https://api.dicebear.com/7.x/pixel-art/svg?seed=${userKey}`;
-        const isAdm = isAdmin(userKey);
-        
-        // Renders with inline styling to fade them out and make the dot grey
-        offlineList.innerHTML += `
-        <div class="member-item" onclick="showMiniProfile(event, '${userKey}')" style="opacity: 0.5;">
-            <div class="member-avatar-wrapper">
-                <img src="${userPfp}" style="filter: grayscale(100%);">
-                <div class="status-dot" style="background-color: #747f8d;"></div>
-            </div>
-            <span style="color:${isAdm?'#a89020':'#747f8d'}">${userKey.split('#')[0]}${isAdm?' 👑':''}</span>
-        </div>`;
-    });
-});
-
-            allGlobalUsers.forEach(dbUser => {
-                if (!uniqueUsers.includes(dbUser.username)) {
-                    offlineCount++;
-                    const isAdm = isAdmin(dbUser.username);
-                    const offlinePfp = livePfps[dbUser.username] || dbUser.avatar_url;
-                    
-                    offlineList.innerHTML += `
-                    <div class="member-item offline" onclick="showMiniProfile(event, '${dbUser.username}')">
-                        <div class="member-avatar-wrapper">
-                            <img src="${offlinePfp}">
-                            <div class="status-dot offline"></div>
-                        </div>
-                        <span style="color:${isAdm?'#b99500':'#80848e'}">${dbUser.username.split('#')[0]}${isAdm?' 👑':''}</span>
-                    </div>`;
-                }
-            });
-            document.getElementById('offline-count').innerText = offlineCount;
-
+        // Presence Setup
+        const presence = db.channel('online_users', { config: { presence: { key: myUsername } } });
+        presence.on('presence', { event: 'sync' }, () => {
+            refreshMemberLists(presence.presenceState());
         }).subscribe(async (status) => {
-            if (status === 'SUBSCRIBED') await presence.track({ online_at: new Date().toISOString(), pfp: myAvatar });
+            if (status === 'SUBSCRIBED') await presence.track({ pfp: myAvatar });
         });
 
-        loadMessages(); checkTimeouts();
-    }
+        // Realtime Listeners
+        db.channel('msgs').on('postgres_changes', { event: '*', schema: 'public', table: 'Messages' }, () => loadMessages()).subscribe();
+        
+        // Channel Switching
+        document.querySelectorAll('.channel-item').forEach(el => {
+            el.onclick = () => {
+                document.querySelectorAll('.channel-item').forEach(c => c.classList.remove('active'));
+                el.classList.add('active'); currentChannel = el.dataset.channel;
+                document.getElementById('chat-input').placeholder = `Message #${currentChannel}`;
+                loadMessages();
+            };
+        });
 
-    async function loadMessages() {
-        const { data } = await db.from('Messages').select('*').eq('channel', currentChannel).order('created_at', { ascending: true });
-        document.getElementById('message-container').innerHTML = ''; 
-        lastUser = null; lastTime = 0;
-        
-        if(data) {
-            data.forEach(m => renderMessage(m, false));
-            const c = document.getElementById('message-container');
-            c.scrollTop = c.scrollHeight;
-        }
-        
-        if(!document.getElementById('input-box-wrapper').classList.contains('is-timeouted')) 
-            document.getElementById('chat-input').placeholder = `Message #${currentChannel}`;
+        loadMessages();
+        checkTimeouts();
     }
-    
-    document.querySelectorAll('.channel-item').forEach(ci => {
-        ci.onclick = () => {
-            document.querySelectorAll('.channel-item').forEach(i => i.classList.remove('active'));
-            ci.classList.add('active'); currentChannel = ci.dataset.channel; loadMessages();
-        };
-    });
 
     initApp();
 </script>
