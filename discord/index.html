@@ -517,33 +517,69 @@
         db.channel('timeouts').on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'Timeouts', filter: `target_user=eq.${myUsername}` }, () => checkTimeouts()).subscribe();
 
         // 4. Presence Sync (Handles Online AND Offline Lists)
-        const presence = db.channel('online_users', { config: { presence: { key: myUsername } } });
-        presence.on('presence', { event: 'sync' }, () => {
-            const state = presence.presenceState();
-            const uniqueUsers = Object.keys(state);
-            
-            // Render Online
-            const onlineList = document.getElementById('member-list-online');
-            onlineList.innerHTML = '';
-            document.getElementById('online-count').innerText = uniqueUsers.length;
-            
-            uniqueUsers.forEach(userKey => {
-                const userPfp = state[userKey][0].pfp || `https://api.dicebear.com/7.x/pixel-art/svg?seed=${userKey}`;
-                livePfps[userKey] = userPfp; 
-                document.querySelectorAll(`.${getUserClass(userKey)}`).forEach(img => img.src = userPfp);
+const presence = db.channel('online_users', { config: { presence: { key: myUsername } } });
 
-                const isAdm = isAdmin(userKey);
-                onlineList.innerHTML += `
-                <div class="member-item" onclick="showMiniProfile(event, '${userKey}')">
-                    <div class="member-avatar-wrapper"><img src="${userPfp}"><div class="status-dot"></div></div>
-                    <span style="color:${isAdm?'#ffcc00':'#dbdee1'}">${userKey.split('#')[0]}${isAdm?' 👑':''}</span>
-                </div>`;
-            });
+// Note: Added 'async' right here so we can fetch the offline users from the DB
+presence.on('presence', { event: 'sync' }, async () => {
+    const state = presence.presenceState();
+    const uniqueUsers = Object.keys(state);
+    
+    // -------------------------
+    // RENDER ONLINE
+    // -------------------------
+    const onlineList = document.getElementById('member-list-online');
+    onlineList.innerHTML = '';
+    document.getElementById('online-count').innerText = uniqueUsers.length;
+    
+    uniqueUsers.forEach(userKey => {
+        const userPfp = state[userKey][0].pfp || `https://api.dicebear.com/7.x/pixel-art/svg?seed=${userKey}`;
+        livePfps[userKey] = userPfp; 
+        document.querySelectorAll(`.${getUserClass(userKey)}`).forEach(img => img.src = userPfp);
 
-            // Render Offline
-            const offlineList = document.getElementById('member-list-offline');
-            offlineList.innerHTML = '';
-            let offlineCount = 0;
+        const isAdm = isAdmin(userKey);
+        onlineList.innerHTML += `
+        <div class="member-item" onclick="showMiniProfile(event, '${userKey}')">
+            <div class="member-avatar-wrapper"><img src="${userPfp}"><div class="status-dot"></div></div>
+            <span style="color:${isAdm?'#ffcc00':'#dbdee1'}">${userKey.split('#')[0]}${isAdm?' 👑':''}</span>
+        </div>`;
+    });
+
+    // -------------------------
+    // RENDER OFFLINE
+    // -------------------------
+    const offlineList = document.getElementById('member-list-offline');
+    offlineList.innerHTML = '';
+    
+    // Fetch all users from the database
+    const { data: allUsers, error } = await db.from('Users').select('*');
+    if (error) {
+        console.error("Error fetching offline users:", error);
+        return;
+    }
+
+    // Filter out the users who are currently online
+    const offlineUsers = allUsers.filter(u => !uniqueUsers.includes(u.username));
+    
+    // Update the offline count (Assuming you have an element with id="offline-count")
+    const offlineCountEl = document.getElementById('offline-count');
+    if (offlineCountEl) offlineCountEl.innerText = offlineUsers.length;
+
+    offlineUsers.forEach(user => {
+        const userKey = user.username;
+        const userPfp = user.avatar_url || `https://api.dicebear.com/7.x/pixel-art/svg?seed=${userKey}`;
+        const isAdm = isAdmin(userKey);
+        
+        // Renders with inline styling to fade them out and make the dot grey
+        offlineList.innerHTML += `
+        <div class="member-item" onclick="showMiniProfile(event, '${userKey}')" style="opacity: 0.5;">
+            <div class="member-avatar-wrapper">
+                <img src="${userPfp}" style="filter: grayscale(100%);">
+                <div class="status-dot" style="background-color: #747f8d;"></div>
+            </div>
+            <span style="color:${isAdm?'#a89020':'#747f8d'}">${userKey.split('#')[0]}${isAdm?' 👑':''}</span>
+        </div>`;
+    });
+});
 
             allGlobalUsers.forEach(dbUser => {
                 if (!uniqueUsers.includes(dbUser.username)) {
