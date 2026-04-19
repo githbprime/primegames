@@ -228,19 +228,16 @@
     function getPfp(user) { return livePfps[user] || `https://api.dicebear.com/7.x/pixel-art/svg?seed=${user}`; }
     function getUserClass(user) { return `avatar-${user.replace('#', '-')}`; }
 
-    // --- NEW SEPARATE RENDER FUNCTION ---
-    async function refreshMemberLists(presenceState) {
+async function refreshMemberLists(presenceState) {
         const onlineUsernames = Object.keys(presenceState);
         const onlineList = document.getElementById('member-list-online');
         const offlineList = document.getElementById('member-list-offline');
         
-        // Render Online Immediately
         onlineList.innerHTML = '';
         onlineUsernames.forEach(userKey => {
             const userPfp = presenceState[userKey][0].pfp || getPfp(userKey);
             livePfps[userKey] = userPfp;
 
-            // --- THE FIX: Force update all PFPs in the chat for this user ---
             document.querySelectorAll(`.${getUserClass(userKey)}`).forEach(img => {
                 if (img.src !== userPfp) img.src = userPfp;
             });
@@ -257,28 +254,37 @@
         });
         document.getElementById('online-count').innerText = onlineUsernames.length;
 
-        // Fetch and Render Offline (Smart Bank Logic)
         try {
             const { data: allUsers } = await db.from('Users').select('*');
             const { data: msgHistory } = await db.from('Messages').select('username');
 
             const bank = new Map();
-            if (allUsers) allUsers.forEach(u => bank.set(u.username, u.avatar_url));
-            if (msgHistory) msgHistory.forEach(m => {
-                if (!bank.has(m.username)) {
-                    bank.set(m.username, `https://api.dicebear.com/7.x/pixel-art/svg?seed=${m.username}`);
-                }
-            });
+            // Prioritize the Users table because it has the real avatar_urls
+            if (allUsers) {
+                allUsers.forEach(u => {
+                    if (u.username) bank.set(u.username, u.avatar_url);
+                });
+            }
+            
+            // Backfill from messages only if they aren't in the Users table
+            if (msgHistory) {
+                msgHistory.forEach(m => {
+                    if (m.username && !bank.has(m.username)) {
+                        bank.set(m.username, `https://api.dicebear.com/7.x/pixel-art/svg?seed=${m.username}`);
+                    }
+                });
+            }
 
             offlineList.innerHTML = '';
             let offlineCount = 0;
             bank.forEach((avatar, username) => {
                 if (!onlineUsernames.includes(username)) {
                     const isAdm = isAdmin(username);
+                    // Use the avatar from the bank
                     offlineList.innerHTML += `
                         <div class="member-item offline" onclick="showMiniProfile(event, '${username}')">
                             <div class="member-avatar-wrapper">
-                                <img src="${avatar}" class="${getUserClass(username)}" style="filter: grayscale(100%);">
+                                <img src="${avatar}" class="${getUserClass(username)}" style="filter: grayscale(100%); opacity: 0.6;">
                                 <div class="status-dot offline"></div>
                             </div>
                             <span style="color:${isAdm?'#a89020':'#747f8d'}">${username.split('#')[0]}${isAdm?' 👑':''}</span>
@@ -482,6 +488,8 @@ function renderMessage(m, appendOnly = false) {
         const myPfpImg = document.getElementById('my-pfp');
         myPfpImg.src = myAvatar;
         myPfpImg.className = getUserClass(myUsername); // This makes sure the update loop finds it
+        
+        await db.from('Users').upsert({ username: myUsername, avatar_url: myAvatar });
         
         // Presence Setup
         const presence = db.channel('online_users', { config: { presence: { key: myUsername } } });
