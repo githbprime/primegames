@@ -379,21 +379,25 @@
             });
         }
 
-function search() {
+        function search() {
             let input = document.getElementById('searchBar').value.toLowerCase();
             let titles = document.getElementsByClassName('row-title');
+            let bigTitles = document.getElementsByClassName('big-row-title');
             let trendingRow = document.getElementById('trending');
             let newRow = document.getElementById('new');
             let pokemonRow = document.getElementById('pokemon');
             let allRow = document.getElementById('all');
-            let apps = document.getElementById('apps');
+            let appsRow = document.getElementById('apps');
             let footer = document.getElementById('requestFooter');
             let hero = document.getElementById('hero');
 
             if (input.trim() !== "") {
                 hero.style.display = "none";
                 footer.style.display = "none";
+                
                 for (let i = 0; i < titles.length; i++) titles[i].style.display = "none";
+                for (let i = 0; i < bigTitles.length; i++) bigTitles[i].style.display = "none";
+                
                 trendingRow.style.display = "none";
                 newRow.style.display = "none";
                 pokemonRow.style.display = "none";
@@ -407,7 +411,10 @@ function search() {
             } else {
                 hero.style.display = "flex";
                 footer.style.display = "flex";
+                
                 for (let i = 0; i < titles.length; i++) titles[i].style.display = "block";
+                for (let i = 0; i < bigTitles.length; i++) bigTitles[i].style.display = "block";
+                
                 trendingRow.style.display = "flex";
                 newRow.style.display = "flex";
                 pokemonRow.style.display = "flex";
