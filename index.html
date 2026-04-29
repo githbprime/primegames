@@ -352,7 +352,7 @@
             });
         }
 
-        function search() {
+function search() {
             let input = document.getElementById('searchBar').value.toLowerCase();
             let titles = document.getElementsByClassName('row-title');
             let trendingRow = document.getElementById('trending');
@@ -360,12 +360,15 @@
             let pokemonRow = document.getElementById('pokemon');
             let allRow = document.getElementById('all');
             let footer = document.getElementById('requestFooter');
+            let hero = document.getElementById('hero'); // <-- Added this
 
             if (input.trim() !== "") {
+                hero.style.display = "none"; // <-- Hides hero during search
                 footer.style.display = "none";
                 for (let i = 0; i < titles.length; i++) titles[i].style.display = "none";
                 trendingRow.style.display = "none";
                 newRow.style.display = "none";
+                pokemonRow.style.display = "none"; // Added this to hide pokemon row too
                 
                 let cards = allRow.getElementsByClassName('card');
                 for (let i = 0; i < cards.length; i++) {
@@ -373,10 +376,12 @@
                     cards[i].style.display = name.includes(input) ? "block" : "none";
                 }
             } else {
+                hero.style.display = "flex"; // <-- Shows hero again when search is cleared
                 footer.style.display = "flex";
                 for (let i = 0; i < titles.length; i++) titles[i].style.display = "block";
                 trendingRow.style.display = "flex";
                 newRow.style.display = "flex";
+                pokemonRow.style.display = "flex"; // Added this to show pokemon row
                 
                 let allCards = document.getElementsByClassName('card');
                 for (let i = 0; i < allCards.length; i++) allCards[i].style.display = "block";
@@ -415,6 +420,7 @@
         }
 
         window.onload = () => {
+            loadFeaturedGame();
             loadGames();
             sortAllGames();
         };
