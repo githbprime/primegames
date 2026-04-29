@@ -282,7 +282,7 @@
 <body>
     <header>
         <div class="logo">PRIME GAMES</div>
-        <input type="text" id="searchBar" placeholder="Search games..." onkeyup="search()">
+        <input type="text" id="searchBar" placeholder="Search games/apps..." onkeyup="search()">
     </header>
 
     <div id="hero">
@@ -410,30 +410,22 @@
                 trendingRow.style.display = "none";
                 newRow.style.display = "none";
                 pokemonRow.style.display = "none";
-                appsRow.style.display = "none"; 
                 
-                // Keep the 'All Games' container visible to hold all search results
+                // We show both rows, but they will look like one big grid
                 allRow.style.display = "flex";
+                appsRow.style.display = "flex";
                 
-                // Look through EVERY card on the page (Games and Apps)
+                // Filter all cards (Games and Apps)
                 let allCards = document.querySelectorAll('.card');
                 for (let i = 0; i < allCards.length; i++) {
                     let name = allCards[i].getAttribute('data-name').toLowerCase();
-                    if (name.includes(input)) {
-                        allCards[i].style.display = "block";
-                        // Move the matching card into the 'all' container for a unified grid
-                        allRow.appendChild(allCards[i]);
-                    } else {
-                        allCards[i].style.display = "none";
-                    }
+                    allCards[i].style.display = name.includes(input) ? "block" : "none";
                 }
             } else {
-                // Search is empty - Reset the site layout back to categorized rows
-                loadGames();
-                sortAllGames(); 
-
+                // Clear search: Bring back the original layout
                 hero.style.display = "flex";
                 footer.style.display = "flex";
+                
                 for (let i = 0; i < titles.length; i++) titles[i].style.display = "block";
                 for (let i = 0; i < bigTitles.length; i++) bigTitles[i].style.display = "block";
                 
@@ -441,6 +433,12 @@
                 newRow.style.display = "flex";
                 pokemonRow.style.display = "flex";
                 appsRow.style.display = "flex";
+                
+                // Reset all cards to be visible in their original positions
+                let allCards = document.querySelectorAll('.card');
+                for (let i = 0; i < allCards.length; i++) {
+                    allCards[i].style.display = "block";
+                }
             }
         }
 
