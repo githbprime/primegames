@@ -362,6 +362,13 @@
         ];
 
         function loadGames() {
+            // Clear rows first to prevent duplicates when resetting a search
+            const rows = ['trending', 'new', 'pokemon', 'all', 'apps'];
+            rows.forEach(id => {
+                const row = document.getElementById(id);
+                if (row) row.innerHTML = '';
+            });
+
             gamesDB.forEach(game => {
                 const cardHTML = `
                     <a href="${game.url}" class="card" data-name="${game.title}">
@@ -379,7 +386,7 @@
             });
         }
 
-function search() {
+        function search() {
             let input = document.getElementById('searchBar').value.toLowerCase();
             let titles = document.getElementsByClassName('row-title');
             let bigTitles = document.getElementsByClassName('big-row-title');
@@ -403,34 +410,37 @@ function search() {
                 trendingRow.style.display = "none";
                 newRow.style.display = "none";
                 pokemonRow.style.display = "none";
+                appsRow.style.display = "none"; 
                 
-                // Keep All and Apps rows visible so the filtered results show up
+                // Keep the 'All Games' container visible to hold all search results
                 allRow.style.display = "flex";
-                appsRow.style.display = "flex";
                 
-                // Search through cards in BOTH the 'all' container and 'apps' container
-                let searchableCards = document.querySelectorAll('#all .card, #apps .card');
-                for (let i = 0; i < searchableCards.length; i++) {
-                    let name = searchableCards[i].getAttribute('data-name').toLowerCase();
-                    searchableCards[i].style.display = name.includes(input) ? "block" : "none";
+                // Look through EVERY card on the page (Games and Apps)
+                let allCards = document.querySelectorAll('.card');
+                for (let i = 0; i < allCards.length; i++) {
+                    let name = allCards[i].getAttribute('data-name').toLowerCase();
+                    if (name.includes(input)) {
+                        allCards[i].style.display = "block";
+                        // Move the matching card into the 'all' container for a unified grid
+                        allRow.appendChild(allCards[i]);
+                    } else {
+                        allCards[i].style.display = "none";
+                    }
                 }
             } else {
+                // Search is empty - Reset the site layout back to categorized rows
+                loadGames();
+                sortAllGames(); 
+
                 hero.style.display = "flex";
                 footer.style.display = "flex";
-                
-                // Bring back all headers
                 for (let i = 0; i < titles.length; i++) titles[i].style.display = "block";
                 for (let i = 0; i < bigTitles.length; i++) bigTitles[i].style.display = "block";
                 
-                // Restore all rows
                 trendingRow.style.display = "flex";
                 newRow.style.display = "flex";
                 pokemonRow.style.display = "flex";
                 appsRow.style.display = "flex";
-                
-                // Show every card again
-                let allCards = document.getElementsByClassName('card');
-                for (let i = 0; i < allCards.length; i++) allCards[i].style.display = "block";
             }
         }
 
