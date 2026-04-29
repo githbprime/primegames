@@ -7,7 +7,6 @@
     <title>Home</title>
     <style>
 
-/* --- FEATURED HERO SECTION --- */
         #hero {
             position: relative;
             width: 100%;
@@ -77,6 +76,21 @@
         .play-btn:hover {
             background-color: #e60b0d; /* Slightly brighter red on hover */
             transform: scale(1.05);
+        }
+
+        .vote-hero-btn {
+            position: absolute;
+            bottom: 25px; /* Sits right above the bottom edge */
+            left: 4%;     /* Aligns with the rest of your content */
+            z-index: 10;  /* Ensures it stays above the background gradients */
+            
+            padding: 8px 20px; 
+            font-size: 11px;
+            opacity: 0.8; /* Subtle look so it doesn't distract from 'Play Now' */
+        }
+
+        .vote-hero-btn:hover {
+            opacity: 1; /* Brightens up when you hover */
         }
         
         :root {
