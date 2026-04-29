@@ -6,6 +6,79 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Home</title>
     <style>
+
+/* --- FEATURED HERO SECTION --- */
+        #hero {
+            position: relative;
+            width: 100%;
+            height: 65vh; /* Takes up 65% of your screen height */
+            min-height: 400px;
+            background-size: cover;
+            background-position: top center;
+            display: flex;
+            align-items: center;
+            /* Pulls the image up to sit underneath your sticky header */
+            margin-top: -80px; 
+        }
+
+        /* The Gradient Overlays */
+        #hero::before {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            /* 1st gradient makes the left dark for text, 2nd gradient fades the bottom into your site's background color */
+            background: 
+                linear-gradient(to right, var(--bg) 5%, rgba(5,5,5,0.6) 45%, transparent 100%),
+                linear-gradient(to bottom, transparent 60%, var(--bg) 100%);
+            z-index: 1;
+        }
+
+        .hero-content {
+            position: relative;
+            z-index: 2; /* Keeps text above the gradient */
+            padding: 0 4%;
+            max-width: 600px;
+            margin-top: 40px; /* Pushes text down slightly so it isn't hidden by the header */
+        }
+
+        #hero-title {
+            font-size: 3.5rem;
+            font-weight: 800;
+            margin: 0 0 10px 0;
+            letter-spacing: 1px;
+            font-style: italic;
+            text-shadow: 2px 2px 5px rgba(0,0,0,0.8);
+        }
+
+        #hero-desc {
+            font-size: 1.1rem;
+            color: #ccc;
+            line-height: 1.5;
+            margin: 0 0 30px 0;
+            text-shadow: 1px 1px 3px rgba(0,0,0,0.8);
+        }
+
+        .play-btn {
+            display: inline-block;
+            background-color: var(--accent);
+            color: white;
+            padding: 12px 32px;
+            font-size: 16px;
+            font-weight: bold;
+            text-decoration: none;
+            border-radius: 4px;
+            transition: all 0.2s ease;
+            box-shadow: 0 4px 10px rgba(185, 9, 11, 0.3);
+        }
+
+        .play-btn:hover {
+            background-color: #e60b0d; /* Slightly brighter red on hover */
+            transform: scale(1.05);
+        }
+        
         :root {
             --bg: #050505;
             --card-bg: #141414;
@@ -190,6 +263,14 @@
         <div class="logo">PRIME GAMES</div>
         <input type="text" id="searchBar" placeholder="Search games..." onkeyup="search()">
     </header>
+
+    <div id="hero">
+        <div class="hero-content">
+            <h1 id="hero-title"></h1>
+            <p id="hero-desc"></p>
+            <a href="#" id="hero-play" class="play-btn">▶ Play Now</a>
+        </div>
+    </div>
     
     <div class="container">
         <div class="row-title">Trending Now</div>
@@ -217,13 +298,31 @@
     </footer>
 
     <script>
+        // --- FEATURED GAME (Separate from gamesDB) ---
+        const featuredGame = { 
+            title: "ULTRAKILL", 
+            url: "./ultrakill/index.html", 
+            imgSrc: "https://shared.fastly.steamstatic.com/store_item_assets/steam/apps/1229490/capsule_616x353.jpg?t=1774188523", 
+            desc: "Mankind is dead. Blood is fuel. Hell is full. Experience a fast-paced, ultra-violent retro FPS that combines high-skill movement with stylish combat." 
+        };
+
+        function loadFeaturedGame() {
+            const hero = document.getElementById('hero');
+            document.getElementById('hero-title').textContent = featuredGame.title;
+            document.getElementById('hero-desc').textContent = featuredGame.desc;
+            document.getElementById('hero-play').href = featuredGame.url;
+            
+            // Set the background image dynamically
+            hero.style.backgroundImage = `url('${featuredGame.imgSrc}')`;
+        }
+        
         const gamesDB = [
             { title: "Your Only Move Is HUSTLE", url: "./hustle/index.html", imgSrc: "https://e.snmc.io/lk/f/x/d65d937781df0213f0bf0aa628aa0d06/13368350", tags: ["trending", "all"], index: "1" },
             { title: "People Playground", url: "./ppg/index.html", imgSrc: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRFTD-fKpHod-WBHHOwok7sZ-gK3RpiBLyTxg&s", tags: ["all"], index: "2" },
             { title: "Geometry Dash", url: "./gdash/index.html", imgSrc: "https://images.ctfassets.net/vfkpgemp7ek3/1204734511/2c0723c100ed8d02a603dfe74597a6cb/geometry-dash-revenue.jpg", tags: ["all"], index: "3" },
             { title: "Needy Streamer Overload", url: "./needy/index.html", imgSrc: "https://i.ytimg.com/vi/BBzKrPTFcsU/hqdefault.jpg", tags: ["all"], index: "4" },
             { title: "Slope", url: "./slope/index.html", imgSrc: "https://i.ytimg.com/vi/yEnVcLpTri0/maxresdefault.jpg", tags: ["trending", "all"], index: "5" },
-            { title: "Ultrakill", url: "./ultrakill/index.html", imgSrc: "https://shared.fastly.steamstatic.com/store_item_assets/steam/apps/1229490/capsule_616x353.jpg", tags: ["trending", "all"], index: "6" },
+            { title: "ULTRAKILL", url: "./ultrakill/index.html", imgSrc: "https://shared.fastly.steamstatic.com/store_item_assets/steam/apps/1229490/capsule_616x353.jpg", tags: ["trending", "all"], index: "6" },
             { title: "The Binding of Isaac", url: "./tboi/index.html", imgSrc: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTSVwshZ-Gy5uWVlR5YIFHF93Dp4uwHEf2-rw&s", tags: ["trending", "all"], index: "7" },
             { title: "Pokémon: Fire Red", url: "./firered/index.html", imgSrc: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcR86fNkVgTboxGRyLAE-6dY5Q9ViEQoOG7SRQ&s", tags: ["pokemon", "all"], index: "8" },
             { title: "Melon Sandbox", url: "./melon/index.html", imgSrc: "https://images.steamusercontent.com/ugc/2041853622142661038/6E00C11C89A6207B1A090B94A96A02FA64657896/?imw=637&imh=358&ima=fit&impolicy=Letterbox&imcolor=%23000000&letterbox=true", tags: ["all"], index: "9" },
