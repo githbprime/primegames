@@ -379,7 +379,7 @@
             });
         }
 
-        function search() {
+function search() {
             let input = document.getElementById('searchBar').value.toLowerCase();
             let titles = document.getElementsByClassName('row-title');
             let bigTitles = document.getElementsByClassName('big-row-title');
@@ -395,31 +395,40 @@
                 hero.style.display = "none";
                 footer.style.display = "none";
                 
+                // Hide all section headers
                 for (let i = 0; i < titles.length; i++) titles[i].style.display = "none";
                 for (let i = 0; i < bigTitles.length; i++) bigTitles[i].style.display = "none";
                 
+                // Hide specific category rows
                 trendingRow.style.display = "none";
                 newRow.style.display = "none";
                 pokemonRow.style.display = "none";
-                appsRow.style.display = "none";
                 
-                let cards = allRow.getElementsByClassName('card');
-                for (let i = 0; i < cards.length; i++) {
-                    let name = cards[i].getAttribute('data-name').toLowerCase();
-                    cards[i].style.display = name.includes(input) ? "block" : "none";
+                // Keep All and Apps rows visible so the filtered results show up
+                allRow.style.display = "flex";
+                appsRow.style.display = "flex";
+                
+                // Search through cards in BOTH the 'all' container and 'apps' container
+                let searchableCards = document.querySelectorAll('#all .card, #apps .card');
+                for (let i = 0; i < searchableCards.length; i++) {
+                    let name = searchableCards[i].getAttribute('data-name').toLowerCase();
+                    searchableCards[i].style.display = name.includes(input) ? "block" : "none";
                 }
             } else {
                 hero.style.display = "flex";
                 footer.style.display = "flex";
                 
+                // Bring back all headers
                 for (let i = 0; i < titles.length; i++) titles[i].style.display = "block";
                 for (let i = 0; i < bigTitles.length; i++) bigTitles[i].style.display = "block";
                 
+                // Restore all rows
                 trendingRow.style.display = "flex";
                 newRow.style.display = "flex";
                 pokemonRow.style.display = "flex";
                 appsRow.style.display = "flex";
                 
+                // Show every card again
                 let allCards = document.getElementsByClassName('card');
                 for (let i = 0; i < allCards.length; i++) allCards[i].style.display = "block";
             }
