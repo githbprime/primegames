@@ -80,17 +80,24 @@
 
         .vote-hero-btn {
             position: absolute;
-            bottom: 25px; /* Sits right above the bottom edge */
-            left: 4%;     /* Aligns with the rest of your content */
-            z-index: 10;  /* Ensures it stays above the background gradients */
+            bottom: 25px; 
+            left: 4%;     
+            z-index: 10;  
             
+            opacity: 1; 
+
+            color: #bbb; 
+            border-color: #666;
+
             padding: 8px 20px; 
             font-size: 11px;
-            opacity: 0.8; /* Subtle look so it doesn't distract from 'Play Now' */
+            transition: all 0.3s ease;
         }
 
         .vote-hero-btn:hover {
-            opacity: 1; /* Brightens up when you hover */
+            background-color: var(--text);
+            color: var(--bg);
+            border-color: var(--text);
         }
         
         :root {
