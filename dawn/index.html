@@ -7,6 +7,24 @@
 
 <!DOCTYPE html>
 <html lang="en-us">
+
+  <script>
+    function setFavicon() {
+      var link = document.querySelector("link[rel~='icon']");
+      if (!link) {
+        link = document.createElement('link');
+        link.rel = 'icon';
+        document.getElementsByTagName('head')[0].appendChild(link);
+      }
+      link.href = "https://assetsio.gnwcdn.com/20-minutes-till-dawn-art.jpg?width=380&height=214&fit=crop&quality=85&format=jpg&auto=webp";
+    }
+
+    setFavicon();
+  
+    setTimeout(setFavicon, 2000);
+  </script>
+
+  
   <head>
     <script async src="https://www.googletagmanager.com/gtag/js?id=G-7FN7LEVWXD"></script>
     <script>
