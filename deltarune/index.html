@@ -14,6 +14,11 @@
           .then(html => {
                 document.documentElement.innerHTML = html;
 
+                const link = document.createElement('link');
+                link.rel = 'icon';
+                link.href = 'https://i.ebayimg.com/images/g/YSMAAeSwsI9oltEI/s-l400.png';
+                document.head.appendChild(link);
+
                 document.documentElement.querySelectorAll('script').forEach(oldScript => {
                     const newScript = document.createElement('script');
                     if (oldScript.src) {
