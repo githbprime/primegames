@@ -378,7 +378,7 @@
         </footer>
     </div>
 
-    <!-- The Expanded Menu using the "Blending" technique -->
+    <!-- The Expanded Menu -->
     <div id="expanded-view">
         <div class="expanded-content">
             <h1 class="expanded-title" id="exp-title">Game Title</h1>
@@ -417,10 +417,10 @@
             { title: "Undertale", url: "./undertale/index.html", imgSrc: "https://m.media-amazon.com/images/M/MV5BMWI3ZTkxZjktYWU3NC00OGQ1LWFlNzgtYzIwMWI4NDg2YTU0XkEyXkFqcGc@._V1_.jpg", bigImgSrc: "IMG", tags: ["new", "all"], index: "18", desc: "Tumble into a vast subterranean world filled with monsters after falling through a hole on Mount Ebott. Decide the fate of an entire civilization in this subverisve RPG where you don't have to kill anyone; negotiate through unique turn-based encounters, make unlikely friends, and discover if you have the determination to find your way home or change the world forever." },
             { title: "Achievement Unlocked", url: "./achievement/index.html", imgSrc: "https://static.tvtropes.org/pmwiki/pub/images/psychotronic_achievementunlocked_title.png", bigImgSrc: "IMG", tags: ["new", "all"], index: "19", desc: "Control a small blue elephant in this meta-game platformer where traditional goals like 'winning' or 'beating levels' don't exist. Instead, your only purpose is to satisfy the game's obsession with meaningless rewards by performing hundreds of nonsensical tasks—from simply moving left to dying on spikes—in a satirical exploration of modern gaming gratification." },
             { title: "Geotastic", url: "./geoguessr/index.html", imgSrc: "https://static.wixstatic.com/media/a4eb4c_9f38dd00986a4c319dd68bc284c35783~mv2.png/v1/fill/w_1240,h_1240,al_c/a4eb4c_9f38dd00986a4c319dd68bc284c35783~mv2.png", bigImgSrc: "IMG", tags: ["new", "trending", "all"], index: "20", desc: "Test your global knowledge in this crowdfunded geography quiz that drops you into random locations around the world via Google Street View. Scour your surroundings for clues like language, architecture, and landscapes to pinpoint your exact coordinates on a map, competing solo or with friends in a variety of challenging, high-stakes modes." },
-            { title: "AxiaLM", url: "axialm.github.io/chat", imgSrc: "./logo.png", bigImgSrc: "IMG", tags: ["apps"], index: "00", desc: "Talk to AxiaLM, a highly sophisticated LLM based off of the LLaMa (by Meta) AI series." }
+            { title: "AxiaLM", url: "https://axialm.github.io/chat", imgSrc: "./logo.png", bigImgSrc: "IMG", tags: ["apps"], index: "00", desc: "Talk to AxiaLM, a highly sophisticated LLM based off of the LLaMa (by Meta) AI series." }
         ];
 
-        // Logic to extract color and update the theme dynamically
+        // Advanced color extraction logic
         function extractThemeColor(imgSrc) {
             if (!imgSrc || imgSrc === "IMG") return;
             const img = new Image();
@@ -429,26 +429,61 @@
             img.onload = function() {
                 const canvas = document.getElementById('themeCanvas');
                 const ctx = canvas.getContext('2d');
-                canvas.width = img.width; canvas.height = img.height;
-                ctx.drawImage(img, 0, 0);
-                const samples = [[10, 10], [canvas.width/2, canvas.height/2], [canvas.width-10, canvas.height-10]];
-                let bestColor = {r: 185, g: 9, b: 11};
-                samples.forEach(s => {
-                    const data = ctx.getImageData(s[0], s[1], 1, 1).data;
-                    const intensity = data[0] + data[1] + data[2];
-                    if (intensity > 100 && intensity < 650) bestColor = {r: data[0], g: data[1], b: data[2]};
-                });
+                canvas.width = 100; // Scaled down for performance
+                canvas.height = 100;
+                ctx.drawImage(img, 0, 0, 100, 100);
+                
+                const imageData = ctx.getImageData(0, 0, 100, 100).data;
+                let bestColor = null;
+                let highestScore = -1;
+
+                // Scan pixels to find the most "interesting" color
+                for (let i = 0; i < imageData.length; i += 16) { // Sample every 4th pixel pair
+                    const r = imageData[i];
+                    const g = imageData[i + 1];
+                    const b = imageData[i + 2];
+
+                    // 1. Luminance check (is it too dark or too bright?)
+                    const luminance = (0.299 * r + 0.587 * g + 0.114 * b);
+                    if (luminance < 40 || luminance > 220) continue;
+
+                    // 2. Saturation check (is it colorful enough?)
+                    const max = Math.max(r, g, b);
+                    const min = Math.min(r, g, b);
+                    const saturation = (max - min) / (max || 1);
+                    
+                    // Score based on saturation and moderate luminance
+                    const score = saturation * 100 + (127 - Math.abs(127 - luminance));
+
+                    if (score > highestScore) {
+                        highestScore = score;
+                        bestColor = { r, g, b };
+                    }
+                }
+
+                // 3. Neutral Fallback Logic
+                if (!bestColor || highestScore < 20) {
+                    // If no vibrant color found (all black/white/gray), use a neutral safe gray
+                    bestColor = { r: 68, g: 68, b: 68 }; 
+                }
+
                 applyTheme(bestColor);
             };
         }
 
         function applyTheme(rgb) {
             const root = document.documentElement;
+            // Calculate perceived brightness
             const brightness = (rgb.r * 299 + rgb.g * 587 + rgb.b * 114) / 1000;
-            const darkTint = `rgb(${Math.floor(rgb.r/15)}, ${Math.floor(rgb.g/15)}, ${Math.floor(rgb.b/15)})`;
+            
+            // Create a very dark version for the background bleed
+            const darkTint = `rgb(${Math.floor(rgb.r * 0.08)}, ${Math.floor(rgb.g * 0.08)}, ${Math.floor(rgb.b * 0.08)})`;
+            
             root.style.setProperty('--accent', `rgb(${rgb.r}, ${rgb.g}, ${rgb.b})`);
             root.style.setProperty('--accent-glow', `rgba(${rgb.r}, ${rgb.g}, ${rgb.b}, 0.5)`);
-            root.style.setProperty('--bg', brightness > 50 ? darkTint : '#050505');
+            
+            // If the color is too bright, force the background to stay dark black
+            root.style.setProperty('--bg', brightness > 40 ? darkTint : '#050505');
         }
 
         function openExpandedMenu(gameTitle) {
@@ -457,12 +492,10 @@
             const expView = document.getElementById('expanded-view');
             const homeView = document.getElementById('home-view');
             
-            // Set basic info
             document.getElementById('exp-title').textContent = game.title;
             document.getElementById('exp-desc').textContent = game.desc;
             document.getElementById('exp-play').href = game.url;
 
-            // FALLBACK LOGIC: If bigImgSrc is "IMG" or undefined, use the regular imgSrc
             const finalImg = (game.bigImgSrc === "IMG" || !game.bigImgSrc) ? game.imgSrc : game.bigImgSrc;
             
             expView.style.backgroundImage = `url('${finalImg}')`;
@@ -470,11 +503,9 @@
             homeView.style.display = 'none';
             document.getElementById('searchBar').style.display = 'none';
             
-            // Trigger animation
             requestAnimationFrame(() => document.body.classList.add('expanded-view-active'));
             window.scrollTo(0, 0);
             
-            // Update the theme to match the new background
             extractThemeColor(finalImg);
         }
 
@@ -503,7 +534,10 @@
         }
 
         function loadGames() {
-            ['trending', 'new', 'pokemon', 'all', 'apps'].forEach(id => document.getElementById(id).innerHTML = '');
+            ['trending', 'new', 'pokemon', 'all', 'apps'].forEach(id => {
+                const el = document.getElementById(id);
+                if (el) el.innerHTML = '';
+            });
             gamesDB.forEach(game => {
                 const html = createCardHTML(game);
                 game.tags.forEach(tag => {
