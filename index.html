@@ -35,8 +35,10 @@
         #hero, #expanded-view {
             position: relative;
             width: 100%;
+            /* Perfect fit scaling calculation */
             background-size: cover;
-            background-position: top center;
+            background-position: center;
+            background-repeat: no-repeat;
             display: flex;
             align-items: center;
             transition: transform 2s cubic-bezier(0.16, 1, 0.3, 1), background-image 1.2s ease, opacity 0.8s ease;
@@ -71,7 +73,7 @@
             opacity: 1;
         }
 
-        /* The "Blending" Effect: Gradient overlays that bleed the image into the BG color */
+        /* The "Blending" Effect */
         #hero::before, #expanded-view::before {
             content: "";
             position: absolute;
@@ -158,6 +160,12 @@
             transform: translateY(0);
         }
 
+        .header-left {
+            display: flex;
+            align-items: center;
+            gap: 40px;
+        }
+
         .logo {
             color: var(--accent);
             font-size: 24px;
@@ -168,6 +176,48 @@
             cursor: pointer;
             position: relative;
             z-index: 210;
+        }
+
+        /* Nav Tab Styles */
+        .main-nav {
+            display: flex;
+            gap: 20px;
+            position: relative;
+            z-index: 210;
+        }
+
+        .nav-btn {
+            background: none;
+            border: none;
+            color: rgba(255, 255, 255, 0.6);
+            font-weight: bold;
+            font-size: 15px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            padding: 5px 10px;
+            font-family: inherit;
+        }
+
+        .nav-btn:hover {
+            color: #fff;
+            transform: scale(1.05);
+            text-shadow: 0 0 10px rgba(255, 255, 255, 0.5);
+        }
+
+        .nav-btn.active {
+            color: #fff;
+            text-shadow: 0 0 15px rgba(255, 255, 255, 0.8);
+        }
+        
+        .nav-btn svg {
+            transition: filter 0.3s ease;
+        }
+
+        .nav-btn:hover svg, .nav-btn.active svg {
+            filter: drop-shadow(0 0 5px rgba(255, 255, 255, 0.8));
         }
 
         #searchBar {
@@ -190,6 +240,14 @@
 
         .container {
             padding: 0 4% 50px 4%;
+        }
+
+        .tab-content {
+            display: none;
+        }
+        
+        .tab-content.active-tab {
+            display: block;
         }
 
         .reveal-section {
@@ -230,16 +288,20 @@
             scrollbar-color: var(--accent) transparent;
         }
 
-        #trending, #new, #pokemon {
+        /* Horizontal Rows */
+        #trending-games, #new-games, #pokemon-games, #recent-games,
+        #trending-ent, #new-ent, #recent-ent {
             overflow-x: auto;
             overflow-y: hidden;
             flex-wrap: nowrap;
             padding-bottom: 50px;
         }
 
-        #all, #apps {
+        /* Wrapping Grids */
+        #all-games, #apps-games, #all-ent {
             flex-wrap: wrap; 
             justify-content: flex-start;
+            overflow: visible;
         }
 
         .row::-webkit-scrollbar { height: 4px; }
@@ -258,6 +320,11 @@
             margin-bottom: 20px;
         }
 
+        /* Landscape orientation for Entertainment Posters */
+        .card.landscape {
+            width: 300px;
+        }
+
         .card:hover { transform: translateY(-10px) scale(1.03); z-index: 20; }
 
         .card img.glow {
@@ -269,6 +336,8 @@
             background: var(--accent); pointer-events: none;
         }
 
+        .card.landscape img.glow { height: 169px; }
+
         .card:hover img.glow { opacity: 0.90; transform: scale(1.15); }
 
         .card img.poster {
@@ -277,6 +346,8 @@
             z-index: 1; box-shadow: 0 10px 20px rgba(0,0,0,0.4);
             transition: border-color 0.4s ease; cursor: pointer;
         }
+
+        .card.landscape img.poster { height: 169px; }
 
         .card:hover img.poster { border-color: var(--accent); }
 
@@ -298,6 +369,7 @@
             overflow: hidden; background-color: var(--accent); color: white;
             padding: 6px 15px; font-size: 12px; font-weight: 700;
             text-decoration: none; border-radius: 4px; transition: all 0.4s ease;
+            cursor: pointer;
         }
 
         .card:hover .card-title { opacity: 1; white-space: normal; }
@@ -319,10 +391,71 @@
 
         .all-header { display: flex; justify-content: space-between; align-items: flex-end; padding-right: 4%; margin-top: 50px; z-index: 10; }
 
-        #sortDropdown {
-            background-color: rgba(255,255,255,0.05); color: var(--text);
-            border: 1px solid rgba(255,255,255,0.1); padding: 8px 16px; border-radius: 20px;
-            font-size: 13px; outline: none; cursor: pointer;
+        /* Custom Dropdown Animation & Layout */
+        .custom-dropdown {
+            position: relative;
+            display: inline-block;
+        }
+
+        .dropdown-toggle {
+            background-color: rgba(255,255,255,0.05);
+            color: var(--text);
+            border: 1px solid rgba(255,255,255,0.1);
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-size: 13px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            min-width: 140px;
+            text-align: left;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-family: inherit;
+        }
+
+        .dropdown-toggle:hover {
+            border-color: var(--accent);
+            background-color: rgba(255,255,255,0.1);
+        }
+
+        .custom-dropdown.open .dropdown-toggle {
+            border-radius: 8px 8px 0 0;
+            background-color: rgba(255,255,255,0.1);
+            border-color: var(--accent);
+        }
+
+        .dropdown-menu {
+            position: absolute;
+            top: 100%;
+            left: 0;
+            right: 0;
+            background-color: var(--card-bg);
+            border: 1px solid var(--accent);
+            border-top: none;
+            border-radius: 0 0 8px 8px;
+            overflow: hidden;
+            max-height: 0;
+            opacity: 0;
+            transition: max-height 0.4s ease, opacity 0.4s ease;
+            z-index: 100;
+        }
+
+        .custom-dropdown.open .dropdown-menu {
+            max-height: 200px;
+            opacity: 1;
+        }
+
+        .dropdown-item {
+            padding: 10px 16px;
+            font-size: 13px;
+            cursor: pointer;
+            transition: background-color 0.2s ease;
+        }
+
+        .dropdown-item:hover {
+            background-color: var(--accent);
+            color: white;
         }
 
         body::after {
@@ -336,7 +469,29 @@
     <canvas id="themeCanvas" style="display:none;"></canvas>
 
     <header id="mainHeader">
-        <div onclick="goHome()" class="logo">PRIME GAMES</div>
+        <div class="header-left">
+            <a href="https://githbprime.github.io/primegames" class="logo">PRIME GAMES</a>
+            
+            <nav class="main-nav">
+                <button id="nav-games" class="nav-btn active" onclick="switchMode('games')">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <rect x="2" y="6" width="20" height="12" rx="2" ry="2"></rect>
+                        <path d="M6 12h4"></path>
+                        <path d="M8 10v4"></path>
+                        <path d="M15 13h.01"></path>
+                        <path d="M18 11h.01"></path>
+                    </svg>
+                    Games
+                </button>
+                <button id="nav-ent" class="nav-btn" onclick="switchMode('ent')">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <rect x="2" y="7" width="20" height="15" rx="2" ry="2"></rect>
+                        <polyline points="17 2 12 7 7 2"></polyline>
+                    </svg>
+                    Entertainment
+                </button>
+            </nav>
+        </div>
         <input type="text" id="searchBar" placeholder="Search games/apps..." onkeyup="search()">
     </header>
 
@@ -349,45 +504,94 @@
             </div>
             <a href="https://docs.google.com/forms/d/e/1FAIpQLSeS_ODOaVA3azjFqq7a31kPo8krNr6x7iWwRavSEfqqhKb0sw/viewform?usp=header" 
                target="_blank" 
+               id="vote-btn"
                class="request-btn vote-hero-btn" style="position: absolute; bottom: 30px; left: 4%; font-size: 11px; z-index: 999">
                Vote for featured game of the week
             </a>
         </div>
         
         <div class="container">
-            <div class="reveal-section"><div class="row-title">Trending Now</div><div id="trending" class="row"></div></div>
-            <div class="reveal-section"><div class="row-title">New Releases</div><div id="new" class="row"></div></div>
-            <div class="reveal-section"><div class="row-title">Pokémon Main Series</div><div id="pokemon" class="row"></div></div>
-            <div class="reveal-section">
-                <div class="all-header">
-                    <div class="row-title">All Games</div>
-                    <select id="sortDropdown" onchange="sortAllGames()">
-                        <option value="newest">Oldest First</option>
-                        <option value="oldest">Newest First</option>
-                        <option value="az">A-Z</option>
-                        <option value="za">Z-A</option>
-                    </select>
+            <!-- GAMES TAB -->
+            <div id="games-container" class="tab-content active-tab">
+                <div class="reveal-section"><div class="row-title">Trending Now</div><div id="trending-games" class="row"></div></div>
+                <div class="reveal-section"><div class="row-title">New Releases</div><div id="new-games" class="row"></div></div>
+                <div class="reveal-section"><div class="row-title">Pokémon Main Series</div><div id="pokemon-games" class="row"></div></div>
+                
+                <div class="reveal-section" id="recent-games-wrapper" style="display: none;">
+                    <div class="row-title">Continue Playing</div>
+                    <div id="recent-games" class="row"></div>
                 </div>
-                <div id="all" class="row"></div>
+
+                <div class="reveal-section">
+                    <div class="all-header">
+                        <div class="row-title">All Games</div>
+                        <div class="custom-dropdown" id="sort-games-dropdown">
+                            <button class="dropdown-toggle" onclick="toggleDropdown(event, 'games')">
+                                <span id="sort-games-label">Oldest First</span>
+                                <span class="chevron">▼</span>
+                            </button>
+                            <div class="dropdown-menu">
+                                <div class="dropdown-item" onclick="selectSort('games', 'oldest', 'Oldest First')">Oldest First</div>
+                                <div class="dropdown-item" onclick="selectSort('games', 'newest', 'Newest First')">Newest First</div>
+                                <div class="dropdown-item" onclick="selectSort('games', 'az', 'A-Z')">A-Z</div>
+                                <div class="dropdown-item" onclick="selectSort('games', 'za', 'Z-A')">Z-A</div>
+                            </div>
+                        </div>
+                    </div>
+                    <div id="all-games" class="row"></div>
+                </div>
+                <div class="reveal-section"><div class="big-row-title">Apps</div><div id="apps-games" class="row"></div></div>
             </div>
-            <div class="reveal-section"><div class="big-row-title">Apps</div><div id="apps" class="row"></div></div>
+
+            <!-- ENTERTAINMENT TAB -->
+            <div id="ent-container" class="tab-content">
+                <div class="reveal-section"><div class="row-title">Trending Now</div><div id="trending-ent" class="row"></div></div>
+                <div class="reveal-section"><div class="row-title">New Releases</div><div id="new-ent" class="row"></div></div>
+                
+                <div class="reveal-section" id="recent-ent-wrapper" style="display: none;">
+                    <div class="row-title">Continue Watching</div>
+                    <div id="recent-ent" class="row"></div>
+                </div>
+
+                <div class="reveal-section">
+                    <div class="all-header">
+                        <div class="row-title">All Movies & Shows</div>
+                        <div class="custom-dropdown" id="sort-ent-dropdown">
+                            <button class="dropdown-toggle" onclick="toggleDropdown(event, 'ent')">
+                                <span id="sort-ent-label">Oldest First</span>
+                                <span class="chevron">▼</span>
+                            </button>
+                            <div class="dropdown-menu">
+                                <div class="dropdown-item" onclick="selectSort('ent', 'oldest', 'Oldest First')">Oldest First</div>
+                                <div class="dropdown-item" onclick="selectSort('ent', 'newest', 'Newest First')">Newest First</div>
+                                <div class="dropdown-item" onclick="selectSort('ent', 'az', 'A-Z')">A-Z</div>
+                                <div class="dropdown-item" onclick="selectSort('ent', 'za', 'Z-A')">Z-A</div>
+                            </div>
+                        </div>
+                    </div>
+                    <div id="all-ent" class="row"></div>
+                </div>
+            </div>
+
         </div>
 
         <footer id="requestFooter">
-            <a href="https://docs.google.com/forms/d/e/1FAIpQLScIhmI3hEFJE3hjmUuGqQIFWCHLSbySl_R3BNaJIWPNFbFuSA/viewform?usp=publish-editor" target="_blank" class="request-btn">Request a Game</a>
+            <a href="https://docs.google.com/forms/d/e/1FAIpQLScIhmI3hEFJE3hjmUuGqQIFWCHLSbySl_R3BNaJIWPNFbFuSA/viewform?usp=publish-editor" target="_blank" class="request-btn">Request a Game/Movie</a>
         </footer>
     </div>
 
     <!-- The Expanded Menu -->
     <div id="expanded-view">
         <div class="expanded-content">
-            <h1 class="expanded-title" id="exp-title">Game Title</h1>
+            <h1 class="expanded-title" id="exp-title">Title</h1>
             <p class="expanded-desc" id="exp-desc"></p>
             <a href="#" id="exp-play" class="play-btn">▶ Play Now</a>
         </div>
     </div>
 
     <script>
+        let currentMode = 'games';
+
         const featuredGame = { 
             title: "The Binding of Isaac", 
             url: "./tboi/index.html", 
@@ -395,101 +599,196 @@
             desc: "When Isaac's mother receives a call from above, Isaac flees into the monster-strewn basement. Face twisted creatures, discover arcane treasures, and fight your way to safety in this genre-defining roguelike." 
         };
 
+        const featuredEnt = {
+            title: "Interstellar",
+            url: "https://www.dailymotion.com/embed/video/x842hhi?autoplay=1&ui-start-screen-info=false",
+            imgSrc: "https://lh5.googleusercontent.com/proxy/_OlPMpBA_22M5QPzrZvk9CId8EDLVS3VTF2SmZmpkFmnuIOZ8wfRckdxuOTdtW9Q2NsUJiGkZOlIZlsWW8uWAN4EbPIwlL8C9Skbzj8OtR5y8g",
+            desc: "Earth's future has been riddled by disasters, famines, and droughts. There is only one way to ensure mankind's survival: Interstellar travel. A newly discovered wormhole allows a team of astronauts to go where no man has gone before."
+        };
+
         const gamesDB = [
-            { title: "Your Only Move Is HUSTLE", url: "./hustle/index.html", imgSrc: "https://e.snmc.io/lk/f/x/d65d937781df0213f0bf0aa628aa0d06/13368350", bigImgSrc: "https://shared.fastly.steamstatic.com/store_item_assets/steam/apps/2212330/header.jpg?t=1702425086", tags: ["trending", "all"], index: "01", desc: "Choreograph spectacular, high-octane battles in this turn-based fighting simulator where strategy replaces reflexes. Predict your opponent's every move with frame-by-frame precision, master complex mind games, and watch your tactical decisions transform into a seamless, cinematic action sequence." },
-            { title: "People Playground", url: "./ppg/index.html", imgSrc: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRFTD-fKpHod-WBHHOwok7sZ-gK3RpiBLyTxg&s", bigImgSrc: "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/1118200/header.jpg?t=1776802758", tags: ["all"], index: "02", desc: "Unleash your creativity and cruelty in this expansive physics sandbox designed for limitless experimentation. Use a massive arsenal of firearms, explosives, and bizarre machinery to interact with ragdoll subjects in gruesome ways, or build your own complex contraptions in a world where everything is destructible." },
-            { title: "Geometry Dash", url: "./gdash/index.html", imgSrc: "https://images.ctfassets.net/vfkpgemp7ek3/1204734511/2c0723c100ed8d02a603dfe74597a6cb/geometry-dash-revenue.jpg", bigImgSrc: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSPXMzzjOY5Vx_Qwvb5NWxLaGmcNOcIEiegIQ&s", tags: ["all"], index: "03", desc: "Jump, fly, and flip your way through danger in this rhythm-based action platformer. Push your skills to the limit as you navigate near-impossible passages and spiky obstacles to the beat of an electronic soundtrack, then unleash your creativity with a powerful editor to build and share your own death-defying challenges." },
-            { title: "Needy Streamer Overload", url: "./needy/index.html", imgSrc: "https://i.ytimg.com/vi/BBzKrPTFcsU/hqdefault.jpg", bigImgSrc: "IMG", tags: ["all"], index: "04", desc: "Step into the role of 'P-Chan' and manage the daily life of Ame, a girl desperate for internet fame as the 'number one streamer.' Balance her stress levels, mental health, and dark impulses while chasing viral growth, navigating a multi-ending descent into the volatile world of modern idol culture." },
-            { title: "Slope", url: "./slope/index.html", imgSrc: "https://i.ytimg.com/vi/yEnVcLpTri0/maxresdefault.jpg", bigImgSrc: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcR2HXY67NSbyMMpzlnSbBWUpcSmNMDM3CPoEA&s", tags: ["trending", "all"], index: "05", desc: "Take control of a high-speed ball and test your reflexes as you hurtle down an endless, neon-lit downhill course. Navigate narrow platforms, dodge deadly red obstacles, and maintain your balance at breakneck speeds as the track becomes increasingly unpredictable in this minimalist, gravity-defying arcade challenge." },
-            { title: "ULTRAKILL", url: "./ultrakill/index.html", imgSrc: "https://shared.fastly.steamstatic.com/store_item_assets/steam/apps/1229490/capsule_616x353.jpg", bigImgSrc: "IMG", tags: ["trending", "all"], index: "06", desc: "Mankind is dead. Blood is fuel. Hell is full. Descend into the depths of the underworld as a high-performance war machine in this hyper-violent, retro-inspired FPS. Master a stylish, high-speed combat system that rewards aggressive play with health-restoring blood, and use a devastating arsenal to tear through the legions of Hell in a relentless pursuit of survival." },
-            { title: "The Binding of Isaac", url: "./tboi/index.html", imgSrc: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTSVwshZ-Gy5uWVlR5YIFHF93Dp4uwHEf2-rw&s", bigImgSrc: "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/250900/capsule_616x353.jpg?t=1731977365", tags: ["trending", "all"], index: "07", desc: "When Isaac's mother receives a call from above, Isaac flees into the monster-strewn basement. Face twisted creatures, discover arcane treasures, and fight your way to safety in this genre-defining roguelike." },
-            { title: "Pokémon: Fire Red", url: "./firered/index.html", imgSrc: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcR86fNkVgTboxGRyLAE-6dY5Q9ViEQoOG7SRQ&s", bigImgSrc: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTkogz2dnx60dtx_ZdfdexOuaaWq6bwzja1wA&s", tags: ["pokemon", "all"], index: "08", desc: "Set out from Pallet Town as a rookie trainer on a classic quest to become the very best in the Kanto region. Collect eight gym badges, thwart the nefarious Team Rocket, and challenge the Elite Four while exploring the expanded Sevii Islands in this definitive remake of the adventure that started it all." },
+            { title: "Your Only Move Is HUSTLE", url: "./hustle/index.html", imgSrc: "https://e.snmc.io/lk/f/x/d65d937781df0213f0bf0aa628aa0d06/13368350", bigImgSrc: "https://shared.fastly.steamstatic.com/store_item_assets/steam/apps/2212330/header.jpg?t=1702425086", tags: ["trending", "all"], index: "01", desc: "Choreograph spectacular, high-octane battles in this turn-based fighting simulator where strategy replaces reflexes." },
+            { title: "People Playground", url: "./ppg/index.html", imgSrc: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRFTD-fKpHod-WBHHOwok7sZ-gK3RpiBLyTxg&s", bigImgSrc: "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/1118200/header.jpg?t=1776802758", tags: ["all"], index: "02", desc: "Unleash your creativity and cruelty in this expansive physics sandbox designed for limitless experimentation." },
+            { title: "Geometry Dash", url: "./gdash/index.html", imgSrc: "https://images.ctfassets.net/vfkpgemp7ek3/1204734511/2c0723c100ed8d02a603dfe74597a6cb/geometry-dash-revenue.jpg", bigImgSrc: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSPXMzzjOY5Vx_Qwvb5NWxLaGmcNOcIEiegIQ&s", tags: ["all"], index: "03", desc: "Jump, fly, and flip your way through danger in this rhythm-based action platformer." },
+            { title: "Needy Streamer Overload", url: "./needy/index.html", imgSrc: "https://i.ytimg.com/vi/BBzKrPTFcsU/hqdefault.jpg", bigImgSrc: "IMG", tags: ["all"], index: "04", desc: "Manage the daily life of Ame, a girl desperate for internet fame as the 'number one streamer.'" },
+            { title: "Slope", url: "./slope/index.html", imgSrc: "https://i.ytimg.com/vi/yEnVcLpTri0/maxresdefault.jpg", bigImgSrc: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcR2HXY67NSbyMMpzlnSbBWUpcSmNMDM3CPoEA&s", tags: ["trending", "all"], index: "05", desc: "Take control of a high-speed ball and test your reflexes down an endless, neon-lit downhill course." },
+            { title: "ULTRAKILL", url: "./ultrakill/index.html", imgSrc: "https://shared.fastly.steamstatic.com/store_item_assets/steam/apps/1229490/capsule_616x353.jpg", bigImgSrc: "IMG", tags: ["trending", "all"], index: "06", desc: "Mankind is dead. Blood is fuel. Hell is full. Descend into the depths of the underworld as a high-performance war machine." },
+            { title: "The Binding of Isaac", url: "./tboi/index.html", imgSrc: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTSVwshZ-Gy5uWVlR5YIFHF93Dp4uwHEf2-rw&s", bigImgSrc: "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/250900/capsule_616x353.jpg?t=1731977365", tags: ["trending", "all"], index: "07", desc: "Face twisted creatures, discover arcane treasures, and fight your way to safety in this genre-defining roguelike." },
+            { title: "Pokémon: Fire Red", url: "./firered/index.html", imgSrc: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcR86fNkVgTboxGRyLAE-6dY5Q9ViEQoOG7SRQ&s", bigImgSrc: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTkogz2dnx60dtx_ZdfdexOuaaWq6bwzja1wA&s", tags: ["pokemon", "all"], index: "08", desc: "Set out from Pallet Town as a rookie trainer on a classic quest to become the very best in the Kanto region." },
             { title: "Melon Sandbox", url: "./melon/index.html", imgSrc: "https://images.steamusercontent.com/ugc/2041853622142661038/6E00C11C89A6207B1A090B94A96A02FA64657896/?imw=637&imh=358&ima=fit&impolicy=Letterbox&imcolor=%23000000&letterbox=true", bigImgSrc: "https://play-lh.googleusercontent.com/Q0mk0zBkwNuxqwfm0xPvLG5kCNJB24RB2T0KAg584Uo4vBOshU0p79-8VCpdkUUgvg=w526-h296-rw", tags: ["all"], index: "09", desc: "Unleash your creativity in this chaotic physics-based sandbox playground." },
             { title: "Discourse", url: "https://githbprime.github.io/Discourse/", imgSrc: "./discord/Discourse.png", bigImgSrc: "./Discourse Banner.png", tags: ["apps"], index: "00", desc: "Connect and chat with friends in our custom communication platform." },
-            { title: "N-GON", url: "./ngon/index.html", imgSrc: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcS70oG-UWKD2RmRslOTq7RhIIduST4piX1eTQ&s", bigImgSrc: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQ0WwWnhlUTW85kuxhWY0DBDkEYsiycfVGASQ&s", tags: ["trending", "all"], index: "10", desc: "Control 'M,' a high-tech combat bot, in this minimalist 2D physics roguelite where every object is a potential weapon. Navigate through experimental simulations, master complex momentum-based movement, and collect hundreds of unique power-ups to survive an onslaught of geometric adversaries." },
-            { title: "10 Minutes till Dawn", url: "./dawn/index.html", imgSrc: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSyEL5h4Dimu70qinRlg_3GdHAfh2aU74aA1w&s", bigImgSrc: "https://shared.fastly.steamstatic.com/store_item_assets/steam/apps/1888430/header.jpg?t=1654690690", tags: ["all"], index: "11", desc: "Hold your ground against relentless hordes of Lovecraftian horrors in this intense, survival-focused bullet heaven. Choose your hero and weapon, then strategically draft powerful upgrades to create game-breaking builds as you count down the final minutes until the sun rises." },
-            { title: "Friday Night Funkin'", url: "./fnf/index.html", imgSrc: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQQmXu3CBflwvGGH5f6KcdpQiBrQgy5dRUObw&s", bigImgSrc: "IMG", tags: ["all"], index: "12", desc: "Engage in high-stakes rhythm battles as a blue-haired kid trying to win his girlfriend’s heart by out-singing her overprotective ex-rockstar father and a cast of eccentric foes. Match the arrows to the beat, keep your cool under pressure, and prove your vocal prowess in this viral, mod-heavy tribute to Flash-era music games." },
-            { title: "Snake Game", url: "./snakegame/index.html", imgSrc: "./snakegame/poster.png", bigImgSrc: "IMG", tags: ["all"], index: "13", desc: "Snake Game is a fast-paced fighting game that features multiple fun and diverse maps, hats with unique abilities, a diverse energetic soundtrack, and two player compatability." },
-            { title: "Basket Random", url: "./basketrandom/index.html", imgSrc: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSr_fo1jcMjvxJBRFEtoewhcZznf65m07vc_g&s", bigImgSrc: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQYDeMroUDVwGK1KEn15DojuDNmZVXGRc-1Lw&s", tags: ["all"], index: "14", desc: "Experience the chaotic side of basketball in this physics-based, two-button sports game where every dunk is a stroke of luck. Navigate unpredictable environments—from snowy courts to shifting hoops—and control wobbly players with erratic movements as you scramble to score five points before your opponent in this hilarious arcade challenge." },
-            { title: "Pokémon: Emerald",  url: "./emerald/index.html", imgSrc: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQxTyOduv8t4ptM9CXzwGlEeH51xqKWJQzbMQ&s", bigImgSrc: "https://i.ytimg.com/vi/9NeHHaZOTag/maxresdefault.jpg", tags: ["pokemon", "all"], index: "15", desc: "Journey through the Hoenn region to stop the warring Team Magma and Team Aqua before they awaken ancient, world-altering legends. Master the art of double battles, conquer the grueling challenges of the all-new Battle Frontier, and unite the powers of land, sea, and sky in this ultimate version of the third generation." },
-            { title: "The Legend of Zelda: A Link to The Past", url: "./zelda-past/index.html", imgSrc: "https://m.media-amazon.com/images/M/MV5BN2U5OWRiMWYtMmI1Mi00MDMyLWFkOTctYTI3ZmYyMDk2ZTkzXkEyXkFqcGc@._V1_.jpg", bigImgSrc: "https://www.nintendo.com/eu/media/images/10_share_images/games_15/super_nintendo_5/H2x1_SNES_TheLegendOfZeldaALinkToThePast.jpg", tags: ["all"], index: "16", desc: "Awaken as a young hero destined to rescue the kingdom of Hyrule from the clutches of the dark wizard Agahnim. Traverse between the flourishing Light World and the corrupted Dark World, conquering intricate dungeons and wielding the legendary Master Sword to seal away the ultimate evil and restore balance to the Triforce." },
-            { title: "Deltarune", url: "./deltarune/index.html", imgSrc: "https://i.ebayimg.com/images/g/YSMAAeSwsI9oltEI/s-l400.png", bigImgSrc: "https://i.pinimg.com/736x/67/bc/94/67bc9407f1c1d7cea9645a3d7227e155.jpg", tags: ["new", "trending", "all"], index: "17", desc: "Fall into a mysterious 'Dark World' alongside a school bully and discover your destiny as the Lightners prophesied to save the realm from an impending shadow. Navigate a world of bizarre characters and bullet-hell combat where your choices—and whether you choose to fight or act—shape a unique story that unfolds across episodic chapters." },
-            { title: "Undertale", url: "./undertale/index.html", imgSrc: "https://m.media-amazon.com/images/M/MV5BMWI3ZTkxZjktYWU3NC00OGQ1LWFlNzgtYzIwMWI4NDg2YTU0XkEyXkFqcGc@._V1_.jpg", bigImgSrc: "https://wallpapercave.com/wp/wp15736065.jpg", tags: ["new", "all"], index: "18", desc: "Tumble into a vast subterranean world filled with monsters after falling through a hole on Mount Ebott. Decide the fate of an entire civilization in this subverisve RPG where you don't have to kill anyone; negotiate through unique turn-based encounters, make unlikely friends, and discover if you have the determination to find your way home or change the world forever." },
-            { title: "Achievement Unlocked", url: "./achievement/index.html", imgSrc: "https://static.tvtropes.org/pmwiki/pub/images/psychotronic_achievementunlocked_title.png", bigImgSrc: "https://i.ytimg.com/vi/kGN2nonqb1s/sddefault.jpg", tags: ["new", "all"], index: "19", desc: "Control a small blue elephant in this meta-game platformer where traditional goals like 'winning' or 'beating levels' don't exist. Instead, your only purpose is to satisfy the game's obsession with meaningless rewards by performing hundreds of nonsensical tasks—from simply moving left to dying on spikes—in a satirical exploration of modern gaming gratification." },
-            { title: "Geotastic", url: "./geoguessr/index.html", imgSrc: "https://static.wixstatic.com/media/a4eb4c_9f38dd00986a4c319dd68bc284c35783~mv2.png/v1/fill/w_1240,h_1240,al_c/a4eb4c_9f38dd00986a4c319dd68bc284c35783~mv2.png", bigImgSrc: "https://www.thomasfelzmann.at/wp-content/uploads/2021/12/A238231D-A86B-4BDE-BF26-BA5A4A4DE0B8.jpeg", tags: ["new", "trending", "all"], index: "20", desc: "Test your global knowledge in this crowdfunded geography quiz that drops you into random locations around the world via Google Street View. Scour your surroundings for clues like language, architecture, and landscapes to pinpoint your exact coordinates on a map, competing solo or with friends in a variety of challenging, high-stakes modes." },
-            { title: "AxiaLM", url: "https://axialm.github.io/chat", imgSrc: "./logo.png", bigImgSrc: "./AxiaLM banner.png", tags: ["apps"], index: "00", desc: "Talk to AxiaLM, a highly sophisticated LLM based off of the LLaMa (by Meta) AI series." },
-            { title: "Pokémon: Platinum", url: "./platinum/index.html", imgSrc: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQsFbDWpk4RKVjf-RpBRgSjQ_WBj6hl4_iNVqa33B2Tqw&s", bigImgSrc: "https://static0.gamerantimages.com/wordpress/wp-content/uploads/2025/01/official-cover-art-of-pokemon-platinum.jpg?q=49&fit=crop&w=825&dpr=2", tags: ["new", "pokemon", "all"], index: "21", desc: "Return to the Sinnoh region in Pokémon Platinum for an enhanced adventure beyond Diamond and Pearl. As a trainer, you'll explore a colder, redesigned Sinnoh, battling Team Galactic and stopping their plot to harness the power of legendary Pokémon." }
+            { title: "N-GON", url: "./ngon/index.html", imgSrc: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcS70oG-UWKD2RmRslOTq7RhIIduST4piX1eTQ&s", bigImgSrc: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQ0WwWnhlUTW85kuxhWY0DBDkEYsiycfVGASQ&s", tags: ["trending", "all"], index: "10", desc: "Control 'M,' a high-tech combat bot, in this minimalist 2D physics roguelite." },
+            { title: "10 Minutes till Dawn", url: "./dawn/index.html", imgSrc: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSyEL5h4Dimu70qinRlg_3GdHAfh2aU74aA1w&s", bigImgSrc: "https://shared.fastly.steamstatic.com/store_item_assets/steam/apps/1888430/header.jpg?t=1654690690", tags: ["all"], index: "11", desc: "Hold your ground against relentless hordes of Lovecraftian horrors." },
+            { title: "Friday Night Funkin'", url: "./fnf/index.html", imgSrc: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQQmXu3CBflwvGGH5f6KcdpQiBrQgy5dRUObw&s", bigImgSrc: "IMG", tags: ["all"], index: "12", desc: "Engage in high-stakes rhythm battles as a blue-haired kid." },
+            { title: "Snake Game", url: "./snakegame/index.html", imgSrc: "./snakegame/poster.png", bigImgSrc: "IMG", tags: ["all"], index: "13", desc: "Snake Game is a fast-paced fighting game that features multiple fun and diverse maps, hats with unique abilities, a diverse energetic soundtrack, and two player compatibility." },
+            { title: "Basket Random", url: "./basketrandom/index.html", imgSrc: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSr_fo1jcMjvxJBRFEtoewhcZznf65m07vc_g&s", bigImgSrc: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQYDeMroUDVwGK1KEn15DojuDNmZVXGRc-1Lw&s", tags: ["all"], index: "14", desc: "Experience the chaotic side of basketball in this physics-based game." },
+            { title: "Pokémon: Emerald",  url: "./emerald/index.html", imgSrc: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQxTyOduv8t4ptM9CXzwGlEeH51xqKWJQzbMQ&s", bigImgSrc: "https://i.ytimg.com/vi/9NeHHaZOTag/maxresdefault.jpg", tags: ["pokemon", "all"], index: "15", desc: "Journey through the Hoenn region to stop the warring Team Magma and Team Aqua." },
+            { title: "The Legend of Zelda: A Link to The Past", url: "./zelda-past/index.html", imgSrc: "https://m.media-amazon.com/images/M/MV5BN2U5OWRiMWYtMmI1Mi00MDMyLWFkOTctYTI3ZmYyMDk2ZTkzXkEyXkFqcGc@._V1_.jpg", bigImgSrc: "https://www.nintendo.com/eu/media/images/10_share_images/games_15/super_nintendo_5/H2x1_SNES_TheLegendOfZeldaALinkToThePast.jpg", tags: ["all"], index: "16", desc: "Rescue the kingdom of Hyrule from the wizard Agahnim." },
+            { title: "Deltarune", url: "./deltarune/index.html", imgSrc: "https://i.ebayimg.com/images/g/YSMAAeSwsI9oltEI/s-l400.png", bigImgSrc: "https://i.pinimg.com/736x/67/bc/94/67bc9407f1c1d7cea9645a3d7227e155.jpg", tags: ["new", "trending", "all"], index: "17", desc: "Fall into a mysterious 'Dark World' and discover your destiny as a Lightner." },
+            { title: "Undertale", url: "./undertale/index.html", imgSrc: "https://m.media-amazon.com/images/M/MV5BMWI3ZTkxZjktYWU3NC00OGQ1LWFlNzgtYzIwMWI4NDg2YTU0XkEyXkFqcGc@._V1_.jpg", bigImgSrc: "https://wallpapercave.com/wp/wp15736065.jpg", tags: ["new", "all"], index: "18", desc: "Tumble into a vast subterranean world where choice defines everything." },
+            { title: "Achievement Unlocked", url: "./achievement/index.html", imgSrc: "https://static.tvtropes.org/pmwiki/pub/images/psychotronic_achievementunlocked_title.png", bigImgSrc: "https://i.ytimg.com/vi/kGN2nonqb1s/sddefault.jpg", tags: ["new", "all"], index: "19", desc: "Collect hundreds of meaningless rewards in this satirical platformer." },
+            { title: "Geotastic", url: "./geoguessr/index.html", imgSrc: "https://static.wixstatic.com/media/a4eb4c_9f38dd00986a4c319dd68bc284c35783~mv2.png/v1/fill/w_1240,h_1240,al_c/a4eb4c_9f38dd00986a4c319dd68bc284c35783~mv2.png", bigImgSrc: "https://www.thomasfelzmann.at/wp-content/uploads/2021/12/A238231D-A86B-4BDE-BF26-BA5A4A4DE0B8.jpeg", tags: ["new", "trending", "all"], index: "20", desc: "Test your global knowledge dropped into random locations via Street View." },
+            { title: "AxiaLM", url: "https://axialm.github.io/chat", imgSrc: "./logo.png", bigImgSrc: "./AxiaLM banner.png", tags: ["apps"], index: "00", desc: "Talk to AxiaLM, a highly sophisticated LLM based off of the LLaMa AI series." },
+            { title: "Pokémon: Platinum", url: "./platinum/index.html", imgSrc: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQsFbDWpk4RKVjf-RpBRgSjQ_WBj6hl4_iNVqa33B2Tqw&s", bigImgSrc: "https://static0.gamerantimages.com/wordpress/wp-content/uploads/2025/01/official-cover-art-of-pokemon-platinum.jpg?q=49&fit=crop&w=825&dpr=2", tags: ["new", "pokemon", "all"], index: "21", desc: "Return to the Sinnoh region in Pokémon Platinum for an enhanced adventure." }
         ];
 
-        // Advanced color extraction logic
+        const entDB = [
+            { 
+                title: "Interstellar", 
+                url: "https://www.dailymotion.com/embed/video/x842hhi?autoplay=1&ui-start-screen-info=false", 
+                imgSrc: "https://lh5.googleusercontent.com/proxy/_OlPMpBA_22M5QPzrZvk9CId8EDLVS3VTF2SmZmpkFmnuIOZ8wfRckdxuOTdtW9Q2NsUJiGkZOlIZlsWW8uWAN4EbPIwlL8C9Skbzj8OtR5y8g", 
+                bigImgSrc: "IMG", 
+                tags: ["trending", "new", "all"], 
+                index: "01", 
+                desc: "A team of explorers travel through a wormhole in space in an attempt to ensure humanity's survival." 
+            }
+        ];
+
+        // Core Functions
+        function switchMode(mode) {
+            currentMode = mode;
+            
+            // Toggle Tab Buttons
+            document.getElementById('nav-games').classList.toggle('active', mode === 'games');
+            document.getElementById('nav-ent').classList.toggle('active', mode === 'ent');
+
+            // Toggle Search Placeholder
+            const searchBar = document.getElementById('searchBar');
+            searchBar.value = ''; 
+            searchBar.placeholder = mode === 'games' ? "Search games/apps..." : "Search movies/shows...";
+
+            // Toggle Content Containers
+            document.getElementById('games-container').classList.toggle('active-tab', mode === 'games');
+            document.getElementById('ent-container').classList.toggle('active-tab', mode === 'ent');
+
+            // Set Hero
+            const heroData = mode === 'games' ? featuredGame : featuredEnt;
+            document.getElementById('hero-title').textContent = heroData.title;
+            document.getElementById('hero-desc').textContent = heroData.desc;
+            document.getElementById('hero-play').href = heroData.url;
+            document.getElementById('hero').style.backgroundImage = `url('${heroData.imgSrc}')`;
+            extractThemeColor(heroData.imgSrc);
+
+            // Hide/Show vote button based on tab
+            document.getElementById('vote-btn').style.display = mode === 'games' ? 'block' : 'none';
+
+            // Re-run search logic to reset view safely
+            search();
+        }
+
+        // Local Storage Logic
+        function saveRecent(title, mode) {
+            const key = mode === 'games' ? 'prime_recent_games' : 'prime_recent_ent';
+            let recents = JSON.parse(localStorage.getItem(key)) || [];
+            
+            recents = recents.filter(item => item !== title);
+            recents.unshift(title);
+            
+            if (recents.length > 6) recents.pop();
+            localStorage.setItem(key, JSON.stringify(recents));
+
+            loadRecents(mode); 
+        }
+
+        function loadRecents(mode) {
+            const key = mode === 'games' ? 'prime_recent_games' : 'prime_recent_ent';
+            const rowId = mode === 'games' ? 'recent-games' : 'recent-ent';
+            const wrapperId = mode === 'games' ? 'recent-games-wrapper' : 'recent-ent-wrapper';
+            const db = mode === 'games' ? gamesDB : entDB;
+            
+            let recents = JSON.parse(localStorage.getItem(key)) || [];
+            let row = document.getElementById(rowId);
+            let wrapper = document.getElementById(wrapperId);
+
+            row.innerHTML = '';
+
+            if (recents.length > 0) {
+                wrapper.style.display = 'block';
+                recents.forEach(title => {
+                    const item = db.find(g => g.title === title);
+                    if (item) {
+                        row.insertAdjacentHTML('beforeend', createCardHTML(item, mode));
+                    }
+                });
+            } else {
+                wrapper.style.display = 'none';
+            }
+        }
+
+        // Advanced color extraction: averages colors, accepts greys/blacks/whites, handles CORS errors safely
         function extractThemeColor(imgSrc) {
-            if (!imgSrc || imgSrc === "IMG") return;
+            if (!imgSrc || imgSrc === "IMG") {
+                applyTheme({ r: 68, g: 68, b: 68 });
+                return;
+            }
             const img = new Image();
             img.crossOrigin = "Anonymous";
-            img.src = imgSrc;
+            
             img.onload = function() {
-                const canvas = document.getElementById('themeCanvas');
-                const ctx = canvas.getContext('2d');
-                canvas.width = 100; // Scaled down for performance
-                canvas.height = 100;
-                ctx.drawImage(img, 0, 0, 100, 100);
-                
-                const imageData = ctx.getImageData(0, 0, 100, 100).data;
-                let bestColor = null;
-                let highestScore = -1;
-
-                // Scan pixels to find the most "interesting" color
-                for (let i = 0; i < imageData.length; i += 16) { // Sample every 4th pixel pair
-                    const r = imageData[i];
-                    const g = imageData[i + 1];
-                    const b = imageData[i + 2];
-
-                    // 1. Luminance check (is it too dark or too bright?)
-                    const luminance = (0.299 * r + 0.587 * g + 0.114 * b);
-                    if (luminance < 40 || luminance > 220) continue;
-
-                    // 2. Saturation check (is it colorful enough?)
-                    const max = Math.max(r, g, b);
-                    const min = Math.min(r, g, b);
-                    const saturation = (max - min) / (max || 1);
+                try {
+                    const canvas = document.getElementById('themeCanvas');
+                    const ctx = canvas.getContext('2d');
+                    canvas.width = 100; 
+                    canvas.height = 100;
+                    ctx.drawImage(img, 0, 0, 100, 100);
                     
-                    // Score based on saturation and moderate luminance
-                    const score = saturation * 100 + (127 - Math.abs(127 - luminance));
+                    const imageData = ctx.getImageData(0, 0, 100, 100).data;
+                    let rSum = 0, gSum = 0, bSum = 0, count = 0;
 
-                    if (score > highestScore) {
-                        highestScore = score;
-                        bestColor = { r, g, b };
+                    for (let i = 0; i < imageData.length; i += 16) { 
+                        const r = imageData[i];
+                        const g = imageData[i + 1];
+                        const b = imageData[i + 2];
+                        const luminance = (0.299 * r + 0.587 * g + 0.114 * b);
+                        
+                        // Average out all visible pixels (avoid complete blacks or blown out whites)
+                        if (luminance >= 15 && luminance <= 240) { 
+                            rSum += r;
+                            gSum += g;
+                            bSum += b;
+                            count++;
+                        }
                     }
+                    
+                    if (count > 0) {
+                        applyTheme({ 
+                            r: Math.floor(rSum / count), 
+                            g: Math.floor(gSum / count), 
+                            b: Math.floor(bSum / count) 
+                        });
+                    } else {
+                        applyTheme({ r: 68, g: 68, b: 68 }); 
+                    }
+                } catch (e) {
+                    // Fallback if browser blocks canvas reading (CORS) e.g., Pinterest links
+                    applyTheme({ r: 68, g: 68, b: 68 });
                 }
-
-                // 3. Neutral Fallback Logic
-                if (!bestColor || highestScore < 20) {
-                    // If no vibrant color found (all black/white/gray), use a neutral safe gray
-                    bestColor = { r: 68, g: 68, b: 68 }; 
-                }
-
-                applyTheme(bestColor);
             };
+            
+            img.onerror = function() {
+                applyTheme({ r: 68, g: 68, b: 68 });
+            };
+            
+            img.src = imgSrc;
         }
 
         function applyTheme(rgb) {
             const root = document.documentElement;
-            // Calculate perceived brightness
             const brightness = (rgb.r * 299 + rgb.g * 587 + rgb.b * 114) / 1000;
-            
-            // Create a very dark version for the background bleed
             const darkTint = `rgb(${Math.floor(rgb.r * 0.08)}, ${Math.floor(rgb.g * 0.08)}, ${Math.floor(rgb.b * 0.08)})`;
             
             root.style.setProperty('--accent', `rgb(${rgb.r}, ${rgb.g}, ${rgb.b})`);
             root.style.setProperty('--accent-glow', `rgba(${rgb.r}, ${rgb.g}, ${rgb.b}, 0.5)`);
-            
-            // If the color is too bright, force the background to stay dark black
             root.style.setProperty('--bg', brightness > 40 ? darkTint : '#050505');
         }
 
-        function openExpandedMenu(gameTitle) {
-            const game = gamesDB.find(g => g.title === gameTitle);
+        function openExpandedMenu(gameTitle, mode) {
+            const db = mode === 'games' ? gamesDB : entDB;
+            const game = db.find(g => g.title === gameTitle);
             if (!game) return;
+            
+            saveRecent(game.title, mode);
+
             const expView = document.getElementById('expanded-view');
             const homeView = document.getElementById('home-view');
             
@@ -506,7 +805,6 @@
             
             requestAnimationFrame(() => document.body.classList.add('expanded-view-active'));
             window.scrollTo(0, 0);
-            
             extractThemeColor(finalImg);
         }
 
@@ -516,85 +814,158 @@
                 document.getElementById('expanded-view').style.display = 'none';
                 document.getElementById('home-view').style.display = 'block';
                 document.getElementById('searchBar').style.display = 'block';
-                extractThemeColor(featuredGame.imgSrc);
+                
+                const heroData = currentMode === 'games' ? featuredGame : featuredEnt;
+                extractThemeColor(heroData.imgSrc);
             }, 800);
         }
 
-        function createCardHTML(game) {
+        function createCardHTML(item, mode) {
+            const landscapeClass = mode === 'ent' ? 'landscape' : '';
             return `
-                <div class="card" data-name="${game.title}">
-                    <img src="${game.imgSrc}" alt="${game.title} Glow" class="glow">
-                    <img src="${game.imgSrc}" alt="${game.title}" class="poster" onclick="openExpandedMenu('${game.title.replace(/'/g, "\\'")}')">
+                <div class="card ${landscapeClass}" data-name="${item.title}">
+                    <img src="${item.imgSrc}" alt="${item.title} Glow" class="glow">
+                    <img src="${item.imgSrc}" alt="${item.title}" class="poster" onclick="openExpandedMenu('${item.title.replace(/'/g, "\\'")}', '${mode}')">
                     <div class="card-info">
-                        <span class="card-title">${game.title}</span>
-                        <p class="card-desc">${game.desc || 'No description available.'}</p>
-                        <a href="${game.url}" class="card-play-btn">⯈ PLAY</a>
+                        <span class="card-title">${item.title}</span>
+                        <p class="card-desc">${item.desc || 'No description available.'}</p>
+                        <a href="${item.url}" class="card-play-btn" onclick="saveRecent('${item.title.replace(/'/g, "\\'")}', '${mode}')">⯈ PLAY</a>
                     </div>
                 </div>
             `;
         }
 
-        function loadGames() {
-            ['trending', 'new', 'pokemon', 'all', 'apps'].forEach(id => {
+        function loadAllDatabases() {
+            ['trending-games', 'new-games', 'pokemon-games', 'all-games', 'apps-games'].forEach(id => {
                 const el = document.getElementById(id);
                 if (el) el.innerHTML = '';
             });
             gamesDB.forEach(game => {
-                const html = createCardHTML(game);
+                const html = createCardHTML(game, 'games');
                 game.tags.forEach(tag => {
-                    const el = document.getElementById(tag);
+                    const el = document.getElementById(tag + '-games');
                     if (el) el.insertAdjacentHTML('beforeend', html);
                 });
             });
+
+            ['trending-ent', 'new-ent', 'all-ent'].forEach(id => {
+                const el = document.getElementById(id);
+                if (el) el.innerHTML = '';
+            });
+            entDB.forEach(ent => {
+                const html = createCardHTML(ent, 'ent');
+                ent.tags.forEach(tag => {
+                    const el = document.getElementById(tag + '-ent');
+                    if (el) el.insertAdjacentHTML('beforeend', html);
+                });
+            });
+
+            loadRecents('games');
+            loadRecents('ent');
         }
 
         function search() {
             let input = document.getElementById('searchBar').value.toLowerCase();
-            let sections = document.querySelectorAll('.reveal-section');
+            let activeContainer = currentMode === 'games' ? document.getElementById('games-container') : document.getElementById('ent-container');
+            let sections = activeContainer.querySelectorAll('.reveal-section');
+            let hero = document.getElementById('hero');
+            let footer = document.getElementById('requestFooter');
+
             if (input.trim() !== "") {
-                document.getElementById('hero').style.display = "none";
-                document.getElementById('requestFooter').style.display = "none";
+                hero.style.display = "none";
+                footer.style.display = "none";
                 sections.forEach(s => {
                     s.classList.add('revealed');
-                    s.style.display = (s.querySelector('#all') || s.querySelector('#apps')) ? "block" : "none";
-                    if (s.querySelector('.row')) { s.querySelector('.row').style.flexWrap = "wrap"; s.querySelector('.row').style.overflowX = "visible"; }
-                });
-                document.querySelectorAll('.card').forEach(card => card.style.display = card.getAttribute('data-name').toLowerCase().includes(input) ? "block" : "none");
-            } else {
-                document.getElementById('hero').style.display = "flex";
-                document.getElementById('requestFooter').style.display = "flex";
-                sections.forEach(s => {
-                    s.style.display = "block";
+                    
+                    if (s.querySelector('#all-' + currentMode) || s.querySelector('#apps-' + currentMode)) {
+                        s.style.display = "block";
+                    } else {
+                        s.style.display = "none";
+                    }
+
                     const row = s.querySelector('.row');
-                    if (row && (row.id === 'trending' || row.id === 'new' || row.id === 'pokemon')) { row.style.flexWrap = "nowrap"; row.style.overflowX = "auto"; }
+                    if (row) { 
+                        row.style.flexWrap = "wrap"; 
+                        row.style.overflowX = "visible"; 
+                    }
                 });
-                document.querySelectorAll('.card').forEach(c => c.style.display = "block");
+                activeContainer.querySelectorAll('.card').forEach(card => {
+                    let name = card.getAttribute('data-name').toLowerCase();
+                    card.style.display = name.includes(input) ? "flex" : "none";
+                });
+            } else {
+                hero.style.display = "flex";
+                footer.style.display = "flex";
+                sections.forEach(s => {
+                    if(s.id === 'recent-games-wrapper' || s.id === 'recent-ent-wrapper') {
+                        const row = s.querySelector('.row');
+                        s.style.display = row.children.length > 0 ? "block" : "none";
+                    } else {
+                        s.style.display = "block";
+                    }
+
+                    const row = s.querySelector('.row');
+                    if (row && (row.id.includes('trending') || row.id.includes('new') || row.id.includes('pokemon') || row.id.includes('recent'))) { 
+                        row.style.flexWrap = "nowrap"; 
+                        row.style.overflowX = "auto"; 
+                    }
+                });
+                activeContainer.querySelectorAll('.card').forEach(c => c.style.display = "flex");
             }
         }
 
-        function sortAllGames() {
-            const criteria = document.getElementById('sortDropdown').value;
-            const allRow = document.getElementById('all');
-            let allCategoryGames = gamesDB.filter(game => game.tags.includes("all"));
-            allCategoryGames.sort((a, b) => {
+        function sortAll(mode, criteria) {
+            const allRowId = mode === 'games' ? 'all-games' : 'all-ent';
+            const db = mode === 'games' ? gamesDB : entDB;
+            const allRow = document.getElementById(allRowId);
+            
+            let allItems = db.filter(item => item.tags.includes("all"));
+            
+            allItems.sort((a, b) => {
                 if (criteria === 'az') return a.title.localeCompare(b.title);
                 if (criteria === 'za') return b.title.localeCompare(a.title);
-                return criteria === 'oldest' ? (parseInt(b.index)||0) - (parseInt(a.index)||0) : (parseInt(a.index)||0) - (parseInt(b.index)||0);
+                
+                let indexA = parseInt(a.index) || 0;
+                let indexB = parseInt(b.index) || 0;
+                
+                // MATH FIXED: Lower index means older. So Oldest First = A - B
+                return criteria === 'oldest' ? indexA - indexB : indexB - indexA;
             });
+            
             allRow.innerHTML = '';
-            allCategoryGames.forEach(game => allRow.insertAdjacentHTML('beforeend', createCardHTML(game)));
+            allItems.forEach(item => allRow.insertAdjacentHTML('beforeend', createCardHTML(item, mode)));
         }
 
+        function toggleDropdown(event, mode) {
+            event.stopPropagation();
+            const dropdown = document.getElementById(`sort-${mode}-dropdown`);
+            document.querySelectorAll('.custom-dropdown').forEach(d => {
+                if (d !== dropdown) d.classList.remove('open');
+            });
+            dropdown.classList.toggle('open');
+        }
+
+        function selectSort(mode, criteria, labelText) {
+            sortAll(mode, criteria);
+            document.getElementById(`sort-${mode}-label`).innerText = labelText;
+            document.getElementById(`sort-${mode}-dropdown`).classList.remove('open');
+        }
+
+        window.onclick = function() {
+            document.querySelectorAll('.custom-dropdown').forEach(d => d.classList.remove('open'));
+        };
+
         window.onload = () => {
-            document.getElementById('hero-title').textContent = featuredGame.title;
-            document.getElementById('hero-desc').textContent = featuredGame.desc;
-            document.getElementById('hero-play').href = featuredGame.url;
-            document.getElementById('hero').style.backgroundImage = `url('${featuredGame.imgSrc}')`;
-            loadGames();
-            sortAllGames();
+            loadAllDatabases();
+            // Default load Oldest First
+            sortAll('games', 'oldest');
+            sortAll('ent', 'oldest');
+            
+            switchMode('games');
+
             const observer = new IntersectionObserver((entries) => entries.forEach(e => { if (e.isIntersecting) e.target.classList.add('revealed'); }), { threshold: 0.1 });
             document.querySelectorAll('.reveal-section').forEach(s => observer.observe(s));
-            extractThemeColor(featuredGame.imgSrc);
+            
             setTimeout(() => document.body.classList.add('loaded'), 100);
         };
     </script>
