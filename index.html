@@ -220,6 +220,64 @@
             filter: drop-shadow(0 0 5px rgba(255, 255, 255, 0.8));
         }
 
+        /* WIP Console-ication Styles */
+        .wip-tag {
+            position: absolute;
+            top: calc(100% + 2px);
+            left: 0;
+            width: 100%;
+            background-color: #e5b300; /* Warm, premium yellow */
+            color: #1a1a1a; /* Soft, deep charcoal instead of pure black */
+            font-size: 10px;
+            font-weight: 800;
+            padding: 6px 4px;
+            border-radius: 4px;
+            text-align: center;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.3s ease, top 0.3s ease, background-color 0.3s ease, color 0.3s ease;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.3), inset 0 2px 2px rgba(255,255,255,0.4), inset 0 -2px 2px rgba(0,0,0,0.1);
+            line-height: 1.2;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-sizing: border-box;
+            z-index: 10;
+        }
+
+        .nav-btn.wip-yellow { color: #e5b300 !important; }
+        .nav-btn.wip-yellow svg { filter: drop-shadow(0 0 5px rgba(229, 179, 0, 0.8)) !important; stroke: #e5b300; }
+        .nav-btn.wip-yellow .wip-tag { opacity: 1; top: calc(100% + 12px); }
+
+        .nav-btn.wip-red { color: #e74c3c !important; }
+        .nav-btn.wip-red svg { filter: drop-shadow(0 0 5px rgba(231, 76, 60, 0.8)) !important; stroke: #e74c3c; }
+        .nav-btn.wip-red .wip-tag { background-color: #e74c3c; color: white; opacity: 1; top: calc(100% + 12px); }
+
+        @keyframes jiggle-mild {
+            0% { transform: rotate(0deg) scale(1.05); }
+            25% { transform: rotate(-4deg) scale(1.05); }
+            50% { transform: rotate(4deg) scale(1.05); }
+            75% { transform: rotate(-4deg) scale(1.05); }
+            100% { transform: rotate(0deg) scale(1.05); }
+        }
+
+        @keyframes jiggle-violent {
+            0% { transform: translate(0, 0) rotate(0deg) scale(1.05); }
+            10% { transform: translate(-3px, -2px) rotate(-6deg) scale(1.05); }
+            20% { transform: translate(3px, -2px) rotate(6deg) scale(1.05); }
+            30% { transform: translate(-3px, 2px) rotate(-6deg) scale(1.05); }
+            40% { transform: translate(3px, 2px) rotate(6deg) scale(1.05); }
+            50% { transform: translate(-3px, -2px) rotate(-6deg) scale(1.05); }
+            60% { transform: translate(3px, -2px) rotate(6deg) scale(1.05); }
+            70% { transform: translate(-3px, 2px) rotate(-6deg) scale(1.05); }
+            80% { transform: translate(3px, 2px) rotate(6deg) scale(1.05); }
+            90% { transform: translate(-3px, -2px) rotate(-6deg) scale(1.05); }
+            100% { transform: translate(0, 0) rotate(0deg) scale(1.05); }
+        }
+
+        .anim-jiggle-mild { animation: jiggle-mild 0.3s ease; }
+        .anim-jiggle-violent { animation: jiggle-violent 0.1s linear infinite; } 
+
         #searchBar {
             background: rgba(255,255,255,0.05);
             border: 1px solid rgba(255,255,255,0.1);
@@ -483,12 +541,13 @@
                     </svg>
                     Games
                 </button>
-                <button id="nav-ent" class="nav-btn" onclick="switchMode('ent')">
+                <button id="nav-ent" class="nav-btn" onclick="handleEntClick(event)">
                     <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                         <rect x="2" y="7" width="20" height="15" rx="2" ry="2"></rect>
                         <polyline points="17 2 12 7 7 2"></polyline>
                     </svg>
                     Entertainment
+                    <div id="ent-wip-tag" class="wip-tag">Feature is under construction! 🚧</div>
                 </button>
             </nav>
         </div>
@@ -951,9 +1010,58 @@
             document.getElementById(`sort-${mode}-dropdown`).classList.remove('open');
         }
 
-        window.onclick = function() {
+        let entWipState = 0;
+        let violentJiggleTimeout;
+
+        function handleEntClick(event) {
+            event.stopPropagation();
+            const btn = document.getElementById('nav-ent');
+            const tag = document.getElementById('ent-wip-tag');
+            
+            if (entWipState === 0) {
+                // First click: Mild jiggle, warm yellow
+                entWipState = 1;
+                btn.classList.add('wip-yellow', 'anim-jiggle-mild');
+                tag.textContent = "Feature is under construction! \uD83D\uDEA7";
+                
+                setTimeout(() => {
+                    btn.classList.remove('anim-jiggle-mild');
+                }, 350);
+
+            } else if (entWipState === 1 || entWipState === 2) {
+                // Subsequent clicks: Violent jiggle, angry red
+                entWipState = 2;
+                clearTimeout(violentJiggleTimeout);
+                
+                btn.classList.remove('wip-yellow', 'anim-jiggle-mild');
+                btn.classList.add('wip-red', 'anim-jiggle-violent');
+                tag.textContent = "UNDER. CONSTRUCTION! \uD83D\uDEA7\uD83D\uDEA7\uD83D\uDEA7";
+                
+                violentJiggleTimeout = setTimeout(() => {
+                    btn.classList.remove('anim-jiggle-violent');
+                }, 1000);
+            }
+        }
+
+        function resetEntWip() {
+            entWipState = 0;
+            const btn = document.getElementById('nav-ent');
+            btn.classList.remove('wip-yellow', 'wip-red', 'anim-jiggle-mild', 'anim-jiggle-violent');
+            clearTimeout(violentJiggleTimeout);
+        }
+
+        window.addEventListener('click', function(event) {
+            // Close custom dropdowns
             document.querySelectorAll('.custom-dropdown').forEach(d => d.classList.remove('open'));
-        };
+            
+            // Reset the Entertainment button warning if clicking away
+            if (entWipState !== 0) {
+                const btn = document.getElementById('nav-ent');
+                if (!btn.contains(event.target)) {
+                    resetEntWip();
+                }
+            }
+        });
 
         window.onload = () => {
             loadAllDatabases();
