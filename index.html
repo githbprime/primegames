@@ -140,6 +140,7 @@
             font-size: 24px;
             font-weight: bold;
             letter-spacing: 2px;
+            text-decoration: none;
             transition: color 1.2s ease;
         }
 
@@ -203,32 +204,52 @@
         .row {
             display: flex;
             gap: 25px;
-            overflow-x: auto;
-            padding: 60px 40px; 
-            margin: -60px -40px;
-            scrollbar-width: none;
-            overflow-y: visible;
+            padding: 40px 0;
+            margin: 0;
+            scrollbar-width: thin;
+            scrollbar-color: var(--accent) transparent;
         }
 
-        .row::-webkit-scrollbar { display: none; }
-        
-        #all { 
+        /* Category rows: Horizontal scroll only, no vertical scroll */
+        #trending, #new, #pokemon {
+            overflow-x: auto;
+            overflow-y: hidden;
+            flex-wrap: nowrap;
+            padding-bottom: 50px; /* Space for hover effects and scrollbar */
+        }
+
+        /* Grid rows: Wrap naturally */
+        #all, #apps {
             flex-wrap: wrap; 
-            overflow-x: visible; 
             justify-content: flex-start;
+            overflow: visible;
+        }
+
+        /* Custom Scrollbar for Row containers */
+        .row::-webkit-scrollbar {
+            height: 4px;
+        }
+        .row::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        .row::-webkit-scrollbar-thumb {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+        }
+        .row:hover::-webkit-scrollbar-thumb {
+            background: var(--accent);
         }
 
         .card {
             flex: 0 0 auto;
             width: 180px;
             position: relative;
-            cursor: pointer;
+            cursor: default;
             transition: all 0.4s cubic-bezier(0.165, 0.84, 0.44, 1);
-            text-decoration: none;
             color: inherit;
-            overflow: visible; 
             display: flex;
             flex-direction: column;
+            margin-bottom: 20px;
         }
 
         .card:hover {
@@ -255,7 +276,7 @@
 
         .card:hover img.glow {
             opacity: 0.90;
-            transform: scale(1.15); /* Updated per request */
+            transform: scale(1.15); 
         }
 
         .card img.poster {
@@ -304,15 +325,44 @@
             text-wrap: balance;
         }
 
+        .card-play-btn {
+            display: inline-block;
+            margin-top: 0;
+            max-height: 0;
+            opacity: 0;
+            overflow: hidden;
+            background-color: var(--accent);
+            color: white;
+            padding: 6px 15px;
+            font-size: 12px;
+            font-weight: 700;
+            text-decoration: none;
+            border-radius: 4px;
+            transition: all 0.4s ease;
+            cursor: pointer;
+        }
+
         .card:hover .card-title {
             opacity: 1;
             white-space: normal;
         }
 
         .card:hover .card-desc {
-            max-height: 100px;
+            max-height: 500px;
             opacity: 1;
             margin-top: 8px;
+        }
+
+        .card:hover .card-play-btn {
+            max-height: 40px;
+            opacity: 1;
+            margin-top: 12px;
+            padding: 8px 20px;
+        }
+
+        .card-play-btn:hover {
+            filter: brightness(1.2);
+            transform: scale(1.05);
         }
 
         footer {
@@ -383,7 +433,7 @@
     <canvas id="themeCanvas" style="display:none;"></canvas>
 
     <header>
-        <div class="logo">PRIME GAMES</div>
+        <a href="https://githbprime.github.io/primegames" class="logo">PRIME GAMES</a>
         <input type="text" id="searchBar" placeholder="Search games/apps..." onkeyup="search()">
     </header>
 
@@ -453,7 +503,7 @@
             { title: "Geometry Dash", url: "./gdash/index.html", imgSrc: "https://images.ctfassets.net/vfkpgemp7ek3/1204734511/2c0723c100ed8d02a603dfe74597a6cb/geometry-dash-revenue.jpg", tags: ["all"], index: "03", desc: "Jump, fly, and flip your way through danger in this rhythm-based action platformer. Push your skills to the limit as you navigate near-impossible passages and spiky obstacles to the beat of an electronic soundtrack, then unleash your creativity with a powerful editor to build and share your own death-defying challenges." },
             { title: "Needy Streamer Overload", url: "./needy/index.html", imgSrc: "https://i.ytimg.com/vi/BBzKrPTFcsU/hqdefault.jpg", tags: ["all"], index: "04", desc: "Step into the role of 'P-Chan' and manage the daily life of Ame, a girl desperate for internet fame as the 'number one streamer.' Balance her stress levels, mental health, and dark impulses while chasing viral growth, navigating a multi-ending descent into the volatile world of modern idol culture." },
             { title: "Slope", url: "./slope/index.html", imgSrc: "https://i.ytimg.com/vi/yEnVcLpTri0/maxresdefault.jpg", tags: ["trending", "all"], index: "05", desc: "Take control of a high-speed ball and test your reflexes as you hurtle down an endless, neon-lit downhill course. Navigate narrow platforms, dodge deadly red obstacles, and maintain your balance at breakneck speeds as the track becomes increasingly unpredictable in this minimalist, gravity-defying arcade challenge." },
-            { title: "ULTRAKILL", url: "./ultrakill/index.html", imgSrc: "https://shared.fastly.steamstatic.com/store_item_assets/steam/apps/1229490/capsule_616x353.jpg", tags: ["trending", "all"], index: "06", desc: "Mankind is dead. Blood is fuel. Hell is full. A fast-paced retro FPS." },
+            { title: "ULTRAKILL", url: "./ultrakill/index.html", imgSrc: "https://shared.fastly.steamstatic.com/store_item_assets/steam/apps/1229490/capsule_616x353.jpg", tags: ["trending", "all"], index: "06", desc: "Mankind is dead. Blood is fuel. Hell is full. Descend into the depths of the underworld as a high-performance war machine in this hyper-violent, retro-inspired FPS. Master a stylish, high-speed combat system that rewards aggressive play with health-restoring blood, and use a devastating arsenal to tear through the legions of Hell in a relentless pursuit of survival." },
             { title: "The Binding of Isaac", url: "./tboi/index.html", imgSrc: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTSVwshZ-Gy5uWVlR5YIFHF93Dp4uwHEf2-rw&s", tags: ["trending", "all"], index: "07", desc: "When Isaac's mother receives a call from above, Isaac flees into the monster-strewn basement. Face twisted creatures, discover arcane treasures, and fight your way to safety in this genre-defining roguelike." },
             { title: "Pokémon: Fire Red", url: "./firered/index.html", imgSrc: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcR86fNkVgTboxGRyLAE-6dY5Q9ViEQoOG7SRQ&s", tags: ["pokemon", "all"], index: "08", desc: "Set out from Pallet Town as a rookie trainer on a classic quest to become the very best in the Kanto region. Collect eight gym badges, thwart the nefarious Team Rocket, and challenge the Elite Four while exploring the expanded Sevii Islands in this definitive remake of the adventure that started it all." },
             { title: "Melon Sandbox", url: "./melon/index.html", imgSrc: "https://images.steamusercontent.com/ugc/2041853622142661038/6E00C11C89A6207B1A090B94A96A02FA64657896/?imw=637&imh=358&ima=fit&impolicy=Letterbox&imcolor=%23000000&letterbox=true", tags: ["all"], index: "09", desc: "Unleash your creativity in this chaotic physics-based sandbox playground." },
@@ -461,7 +511,7 @@
             { title: "N-GON", url: "./ngon/index.html", imgSrc: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcS70oG-UWKD2RmRslOTq7RhIIduST4piX1eTQ&s", tags: ["trending", "all"], index: "10", desc: "Control 'M,' a high-tech combat bot, in this minimalist 2D physics roguelite where every object is a potential weapon. Navigate through experimental simulations, master complex momentum-based movement, and collect hundreds of unique power-ups to survive an onslaught of geometric adversaries." },
             { title: "10 Minutes till Dawn", url: "./dawn/index.html", imgSrc: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSyEL5h4Dimu70qinRlg_3GdHAfh2aU74aA1w&s", tags: ["all"], index: "11", desc: "Hold your ground against relentless hordes of Lovecraftian horrors in this intense, survival-focused bullet heaven. Choose your hero and weapon, then strategically draft powerful upgrades to create game-breaking builds as you count down the final minutes until the sun rises." },
             { title: "Friday Night Funkin'", url: "./fnf/index.html", imgSrc: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQQmXu3CBflwvGGH5f6KcdpQiBrQgy5dRUObw&s", tags: ["all"], index: "12", desc: "Engage in high-stakes rhythm battles as a blue-haired kid trying to win his girlfriend’s heart by out-singing her overprotective ex-rockstar father and a cast of eccentric foes. Match the arrows to the beat, keep your cool under pressure, and prove your vocal prowess in this viral, mod-heavy tribute to Flash-era music games." },
-            { title: "Snake Game", url: "./snakegame/index.html", imgSrc: "./snakegame/poster.png", tags: ["all"], index: "13", desc: "The timeless classic—eat the apples and grow as long as you can." },
+            { title: "Snake Game", url: "./snakegame/index.html", imgSrc: "./snakegame/poster.png", tags: ["all"], index: "13", desc: "[PLACEHOLDER] The timeless classic—eat the apples and grow as long as you can. [PLACEHOLDER]" },
             { title: "Basket Random", url: "./basketrandom/index.html", imgSrc: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSr_fo1jcMjvxJBRFEtoewhcZznf65m07vc_g&s", tags: ["all"], index: "14", desc: "Experience the chaotic side of basketball in this physics-based, two-button sports game where every dunk is a stroke of luck. Navigate unpredictable environments—from snowy courts to shifting hoops—and control wobbly players with erratic movements as you scramble to score five points before your opponent in this hilarious arcade challenge." },
             { title: "Pokémon: Emerald",  url: "./emerald/index.html", imgSrc: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQxTyOduv8t4ptM9CXzwGlEeH51xqKWJQzbMQ&s", tags: ["pokemon", "all"], index: "15", desc: "Journey through the Hoenn region to stop the warring Team Magma and Team Aqua before they awaken ancient, world-altering legends. Master the art of double battles, conquer the grueling challenges of the all-new Battle Frontier, and unite the powers of land, sea, and sky in this ultimate version of the third generation." },
             { title: "The Legend of Zelda: A Link to The Past", url: "./zelda-past/index.html", imgSrc: "https://m.media-amazon.com/images/M/MV5BN2U5OWRiMWYtMmI1Mi00MDMyLWFkOTctYTI3ZmYyMDk2ZTkzXkEyXkFqcGc@._V1_.jpg", tags: ["all"], index: "16", desc: "Awaken as a young hero destined to rescue the kingdom of Hyrule from the clutches of the dark wizard Agahnim. Traverse between the flourishing Light World and the corrupted Dark World, conquering intricate dungeons and wielding the legendary Master Sword to seal away the ultimate evil and restore balance to the Triforce." },
@@ -536,14 +586,15 @@
 
         function createCardHTML(game) {
             return `
-                <a href="${game.url}" class="card" data-name="${game.title}">
+                <div class="card" data-name="${game.title}">
                     <img src="${game.imgSrc}" alt="${game.title} Glow" class="glow">
                     <img src="${game.imgSrc}" alt="${game.title}" class="poster">
                     <div class="card-info">
                         <span class="card-title">${game.title}</span>
                         <p class="card-desc">${game.desc || 'Placeholder Description'}</p>
+                        <a href="${game.url}" class="card-play-btn">⯈ PLAY</a>
                     </div>
-                </a>
+                </div>
             `;
         }
 
@@ -574,6 +625,13 @@
                 footer.style.display = "none";
                 sections.forEach(s => {
                     s.classList.add('revealed');
+                    // When searching, switch all containers to grid layout for visibility
+                    const row = s.querySelector('.row');
+                    if (row) {
+                        row.style.flexWrap = "wrap";
+                        row.style.overflowX = "visible";
+                    }
+
                     if (s.querySelector('#all') || s.querySelector('#apps')) {
                         s.style.display = "block";
                     } else {
@@ -590,6 +648,11 @@
                 footer.style.display = "flex";
                 sections.forEach(s => {
                     s.style.display = "block";
+                    const row = s.querySelector('.row');
+                    if (row && (row.id === 'trending' || row.id === 'new' || row.id === 'pokemon')) {
+                        row.style.flexWrap = "nowrap";
+                        row.style.overflowX = "auto";
+                    }
                 });
                 document.querySelectorAll('.card').forEach(c => c.style.display = "block");
             }
