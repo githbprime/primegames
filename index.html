@@ -6,21 +6,49 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Home</title>
     <style>
+        :root {
+            --bg: #050505;
+            --card-bg: #141414;
+            --text: #e5e5e5;
+            --accent: #b9090b;
+            --accent-glow: rgba(185, 9, 11, 0.5);
+            --header-bg: rgba(5, 5, 5, 0.8);
+        }
+
+        body {
+            background-color: var(--bg);
+            color: var(--text);
+            font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            overflow-x: hidden;
+            transition: background-color 1.2s cubic-bezier(0.4, 0, 0.2, 1);
+            opacity: 0; 
+        }
+
+        body.loaded {
+            opacity: 1;
+            transition: opacity 1.5s ease;
+        }
 
         #hero {
             position: relative;
             width: 100%;
-            height: 85vh; /* Takes up 65% of your screen height */
+            height: 85vh;
             min-height: 400px;
             background-size: cover;
             background-position: top center;
             display: flex;
             align-items: center;
-            /* Pulls the image up to sit underneath your sticky header */
-            margin-top: -80px; 
+            margin-top: -80px;
+            transform: scale(1.05);
+            transition: transform 2s cubic-bezier(0.16, 1, 0.3, 1), background-image 1.2s ease;
         }
 
-        /* The Gradient Overlays */
+        body.loaded #hero {
+            transform: scale(1);
+        }
+
         #hero::before {
             content: "";
             position: absolute;
@@ -28,19 +56,26 @@
             left: 0;
             width: 100%;
             height: 100%;
-            /* 1st gradient makes the left dark for text, 2nd gradient fades the bottom into your site's background color */
             background: 
-                linear-gradient(to right, var(--bg) 5%, rgba(5,5,5,0.6) 45%, transparent 100%),
-                linear-gradient(to bottom, transparent 60%, var(--bg) 100%);
+                linear-gradient(to right, var(--bg) 5%, rgba(5,5,5,0.4) 45%, transparent 100%),
+                linear-gradient(to bottom, transparent 50%, var(--bg) 100%);
             z-index: 1;
         }
 
         .hero-content {
             position: relative;
-            z-index: 2; /* Keeps text above the gradient */
+            z-index: 2;
             padding: 0 4%;
             max-width: 600px;
-            margin-top: 40px; /* Pushes text down slightly so it isn't hidden by the header */
+            margin-top: 40px;
+            opacity: 0;
+            transform: translateY(20px);
+            transition: opacity 1s ease 0.5s, transform 1s ease 0.5s;
+        }
+
+        body.loaded .hero-content {
+            opacity: 1;
+            transform: translateY(0);
         }
 
         #hero-title {
@@ -49,7 +84,7 @@
             margin: 0 0 10px 0;
             letter-spacing: 1px;
             font-style: italic;
-            text-shadow: 2px 2px 5px rgba(0,0,0,0.8);
+            text-shadow: 2px 2px 15px rgba(0,0,0,0.5);
         }
 
         #hero-desc {
@@ -57,7 +92,7 @@
             color: #ccc;
             line-height: 1.5;
             margin: 0 0 30px 0;
-            text-shadow: 1px 1px 3px rgba(0,0,0,0.8);
+            text-shadow: 1px 1px 10px rgba(0,0,0,0.5);
         }
 
         .play-btn {
@@ -69,52 +104,16 @@
             font-weight: bold;
             text-decoration: none;
             border-radius: 4px;
-            transition: all 0.2s ease;
-            box-shadow: 0 4px 10px rgba(185, 9, 11, 0.3);
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            box-shadow: 0 4px 15px var(--accent-glow);
         }
 
         .play-btn:hover {
-            background-color: #e60b0d; /* Slightly brighter red on hover */
-            transform: scale(1.05);
+            transform: scale(1.08);
+            box-shadow: 0 8px 25px var(--accent-glow);
+            filter: brightness(1.2);
         }
 
-        .vote-hero-btn {
-            position: absolute;
-            bottom: 25px; 
-            left: 4%;     
-            z-index: 10;  
-            
-            opacity: 1; 
-
-            color: #bbb; 
-            border-color: #666;
-
-            padding: 8px 20px; 
-            font-size: 11px;
-            transition: all 0.3s ease;
-        }
-
-        .vote-hero-btn:hover {
-            background-color: var(--text);
-            color: var(--bg);
-            border-color: var(--text);
-        }
-        
-        :root {
-            --bg: #050505;
-            --card-bg: #141414;
-            --text: #e5e5e5;
-            --accent: #b9090b;
-        }
-        body {
-            background-color: var(--bg);
-            color: var(--text);
-            font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
-            margin: 0;
-            padding: 0;
-            overflow-x: hidden;
-        }
-        
         header {
             padding: 20px 4%;
             display: flex;
@@ -122,59 +121,101 @@
             justify-content: space-between;
             position: sticky;
             top: 0;
-            background: linear-gradient(to bottom, rgba(0,0,0,0.8), transparent);
+            background: var(--header-bg);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
             z-index: 100;
+            border-bottom: 2px solid var(--accent);
+            box-shadow: 0 4px 30px rgba(0, 0, 0, 0.5);
+            transform: translateY(-100%);
+            transition: transform 0.8s cubic-bezier(0.16, 1, 0.3, 1), border-color 1.2s ease;
         }
+
+        body.loaded header {
+            transform: translateY(0);
+        }
+
         .logo {
             color: var(--accent);
             font-size: 24px;
             font-weight: bold;
-            letter-spacing: 1px;
+            letter-spacing: 2px;
+            transition: color 1.2s ease;
         }
+
         #searchBar {
-            background: rgba(0,0,0,0.6);
-            border: 1px solid #333;
+            background: rgba(255,255,255,0.05);
+            border: 1px solid rgba(255,255,255,0.1);
             color: white;
-            padding: 8px 15px;
-            border-radius: 4px;
+            padding: 10px 20px;
+            border-radius: 20px;
             width: 250px;
             outline: none;
+            transition: all 0.3s ease;
+        }
+
+        #searchBar:focus {
+            width: 320px;
+            background: rgba(255,255,255,0.1);
+            border-color: var(--accent);
+            box-shadow: 0 0 15px var(--accent-glow);
         }
 
         .container {
             padding: 0 4% 50px 4%;
+            overflow: visible;
         }
+
+        .reveal-section {
+            opacity: 0;
+            transform: translateY(40px);
+            transition: opacity 1s cubic-bezier(0.25, 0.46, 0.45, 0.94), transform 1s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+            margin-bottom: 20px;
+            overflow: visible;
+        }
+
+        .reveal-section.revealed {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
         .row-title {
             font-size: 1.4vw;
             font-weight: 500;
-            margin-top: 30px;
-            margin-bottom: -10px;
+            margin-top: 60px;
+            margin-bottom: 10px;
             color: #ffffff;
+            letter-spacing: 0.5px;
+            position: relative;
+            z-index: 5;
         }
+
         .big-row-title {
             font-size: 2.8vw;
-            font-weight: 1000;
-            margin-top: 60px;
-            margin-bottom: -20px;
+            font-weight: 800;
+            margin-top: 100px;
+            margin-bottom: 20px;
             color: #ffffff;
+            position: relative;
+            z-index: 5;
         }
+
         .row {
             display: flex;
-            gap: 35px;
+            gap: 25px;
             overflow-x: auto;
-            padding-top: 40px;
-            padding-bottom: 50px;
-            padding-left: 30px;
-            padding-right: 30px;
+            padding: 60px 40px; 
+            margin: -60px -40px;
             scrollbar-width: none;
+            overflow-y: visible;
         }
-        .row::-webkit-scrollbar {
-            display: none;
-        }
+
+        .row::-webkit-scrollbar { display: none; }
         
-        #all {
-            flex-wrap: wrap;
-            overflow-x: visible;
+        #all { 
+            flex-wrap: wrap; 
+            overflow-x: visible; 
+            justify-content: flex-start;
         }
 
         .card {
@@ -182,14 +223,19 @@
             width: 180px;
             position: relative;
             cursor: pointer;
-            transition: transform 0.3s;
+            transition: all 0.4s cubic-bezier(0.165, 0.84, 0.44, 1);
             text-decoration: none;
             color: inherit;
+            overflow: visible; 
+            display: flex;
+            flex-direction: column;
         }
+
         .card:hover {
-            transform: scale(1.05);
-            z-index: 10;
+            transform: translateY(-10px) scale(1.03);
+            z-index: 20;
         }
+
         .card img.glow {
             position: absolute;
             top: 0;
@@ -197,60 +243,107 @@
             width: 100%;
             height: 260px;
             object-fit: cover;
-            border-radius: 4px;
-            filter: blur(20px);
-            opacity: 0.75;
-            transform: scale(1.15) translateY(5px);
+            border-radius: 8px;
+            filter: blur(35px);
+            opacity: 0.65;
+            transform: scale(1.05);
             z-index: 0;
-            transition: opacity 0.3s, filter 0.3s;
+            transition: opacity 0.4s ease, transform 0.4s ease;
+            background: var(--accent); 
+            pointer-events: none;
         }
+
         .card:hover img.glow {
-            opacity: 1;
-            filter: blur(25px);
+            opacity: 0.90;
+            transform: scale(1.15); /* Updated per request */
         }
+
         .card img.poster {
             position: relative;
             width: 100%;
             height: 260px;
             object-fit: cover;
-            border-radius: 4px;
-            border: 1px solid #222;
+            border-radius: 8px;
+            border: 1px solid rgba(255,255,255,0.1);
             z-index: 1;
+            box-shadow: 0 10px 20px rgba(0,0,0,0.4);
+            transition: border-color 0.4s ease;
         }
-        .card-title {
-            margin-top: 8px;
-            font-size: 14px;
+
+        .card:hover img.poster {
+            border-color: var(--accent);
+        }
+
+        .card-info {
+            margin-top: 12px;
+            position: relative;
+            z-index: 2;
             text-align: center;
+        }
+
+        .card-title {
+            font-size: 14px;
+            font-weight: 500;
             white-space: nowrap;
             overflow: hidden;
             text-overflow: ellipsis;
             display: block;
-            position: relative;
-            z-index: 2;
+            opacity: 0.8;
+            transition: opacity 0.3s ease;
+        }
+
+        .card-desc {
+            max-height: 0;
+            opacity: 0;
+            font-size: 11px;
+            color: #aaa;
+            margin-top: 0;
+            overflow: hidden;
+            transition: all 0.4s ease;
+            line-height: 1.4;
+            text-wrap: balance;
+        }
+
+        .card:hover .card-title {
+            opacity: 1;
+            white-space: normal;
+        }
+
+        .card:hover .card-desc {
+            max-height: 100px;
+            opacity: 1;
+            margin-top: 8px;
         }
 
         footer {
-            padding: 60px 0;
+            padding: 80px 0;
             display: flex;
             justify-content: center;
             background-color: var(--bg);
+            transition: background-color 1.2s ease;
+            position: relative;
+            z-index: 10;
         }
+
         .request-btn {
-            background-color: transparent;
-            color: #777;
-            border: 1px solid #444;
-            padding: 12px 35px;
-            font-size: 14px;
+            background: rgba(255,255,255,0.03);
+            color: #999;
+            border: 1px solid rgba(255,255,255,0.1);
+            padding: 14px 40px;
+            font-size: 13px;
             text-decoration: none;
-            border-radius: 4px;
+            border-radius: 30px;
             transition: all 0.3s ease;
             text-transform: uppercase;
-            letter-spacing: 1.5px;
+            letter-spacing: 2px;
         }
+
         .request-btn:hover {
-            background-color: var(--text);
-            color: var(--bg);
-            border-color: var(--text);
+            background: var(--accent);
+            color: white;
+            border-color: var(--accent);
+            box-shadow: 0 0 20px var(--accent-glow);
+            transform: translateY(-2px);
         }
 
         .all-header {
@@ -258,28 +351,37 @@
             justify-content: space-between;
             align-items: flex-end;
             padding-right: 4%;
-            margin-top: 30px;
+            margin-top: 50px;
+            position: relative;
+            z-index: 10;
         }
-        .all-header .row-title {
-            margin-top: 0;
-        }
+
         #sortDropdown {
-            background-color: var(--card-bg);
+            background-color: rgba(255,255,255,0.05);
             color: var(--text);
-            border: 1px solid #444;
-            padding: 6px 12px;
-            border-radius: 4px;
+            border: 1px solid rgba(255,255,255,0.1);
+            padding: 8px 16px;
+            border-radius: 20px;
             font-size: 13px;
             outline: none;
             cursor: pointer;
-            transition: border-color 0.3s;
+            transition: all 0.3s ease;
         }
-        #sortDropdown:hover {
-            border-color: var(--accent);
+
+        body::after {
+            content: "";
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: url('https://upload.wikimedia.org/wikipedia/commons/7/76/1k_filmgrain.png');
+            opacity: 0.03;
+            pointer-events: none;
+            z-index: 9999;
         }
     </style>
 </head>
 <body>
+    <canvas id="themeCanvas" style="display:none;"></canvas>
+
     <header>
         <div class="logo">PRIME GAMES</div>
         <input type="text" id="searchBar" placeholder="Search games/apps..." onkeyup="search()">
@@ -291,33 +393,46 @@
             <p id="hero-desc"></p>
             <a href="#" id="hero-play" class="play-btn">▶ Play Now</a>
         </div>
-
         <a href="https://docs.google.com/forms/d/e/1FAIpQLSeS_ODOaVA3azjFqq7a31kPo8krNr6x7iWwRavSEfqqhKb0sw/viewform?usp=header" 
            target="_blank" 
-           class="request-btn vote-hero-btn">
+           class="request-btn vote-hero-btn" style="position: absolute; bottom: 30px; left: 4%; font-size: 11px;">
            Vote for featured game of the week
         </a>
     </div>
     
     <div class="container">
-        <div class="row-title">Trending Now</div>
-        <div class="row" id="trending"></div>
-        <div class="row-title">New Releases</div>
-        <div class="row" id="new"></div>
-        <div class="row-title">Pokémon Main Series</div>
-        <div class="row" id="pokemon"></div>
-        <div class="all-header">
-            <div class="row-title">All Games</div>
-            <select id="sortDropdown" onchange="sortAllGames()">
-                <option value="newest">Oldest First</option>
-                <option value="oldest">Newest First</option>
-                <option value="az">A-Z</option>
-                <option value="za">Z-A</option>
-            </select>
+        <div class="reveal-section">
+            <div class="row-title">Trending Now</div>
+            <div id="trending" class="row"></div>
         </div>
-        <div class="row" id="all"></div>
-        <div class="big-row-title">Apps</div>
-        <div class="row" id="apps"></div>
+
+        <div class="reveal-section">
+            <div class="row-title">New Releases</div>
+            <div id="new" class="row"></div>
+        </div>
+
+        <div class="reveal-section">
+            <div class="row-title">Pokémon Main Series</div>
+            <div id="pokemon" class="row"></div>
+        </div>
+
+        <div class="reveal-section">
+            <div class="all-header">
+                <div class="row-title">All Games</div>
+                <select id="sortDropdown" onchange="sortAllGames()">
+                    <option value="newest">Oldest First</option>
+                    <option value="oldest">Newest First</option>
+                    <option value="az">A-Z</option>
+                    <option value="za">Z-A</option>
+                </select>
+            </div>
+            <div id="all" class="row"></div>
+        </div>
+
+        <div class="reveal-section">
+            <div class="big-row-title">Apps</div>
+            <div id="apps" class="row"></div>
+        </div>
     </div>
 
     <footer id="requestFooter">
@@ -325,7 +440,6 @@
     </footer>
 
     <script>
-        // --- FEATURED GAME (Separate from gamesDB) ---
         const featuredGame = { 
             title: "The Binding of Isaac", 
             url: "./tboi/index.html", 
@@ -333,43 +447,107 @@
             desc: "When Isaac's mother receives a call from above, Isaac flees into the monster-strewn basement. Face twisted creatures, discover arcane treasures, and fight your way to safety in this genre-defining roguelike." 
         };
 
+        const gamesDB = [
+            { title: "Your Only Move Is HUSTLE", url: "./hustle/index.html", imgSrc: "https://e.snmc.io/lk/f/x/d65d937781df0213f0bf0aa628aa0d06/13368350", tags: ["trending", "all"], index: "01", desc: "Choreograph spectacular, high-octane battles in this turn-based fighting simulator where strategy replaces reflexes. Predict your opponent's every move with frame-by-frame precision, master complex mind games, and watch your tactical decisions transform into a seamless, cinematic action sequence." },
+            { title: "People Playground", url: "./ppg/index.html", imgSrc: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRFTD-fKpHod-WBHHOwok7sZ-gK3RpiBLyTxg&s", tags: ["all"], index: "02", desc: "Unleash your creativity and cruelty in this expansive physics sandbox designed for limitless experimentation. Use a massive arsenal of firearms, explosives, and bizarre machinery to interact with ragdoll subjects in gruesome ways, or build your own complex contraptions in a world where everything is destructible." },
+            { title: "Geometry Dash", url: "./gdash/index.html", imgSrc: "https://images.ctfassets.net/vfkpgemp7ek3/1204734511/2c0723c100ed8d02a603dfe74597a6cb/geometry-dash-revenue.jpg", tags: ["all"], index: "03", desc: "Jump, fly, and flip your way through danger in this rhythm-based action platformer. Push your skills to the limit as you navigate near-impossible passages and spiky obstacles to the beat of an electronic soundtrack, then unleash your creativity with a powerful editor to build and share your own death-defying challenges." },
+            { title: "Needy Streamer Overload", url: "./needy/index.html", imgSrc: "https://i.ytimg.com/vi/BBzKrPTFcsU/hqdefault.jpg", tags: ["all"], index: "04", desc: "Step into the role of 'P-Chan' and manage the daily life of Ame, a girl desperate for internet fame as the 'number one streamer.' Balance her stress levels, mental health, and dark impulses while chasing viral growth, navigating a multi-ending descent into the volatile world of modern idol culture." },
+            { title: "Slope", url: "./slope/index.html", imgSrc: "https://i.ytimg.com/vi/yEnVcLpTri0/maxresdefault.jpg", tags: ["trending", "all"], index: "05", desc: "Take control of a high-speed ball and test your reflexes as you hurtle down an endless, neon-lit downhill course. Navigate narrow platforms, dodge deadly red obstacles, and maintain your balance at breakneck speeds as the track becomes increasingly unpredictable in this minimalist, gravity-defying arcade challenge." },
+            { title: "ULTRAKILL", url: "./ultrakill/index.html", imgSrc: "https://shared.fastly.steamstatic.com/store_item_assets/steam/apps/1229490/capsule_616x353.jpg", tags: ["trending", "all"], index: "06", desc: "Mankind is dead. Blood is fuel. Hell is full. A fast-paced retro FPS." },
+            { title: "The Binding of Isaac", url: "./tboi/index.html", imgSrc: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTSVwshZ-Gy5uWVlR5YIFHF93Dp4uwHEf2-rw&s", tags: ["trending", "all"], index: "07", desc: "When Isaac's mother receives a call from above, Isaac flees into the monster-strewn basement. Face twisted creatures, discover arcane treasures, and fight your way to safety in this genre-defining roguelike." },
+            { title: "Pokémon: Fire Red", url: "./firered/index.html", imgSrc: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcR86fNkVgTboxGRyLAE-6dY5Q9ViEQoOG7SRQ&s", tags: ["pokemon", "all"], index: "08", desc: "Set out from Pallet Town as a rookie trainer on a classic quest to become the very best in the Kanto region. Collect eight gym badges, thwart the nefarious Team Rocket, and challenge the Elite Four while exploring the expanded Sevii Islands in this definitive remake of the adventure that started it all." },
+            { title: "Melon Sandbox", url: "./melon/index.html", imgSrc: "https://images.steamusercontent.com/ugc/2041853622142661038/6E00C11C89A6207B1A090B94A96A02FA64657896/?imw=637&imh=358&ima=fit&impolicy=Letterbox&imcolor=%23000000&letterbox=true", tags: ["all"], index: "09", desc: "Unleash your creativity in this chaotic physics-based sandbox playground." },
+            { title: "Discourse", url: "https://githbprime.github.io/Discourse/", imgSrc: "./discord/Discourse.png", tags: ["apps"], index: "00", desc: "Connect and chat with friends in our custom communication platform." },
+            { title: "N-GON", url: "./ngon/index.html", imgSrc: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcS70oG-UWKD2RmRslOTq7RhIIduST4piX1eTQ&s", tags: ["trending", "all"], index: "10", desc: "Control "M," a high-tech combat bot, in this minimalist 2D physics roguelite where every object is a potential weapon. Navigate through experimental simulations, master complex momentum-based movement, and collect hundreds of unique power-ups to survive an onslaught of geometric adversaries." },
+            { title: "10 Minutes till Dawn", url: "./dawn/index.html", imgSrc: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSyEL5h4Dimu70qinRlg_3GdHAfh2aU74aA1w&s", tags: ["all"], index: "11", desc: "Hold your ground against relentless hordes of Lovecraftian horrors in this intense, survival-focused bullet heaven. Choose your hero and weapon, then strategically draft powerful upgrades to create game-breaking builds as you count down the final minutes until the sun rises." },
+            { title: "Friday Night Funkin'", url: "./fnf/index.html", imgSrc: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQQmXu3CBflwvGGH5f6KcdpQiBrQgy5dRUObw&s", tags: ["all"], index: "12", desc: "Engage in high-stakes rhythm battles as a blue-haired kid trying to win his girlfriend’s heart by out-singing her overprotective ex-rockstar father and a cast of eccentric foes. Match the arrows to the beat, keep your cool under pressure, and prove your vocal prowess in this viral, mod-heavy tribute to Flash-era music games." },
+            { title: "Snake Game", url: "./snakegame/index.html", imgSrc: "./snakegame/poster.png", tags: ["all"], index: "13", desc: "The timeless classic—eat the apples and grow as long as you can." },
+            { title: "Basket Random", url: "./basketrandom/index.html", imgSrc: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSr_fo1jcMjvxJBRFEtoewhcZznf65m07vc_g&s", tags: ["all"], index: "14", desc: "Experience the chaotic side of basketball in this physics-based, two-button sports game where every dunk is a stroke of luck. Navigate unpredictable environments—from snowy courts to shifting hoops—and control wobbly players with erratic movements as you scramble to score five points before your opponent in this hilarious arcade challenge." },
+            { title: "Pokémon: Emerald",  url: "./emerald/index.html", imgSrc: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQxTyOduv8t4ptM9CXzwGlEeH51xqKWJQzbMQ&s", tags: ["pokemon", "all"], index: "15", desc: "Journey through the Hoenn region to stop the warring Team Magma and Team Aqua before they awaken ancient, world-altering legends. Master the art of double battles, conquer the grueling challenges of the all-new Battle Frontier, and unite the powers of land, sea, and sky in this ultimate version of the third generation." },
+            { title: "The Legend of Zelda: A Link to The Past", url: "./zelda-past/index.html", imgSrc: "https://m.media-amazon.com/images/M/MV5BN2U5OWRiMWYtMmI1Mi00MDMyLWFkOTctYTI3ZmYyMDk2ZTkzXkEyXkFqcGc@._V1_.jpg", tags: ["all"], index: "16", desc: "Awaken as a young hero destined to rescue the kingdom of Hyrule from the clutches of the dark wizard Agahnim. Traverse between the flourishing Light World and the corrupted Dark World, conquering intricate dungeons and wielding the legendary Master Sword to seal away the ultimate evil and restore balance to the Triforce." },
+            { title: "Deltarune", url: "./deltarune/index.html", imgSrc: "https://i.ebayimg.com/images/g/YSMAAeSwsI9oltEI/s-l400.png", tags: ["new", "trending", "all"], index: "17", desc: "Fall into a mysterious 'Dark World' alongside a school bully and discover your destiny as the Lightners prophesied to save the realm from an impending shadow. Navigate a world of bizarre characters and bullet-hell combat where your choices—and whether you choose to fight or act—shape a unique story that unfolds across episodic chapters." },
+            { title: "Undertale", url: "./undertale/index.html", imgSrc: "https://m.media-amazon.com/images/M/MV5BMWI3ZTkxZjktYWU3NC00OGQ1LWFlNzgtYzIwMWI4NDg2YTU0XkEyXkFqcGc@._V1_.jpg", tags: ["new", "all"], index: "18", desc: "Tumble into a vast subterranean world filled with monsters after falling through a hole on Mount Ebott. Decide the fate of an entire civilization in this subverisve RPG where you don't have to kill anyone; negotiate through unique turn-based encounters, make unlikely friends, and discover if you have the determination to find your way home or change the world forever." },
+            { title: "Achievement Unlocked", url: "./achievement/index.html", imgSrc: "https://static.tvtropes.org/pmwiki/pub/images/psychotronic_achievementunlocked_title.png", tags: ["new", "all"], index: "19", desc: "Control a small blue elephant in this meta-game platformer where traditional goals like 'winning' or 'beating levels' don't exist. Instead, your only purpose is to satisfy the game's obsession with meaningless rewards by performing hundreds of nonsensical tasks—from simply moving left to dying on spikes—in a satirical exploration of modern gaming gratification." },
+            { title: "Geotastic", url: "./geoguessr/index.html", imgSrc: "https://static.wixstatic.com/media/a4eb4c_9f38dd00986a4c319dd68bc284c35783~mv2.png/v1/fill/w_1240,h_1240,al_c/a4eb4c_9f38dd00986a4c319dd68bc284c35783~mv2.png", tags: ["new", "trending", "all"], index: "20", desc: "Test your global knowledge in this crowdfunded geography quiz that drops you into random locations around the world via Google Street View. Scour your surroundings for clues like language, architecture, and landscapes to pinpoint your exact coordinates on a map, competing solo or with friends in a variety of challenging, high-stakes modes." },
+            { title: "AxiaLM", url: "axialm.github.io/chat", imgSrc: "./logo.png", tags: ["apps"], index: "00", desc: "Talk to AxiaLM, a highly sophisticated LLM based off of the LLaMa (by Meta) AI series." }
+        ];
+
+        function extractThemeColor(imgSrc) {
+            const img = new Image();
+            img.crossOrigin = "Anonymous";
+            img.src = imgSrc;
+            img.onload = function() {
+                const canvas = document.getElementById('themeCanvas');
+                const ctx = canvas.getContext('2d');
+                canvas.width = img.width;
+                canvas.height = img.height;
+                ctx.drawImage(img, 0, 0);
+                const samples = [[10, 10], [canvas.width/2, canvas.height/2], [canvas.width-10, canvas.height-10]];
+                let bestColor = {r: 185, g: 9, b: 11};
+                samples.forEach(s => {
+                    const data = ctx.getImageData(s[0], s[1], 1, 1).data;
+                    const intensity = data[0] + data[1] + data[2];
+                    if (intensity > 100 && intensity < 650) {
+                        bestColor = {r: data[0], g: data[1], b: data[2]};
+                    }
+                });
+                applyTheme(bestColor);
+            };
+        }
+
+        function applyTheme(rgb) {
+            const root = document.documentElement;
+            const colorStr = `rgb(${rgb.r}, ${rgb.g}, ${rgb.b})`;
+            const glowStr = `rgba(${rgb.r}, ${rgb.g}, ${rgb.b}, 0.5)`;
+            root.style.setProperty('--accent', colorStr);
+            root.style.setProperty('--accent-glow', glowStr);
+            const brightness = (rgb.r * 299 + rgb.g * 587 + rgb.b * 114) / 1000;
+            const darkTint = `rgb(${Math.floor(rgb.r/15)}, ${Math.floor(rgb.g/15)}, ${Math.floor(rgb.b/15)})`;
+            root.style.setProperty('--bg', brightness > 50 ? darkTint : '#050505');
+        }
+
+        function initScrollReveal() {
+            const observerOptions = {
+                threshold: 0.1,
+                rootMargin: "0px 0px -50px 0px"
+            };
+
+            const observer = new IntersectionObserver((entries) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        entry.target.classList.add('revealed');
+                    }
+                });
+            }, observerOptions);
+
+            document.querySelectorAll('.reveal-section').forEach(section => {
+                observer.observe(section);
+            });
+        }
+
         function loadFeaturedGame() {
             const hero = document.getElementById('hero');
             document.getElementById('hero-title').textContent = featuredGame.title;
             document.getElementById('hero-desc').textContent = featuredGame.desc;
             document.getElementById('hero-play').href = featuredGame.url;
-            
-            // Set the background image dynamically
             hero.style.backgroundImage = `url('${featuredGame.imgSrc}')`;
+            extractThemeColor(featuredGame.imgSrc);
         }
-        
-        const gamesDB = [
-            { title: "Your Only Move Is HUSTLE", url: "./hustle/index.html", imgSrc: "https://e.snmc.io/lk/f/x/d65d937781df0213f0bf0aa628aa0d06/13368350", tags: ["trending", "all"], index: "1" },
-            { title: "People Playground", url: "./ppg/index.html", imgSrc: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRFTD-fKpHod-WBHHOwok7sZ-gK3RpiBLyTxg&s", tags: ["all"], index: "2" },
-            { title: "Geometry Dash", url: "./gdash/index.html", imgSrc: "https://images.ctfassets.net/vfkpgemp7ek3/1204734511/2c0723c100ed8d02a603dfe74597a6cb/geometry-dash-revenue.jpg", tags: ["all"], index: "3" },
-            { title: "Needy Streamer Overload", url: "./needy/index.html", imgSrc: "https://i.ytimg.com/vi/BBzKrPTFcsU/hqdefault.jpg", tags: ["all"], index: "4" },
-            { title: "Slope", url: "./slope/index.html", imgSrc: "https://i.ytimg.com/vi/yEnVcLpTri0/maxresdefault.jpg", tags: ["trending", "all"], index: "5" },
-            { title: "ULTRAKILL", url: "./ultrakill/index.html", imgSrc: "https://shared.fastly.steamstatic.com/store_item_assets/steam/apps/1229490/capsule_616x353.jpg", tags: ["trending", "all"], index: "6" },
-            { title: "The Binding of Isaac", url: "./tboi/index.html", imgSrc: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTSVwshZ-Gy5uWVlR5YIFHF93Dp4uwHEf2-rw&s", tags: ["trending", "all"], index: "7" },
-            { title: "Pokémon: Fire Red", url: "./firered/index.html", imgSrc: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcR86fNkVgTboxGRyLAE-6dY5Q9ViEQoOG7SRQ&s", tags: ["pokemon", "all"], index: "8" },
-            { title: "Melon Sandbox", url: "./melon/index.html", imgSrc: "https://images.steamusercontent.com/ugc/2041853622142661038/6E00C11C89A6207B1A090B94A96A02FA64657896/?imw=637&imh=358&ima=fit&impolicy=Letterbox&imcolor=%23000000&letterbox=true", tags: ["all"], index: "9" },
-            { title: "Discourse", url: "https://githbprime.github.io/Discourse/", imgSrc: "./discord/Discourse.png", tags: ["apps"] },
-            { title: "N-GON", url: "./ngon/index.html", imgSrc: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcS70oG-UWKD2RmRslOTq7RhIIduST4piX1eTQ&s", tags: ["trending", "all"], index: "10" },
-            { title: "10 Minutes till Dawn", url: "./dawn/index.html", imgSrc: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSyEL5h4Dimu70qinRlg_3GdHAfh2aU74aA1w&s", tags: ["all"], index: "11" },
-            { title: "Friday Night Funkin'", url: "./fnf/index.html", imgSrc: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQQmXu3CBflwvGGH5f6KcdpQiBrQgy5dRUObw&s", tags: ["all"], index: "12" },
-            { title: "Snake Game", url: "./snakegame/index.html", imgSrc: "./snakegame/poster.png", tags: ["all"], index: "13" },
-            { title: "Basket Random", url: "./basketrandom/index.html", imgSrc: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSr_fo1jcMjvxJBRFEtoewhcZznf65m07vc_g&s", tags: ["all"], index: "14" },
-            { title: "Pokémon: Emerald",  url: "./emerald/index.html", imgSrc: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQxTyOduv8t4ptM9CXzwGlEeH51xqKWJQzbMQ&s", tags: ["pokemon", "all"], index: "15" },
-            { title: "The Legend of Zelda: A Link to The Past", url: "./zelda-past/index.html", imgSrc: "https://m.media-amazon.com/images/M/MV5BN2U5OWRiMWYtMmI1Mi00MDMyLWFkOTctYTI3ZmYyMDk2ZTkzXkEyXkFqcGc@._V1_.jpg", tags: ["all"], index: "16" },
-            { title: "Deltarune", url: "./deltarune/index.html", imgSrc: "https://i.ebayimg.com/images/g/YSMAAeSwsI9oltEI/s-l400.png", tags: ["new", "trending", "all"], index: "17" },
-            { title: "Undertale", url: "./undertale/index.html", imgSrc: "https://m.media-amazon.com/images/M/MV5BMWI3ZTkxZjktYWU3NC00OGQ1LWFlNzgtYzIwMWI4NDg2YTU0XkEyXkFqcGc@._V1_.jpg", tags: ["new", "all"], index: "18" },
-            { title: "Achievement Unlocked", url: "./achievement/index.html", imgSrc: "https://static.tvtropes.org/pmwiki/pub/images/psychotronic_achievementunlocked_title.png", tags: ["new", "all"], index: "19" },
-            { title: "Geotastic", url: "./geoguessr/index.html", imgSrc: "https://static.wixstatic.com/media/a4eb4c_9f38dd00986a4c319dd68bc284c35783~mv2.png/v1/fill/w_1240,h_1240,al_c/a4eb4c_9f38dd00986a4c319dd68bc284c35783~mv2.png", tags: ["new", "trending", "all"], index: "20" },
-            { title: "AxiaLM", url: "axialm.github.io/chat", imgSrc: "./logo.png", tags: ["apps"] }
-        ];
+
+        function createCardHTML(game) {
+            return `
+                <a href="${game.url}" class="card" data-name="${game.title}">
+                    <img src="${game.imgSrc}" alt="${game.title} Glow" class="glow">
+                    <img src="${game.imgSrc}" alt="${game.title}" class="poster">
+                    <div class="card-info">
+                        <span class="card-title">${game.title}</span>
+                        <p class="card-desc">${game.desc || 'Placeholder Description'}</p>
+                    </div>
+                </a>
+            `;
+        }
 
         function loadGames() {
-            // Clear rows first to prevent duplicates when resetting a search
             const rows = ['trending', 'new', 'pokemon', 'all', 'apps'];
             rows.forEach(id => {
                 const row = document.getElementById(id);
@@ -377,106 +555,62 @@
             });
 
             gamesDB.forEach(game => {
-                const cardHTML = `
-                    <a href="${game.url}" class="card" data-name="${game.title}">
-                        <img src="${game.imgSrc}" alt="${game.title} Glow" class="glow">
-                        <img src="${game.imgSrc}" alt="${game.title}" class="poster">
-                        <span class="card-title">${game.title}</span>
-                    </a>
-                `;
+                const html = createCardHTML(game);
                 game.tags.forEach(tag => {
                     const targetRow = document.getElementById(tag);
-                    if (targetRow) {
-                        targetRow.insertAdjacentHTML('beforeend', cardHTML);
-                    }
+                    if (targetRow) targetRow.insertAdjacentHTML('beforeend', html);
                 });
             });
         }
 
         function search() {
             let input = document.getElementById('searchBar').value.toLowerCase();
-            let titles = document.getElementsByClassName('row-title');
-            let bigTitles = document.getElementsByClassName('big-row-title');
-            let trendingRow = document.getElementById('trending');
-            let newRow = document.getElementById('new');
-            let pokemonRow = document.getElementById('pokemon');
-            let allRow = document.getElementById('all');
-            let appsRow = document.getElementById('apps');
-            let footer = document.getElementById('requestFooter');
+            let sections = document.querySelectorAll('.reveal-section');
             let hero = document.getElementById('hero');
+            let footer = document.getElementById('requestFooter');
 
             if (input.trim() !== "") {
                 hero.style.display = "none";
                 footer.style.display = "none";
+                sections.forEach(s => {
+                    s.classList.add('revealed');
+                    if (s.querySelector('#all') || s.querySelector('#apps')) {
+                        s.style.display = "block";
+                    } else {
+                        s.style.display = "none";
+                    }
+                });
                 
-                // Hide all section headers
-                for (let i = 0; i < titles.length; i++) titles[i].style.display = "none";
-                for (let i = 0; i < bigTitles.length; i++) bigTitles[i].style.display = "none";
-                
-                // Hide specific category rows
-                trendingRow.style.display = "none";
-                newRow.style.display = "none";
-                pokemonRow.style.display = "none";
-                
-                // We show both rows, but they will look like one big grid
-                allRow.style.display = "flex";
-                appsRow.style.display = "flex";
-                
-                // Filter all cards (Games and Apps)
-                let allCards = document.querySelectorAll('.card');
-                for (let i = 0; i < allCards.length; i++) {
-                    let name = allCards[i].getAttribute('data-name').toLowerCase();
-                    allCards[i].style.display = name.includes(input) ? "block" : "none";
-                }
+                document.querySelectorAll('.card').forEach(card => {
+                    let name = card.getAttribute('data-name').toLowerCase();
+                    card.style.display = name.includes(input) ? "block" : "none";
+                });
             } else {
-                // Clear search: Bring back the original layout
                 hero.style.display = "flex";
                 footer.style.display = "flex";
-                
-                for (let i = 0; i < titles.length; i++) titles[i].style.display = "block";
-                for (let i = 0; i < bigTitles.length; i++) bigTitles[i].style.display = "block";
-                
-                trendingRow.style.display = "flex";
-                newRow.style.display = "flex";
-                pokemonRow.style.display = "flex";
-                appsRow.style.display = "flex";
-                
-                // Reset all cards to be visible in their original positions
-                let allCards = document.querySelectorAll('.card');
-                for (let i = 0; i < allCards.length; i++) {
-                    allCards[i].style.display = "block";
-                }
+                sections.forEach(s => {
+                    s.style.display = "block";
+                });
+                document.querySelectorAll('.card').forEach(c => c.style.display = "block");
             }
         }
 
         function sortAllGames() {
             const criteria = document.getElementById('sortDropdown').value;
             const allRow = document.getElementById('all');
-            
             let allCategoryGames = gamesDB.filter(game => game.tags.includes("all"));
             
             allCategoryGames.sort((a, b) => {
                 if (criteria === 'az') return a.title.localeCompare(b.title);
                 if (criteria === 'za') return b.title.localeCompare(a.title);
-                
                 let indexA = parseInt(a.index) || 0;
                 let indexB = parseInt(b.index) || 0;
-                
-                if (criteria === 'oldest') return indexB - indexA;
-                if (criteria === 'newest') return indexA - indexB;
+                return criteria === 'oldest' ? indexB - indexA : indexA - indexB;
             });
             
             allRow.innerHTML = '';
-            
             allCategoryGames.forEach(game => {
-                const cardHTML = `
-                    <a href="${game.url}" class="card" data-name="${game.title}">
-                        <img src="${game.imgSrc}" alt="${game.title} Glow" class="glow">
-                        <img src="${game.imgSrc}" alt="${game.title}" class="poster">
-                        <span class="card-title">${game.title}</span>
-                    </a>
-                `;
-                allRow.insertAdjacentHTML('beforeend', cardHTML);
+                allRow.insertAdjacentHTML('beforeend', createCardHTML(game));
             });
         }
 
@@ -484,6 +618,11 @@
             loadFeaturedGame();
             loadGames();
             sortAllGames();
+            initScrollReveal();
+            
+            setTimeout(() => {
+                document.body.classList.add('loaded');
+            }, 100);
         };
     </script>
 </body>
