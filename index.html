@@ -50,6 +50,10 @@
         body.offline-mode .tab-content #downloads-games-wrapper { opacity: 1; pointer-events: auto; filter: none; }
         body.offline-mode #nav-ent { opacity: 0.3; pointer-events: none; }
         body.offline-mode #hero { opacity: 0.3; pointer-events: none; filter: grayscale(0.5); }
+        
+        /* Shift the in-game menu down so the offline banner doesn't block it */
+        body.offline-mode #in-game-hover-zone, 
+        body.offline-mode #in-game-header { top: 44px; }
 
         /* ---------------------------------------------------
            WELCOME SCREEN
