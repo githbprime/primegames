@@ -670,7 +670,7 @@
             background: rgba(5, 5, 5, 0.9);
             backdrop-filter: blur(10px);
             z-index: 9400;
-            display: none; /* Changed: Only shown during gameplay */
+            display: none; 
             justify-content: center;
             transform: translateY(-100%);
             transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1), top 0.4s ease;
@@ -1271,17 +1271,13 @@
                 downloads = downloads.filter(t => t !== currentExpandedGame.title);
                 localStorage.setItem('prime_downloads', JSON.stringify(downloads));
                 
-                // Remove from browser cache
+                // We cannot easily delete runtime-cached game assets without wiping the whole cache,
+                // but we can remove it from the UI list. Wiping the specific index.html is possible.
                 if ('caches' in window) {
-                    const cache = await caches.open('prime-games-data');
-                    await cache.delete(currentExpandedGame.url);
-                    await cache.delete(currentExpandedGame.imgSrc);
-                    if (currentExpandedGame.bigImgSrc && currentExpandedGame.bigImgSrc !== "IMG") {
-                        await cache.delete(currentExpandedGame.bigImgSrc);
-                    }
-                    if (currentExpandedGame.assets) {
-                        for (let asset of currentExpandedGame.assets) await cache.delete(asset);
-                    }
+                    try {
+                        const cache = await caches.open('prime-core-v3'); 
+                        await cache.delete(currentExpandedGame.url);
+                    } catch(e) {}
                 }
 
                 updateDownloadButtonState();
@@ -1289,62 +1285,53 @@
             } else {
                 // Install Phase
                 btn.className = 'download-btn installing';
-                let progress = 0;
-                
                 const spinnerSVG = `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="anim-spin-circle"><path d="M21 12a9 9 0 1 1-6.219-8.56"></path></svg>`;
-                btn.innerHTML = `${spinnerSVG} Installing... 0%`;
-                
-                // Actual caching logic happening in the background
-                let cachingSuccess = true;
+                btn.innerHTML = `${spinnerSVG} Installing...`;
+
+                // Cache images manually
                 if ('caches' in window) {
                     try {
-                        const cache = await caches.open('prime-games-data');
-                        const assetsToCache = [currentExpandedGame.url, currentExpandedGame.imgSrc];
-                        if (currentExpandedGame.bigImgSrc && currentExpandedGame.bigImgSrc !== "IMG") {
-                            assetsToCache.push(currentExpandedGame.bigImgSrc);
+                        const cache = await caches.open('prime-core-v3'); 
+                        // Use no-cors for images to prevent external opaque responses from failing the cache
+                        const imgReq1 = new Request(currentExpandedGame.imgSrc, { mode: 'no-cors' });
+                        cache.add(imgReq1);
+                        if(currentExpandedGame.bigImgSrc && currentExpandedGame.bigImgSrc !== "IMG") {
+                             const imgReq2 = new Request(currentExpandedGame.bigImgSrc, { mode: 'no-cors' });
+                             cache.add(imgReq2);
                         }
-                        if (currentExpandedGame.assets && Array.isArray(currentExpandedGame.assets)) {
-                            assetsToCache.push(...currentExpandedGame.assets);
-                        }
-                        
-                        // Process one-by-one so a single missing file doesn't break the whole game download
-                        await Promise.all(assetsToCache.map(async (url) => {
-                            try {
-                                // Use no-cors for external images to prevent opaque responses from failing the cache
-                                const isCrossOrigin = url.startsWith('http') && !url.includes(window.location.host);
-                                const req = new Request(url, isCrossOrigin ? { mode: 'no-cors' } : {});
-                                const response = await fetch(req);
-                                await cache.put(req, response);
-                            } catch(e) {
-                                console.warn('Failed to cache asset:', url);
-                            }
-                        }));
-                    } catch (err) {
-                        console.error("Caching failed: ", err);
-                        cachingSuccess = false; 
-                    }
+                    } catch(e) {}
                 }
 
+                // Hidden Iframe Trick to cache game assets dynamically!
+                const hiddenFrame = document.createElement('iframe');
+                hiddenFrame.style.display = 'none';
+                hiddenFrame.src = currentExpandedGame.url;
+                document.body.appendChild(hiddenFrame);
+
+                // Fake progress while it loads in the background
+                let progress = 0;
                 clearInterval(downloadInterval);
                 downloadInterval = setInterval(() => {
-                    progress += Math.floor(Math.random() * 15) + 5;
-                    if (progress >= 100) {
-                        progress = 100;
+                    progress += Math.floor(Math.random() * 10) + 2;
+                    if (progress > 95) progress = 95; // Hold at 95 until loaded
+                    btn.innerHTML = `${spinnerSVG} Installing... ${progress}%`;
+                }, 500);
+
+                hiddenFrame.onload = () => {
+                    // Give Unity/WASM games an extra 5 seconds to pull their background chunks
+                    setTimeout(() => {
                         clearInterval(downloadInterval);
+                        btn.innerHTML = `${spinnerSVG} Installing... 100%`;
                         
-                        if (cachingSuccess) {
+                        setTimeout(() => {
+                            document.body.removeChild(hiddenFrame);
                             downloads.unshift(currentExpandedGame.title);
                             localStorage.setItem('prime_downloads', JSON.stringify(downloads));
-                        } else {
-                            alert("Failed to download game assets. Please check your connection.");
-                        }
-
-                        updateDownloadButtonState();
-                        loadDownloads();
-                    } else {
-                        btn.innerHTML = `${spinnerSVG} Installing... ${progress}%`;
-                    }
-                }, 300);
+                            updateDownloadButtonState();
+                            loadDownloads();
+                        }, 500);
+                    }, 4000); 
+                };
             }
         }
 
