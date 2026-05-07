@@ -1004,11 +1004,15 @@
         let downloadInterval = null;
 
         // --- AUDIO SYSTEM ---
-        const sfxHover = new Audio('./Small.wav');
-        const sfxClick = new Audio('./Big.wav');
+        let sfxHover = new Audio();
+        let sfxClick = new Audio();
         
         sfxHover.volume = 0.3; 
         sfxClick.volume = 0.5;
+
+        // Fetch audio as Blobs to bypass offline Range-request restrictions
+        fetch('./Small.wav').then(res => res.blob()).then(blob => sfxHover.src = URL.createObjectURL(blob)).catch(()=>{});
+        fetch('./Big.wav').then(res => res.blob()).then(blob => sfxClick.src = URL.createObjectURL(blob)).catch(()=>{});
 
         const interactiveElements = 'a, button, .card, .dropdown-toggle, .dropdown-item, .logo, #enter-btn';
 
@@ -1236,8 +1240,8 @@
         // Download Simulation & Real Cache Logic
         function updateDownloadButtonState() {
             const btn = document.getElementById('exp-download');
-            // Hide for Entertainment mode
-            if (currentMode === 'ent') {
+            // Hide for Entertainment mode AND Apps
+            if (currentMode === 'ent' || (currentExpandedGame && currentExpandedGame.tags.includes('apps'))) {
                 btn.style.display = 'none';
                 return;
             } else {
@@ -1272,6 +1276,12 @@
                     const cache = await caches.open('prime-games-data');
                     await cache.delete(currentExpandedGame.url);
                     await cache.delete(currentExpandedGame.imgSrc);
+                    if (currentExpandedGame.bigImgSrc && currentExpandedGame.bigImgSrc !== "IMG") {
+                        await cache.delete(currentExpandedGame.bigImgSrc);
+                    }
+                    if (currentExpandedGame.assets) {
+                        for (let asset of currentExpandedGame.assets) await cache.delete(asset);
+                    }
                 }
 
                 updateDownloadButtonState();
@@ -1293,10 +1303,25 @@
                         if (currentExpandedGame.bigImgSrc && currentExpandedGame.bigImgSrc !== "IMG") {
                             assetsToCache.push(currentExpandedGame.bigImgSrc);
                         }
-                        await cache.addAll(assetsToCache);
+                        if (currentExpandedGame.assets && Array.isArray(currentExpandedGame.assets)) {
+                            assetsToCache.push(...currentExpandedGame.assets);
+                        }
+                        
+                        // Process one-by-one so a single missing file doesn't break the whole game download
+                        await Promise.all(assetsToCache.map(async (url) => {
+                            try {
+                                // Use no-cors for external images to prevent opaque responses from failing the cache
+                                const isCrossOrigin = url.startsWith('http') && !url.includes(window.location.host);
+                                const req = new Request(url, isCrossOrigin ? { mode: 'no-cors' } : {});
+                                const response = await fetch(req);
+                                await cache.put(req, response);
+                            } catch(e) {
+                                console.warn('Failed to cache asset:', url);
+                            }
+                        }));
                     } catch (err) {
                         console.error("Caching failed: ", err);
-                        cachingSuccess = false; // Note: Complex HTML5 games with many loose files might need custom SW logic
+                        cachingSuccess = false; 
                     }
                 }
 
