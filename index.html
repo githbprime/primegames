@@ -31,11 +31,13 @@
             transition: opacity 1.5s ease;
         }
 
-        /* Hero & Expanded View Shared Styles */
+        #ui-wrapper {
+            transition: opacity 0.5s ease, filter 0.5s ease;
+        }
+
         #hero, #expanded-view {
             position: relative;
             width: 100%;
-            /* Perfect fit scaling calculation */
             background-size: cover;
             background-position: center;
             background-repeat: no-repeat;
@@ -73,7 +75,6 @@
             opacity: 1;
         }
 
-        /* The "Blending" Effect */
         #hero::before, #expanded-view::before {
             content: "";
             position: absolute;
@@ -131,6 +132,7 @@
             border-radius: 4px;
             transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
             box-shadow: 0 4px 15px var(--accent-glow);
+            cursor: pointer;
         }
 
         .play-btn:hover {
@@ -178,7 +180,6 @@
             z-index: 210;
         }
 
-        /* Nav Tab Styles */
         .main-nav {
             display: flex;
             gap: 20px;
@@ -212,22 +213,16 @@
             text-shadow: 0 0 15px rgba(255, 255, 255, 0.8);
         }
         
-        .nav-btn svg {
-            transition: filter 0.3s ease;
-        }
+        .nav-btn svg { transition: filter 0.3s ease; }
+        .nav-btn:hover svg, .nav-btn.active svg { filter: drop-shadow(0 0 5px rgba(255, 255, 255, 0.8)); }
 
-        .nav-btn:hover svg, .nav-btn.active svg {
-            filter: drop-shadow(0 0 5px rgba(255, 255, 255, 0.8));
-        }
-
-        /* WIP Console-ication Styles */
         .wip-tag {
             position: absolute;
             top: calc(100% + 2px);
             left: 0;
             width: 100%;
-            background-color: #e5b300; /* Warm, premium yellow */
-            color: #1a1a1a; /* Soft, deep charcoal instead of pure black */
+            background-color: #e5b300; 
+            color: #1a1a1a; 
             font-size: 10px;
             font-weight: 800;
             padding: 6px 4px;
@@ -296,17 +291,9 @@
             box-shadow: 0 0 15px var(--accent-glow);
         }
 
-        .container {
-            padding: 0 4% 50px 4%;
-        }
-
-        .tab-content {
-            display: none;
-        }
-        
-        .tab-content.active-tab {
-            display: block;
-        }
+        .container { padding: 0 4% 50px 4%; }
+        .tab-content { display: none; }
+        .tab-content.active-tab { display: block; }
 
         .reveal-section {
             opacity: 0;
@@ -320,74 +307,35 @@
             transform: translateY(0);
         }
 
-        .row-title {
-            font-size: 1.4vw;
-            font-weight: 500;
-            margin-top: 60px;
-            margin-bottom: 10px;
-            color: #ffffff;
-            letter-spacing: 0.5px;
-        }
-
-        .big-row-title {
-            font-size: 2.8vw;
-            font-weight: 800;
-            margin-top: 100px;
-            margin-bottom: 20px;
-            color: #ffffff;
-        }
+        .row-title { font-size: 1.4vw; font-weight: 500; margin-top: 60px; margin-bottom: 10px; color: #ffffff; letter-spacing: 0.5px; }
+        .big-row-title { font-size: 2.8vw; font-weight: 800; margin-top: 100px; margin-bottom: 20px; color: #ffffff; }
 
         .row {
-            display: flex;
-            gap: 25px;
-            padding: 40px 0;
-            margin: 0;
-            scrollbar-width: thin;
-            scrollbar-color: var(--accent) transparent;
+            display: flex; gap: 25px; padding: 40px 0; margin: 0;
+            scrollbar-width: thin; scrollbar-color: var(--accent) transparent;
         }
 
-        /* Horizontal Rows */
-        #trending-games, #new-games, #pokemon-games, #recent-games,
-        #trending-ent, #new-ent, #recent-ent {
-            overflow-x: auto;
-            overflow-y: hidden;
-            flex-wrap: nowrap;
-            padding-bottom: 50px;
+        #trending-games, #new-games, #pokemon-games, #recent-games, #trending-ent, #new-ent, #recent-ent {
+            overflow-x: auto; overflow-y: hidden; flex-wrap: nowrap; padding-bottom: 50px;
         }
 
-        /* Wrapping Grids */
-        #all-games, #apps-games, #all-ent {
-            flex-wrap: wrap; 
-            justify-content: flex-start;
-            overflow: visible;
-        }
+        #all-games, #apps-games, #all-ent { flex-wrap: wrap; justify-content: flex-start; overflow: visible; }
 
         .row::-webkit-scrollbar { height: 4px; }
         .row::-webkit-scrollbar-thumb { background: rgba(255, 255, 255, 0.1); border-radius: 10px; }
         .row:hover::-webkit-scrollbar-thumb { background: var(--accent); }
 
         .card {
-            flex: 0 0 auto;
-            width: 180px;
-            position: relative;
-            cursor: default;
+            flex: 0 0 auto; width: 180px; position: relative; cursor: pointer;
             transition: all 0.4s cubic-bezier(0.165, 0.84, 0.44, 1);
-            color: inherit;
-            display: flex;
-            flex-direction: column;
-            margin-bottom: 20px;
+            color: inherit; display: flex; flex-direction: column; margin-bottom: 20px;
         }
 
-        /* Landscape orientation for Entertainment Posters */
-        .card.landscape {
-            width: 300px;
-        }
-
+        .card.landscape { width: 300px; }
         .card:hover { transform: translateY(-10px) scale(1.03); z-index: 20; }
 
         .card img.glow {
-            position: absolute;
-            top: 0; left: 0; width: 100%; height: 260px;
+            position: absolute; top: 0; left: 0; width: 100%; height: 260px;
             object-fit: cover; border-radius: 8px; filter: blur(35px);
             opacity: 0.65; transform: scale(1.05); z-index: 0;
             transition: opacity 0.4s ease, transform 0.4s ease;
@@ -395,44 +343,25 @@
         }
 
         .card.landscape img.glow { height: 169px; }
-
         .card:hover img.glow { opacity: 0.90; transform: scale(1.15); }
 
         .card img.poster {
             position: relative; width: 100%; height: 260px;
             object-fit: cover; border-radius: 8px; border: 1px solid rgba(255,255,255,0.1);
             z-index: 1; box-shadow: 0 10px 20px rgba(0,0,0,0.4);
-            transition: border-color 0.4s ease; cursor: pointer;
+            transition: border-color 0.4s ease;
         }
 
         .card.landscape img.poster { height: 169px; }
-
         .card:hover img.poster { border-color: var(--accent); }
 
         .card-info { margin-top: 12px; position: relative; z-index: 2; text-align: center; }
-
         .card-title {
             font-size: 14px; font-weight: 500; white-space: nowrap;
             overflow: hidden; text-overflow: ellipsis; display: block;
             opacity: 0.8; transition: opacity 0.3s ease;
         }
-
-        .card-desc {
-            max-height: 0; opacity: 0; font-size: 11px; color: #aaa;
-            margin-top: 0; overflow: hidden; transition: all 0.4s ease; line-height: 1.4;
-        }
-
-        .card-play-btn {
-            display: inline-block; margin-top: 0; max-height: 0; opacity: 0;
-            overflow: hidden; background-color: var(--accent); color: white;
-            padding: 6px 15px; font-size: 12px; font-weight: 700;
-            text-decoration: none; border-radius: 4px; transition: all 0.4s ease;
-            cursor: pointer;
-        }
-
         .card:hover .card-title { opacity: 1; white-space: normal; }
-        .card:hover .card-desc { max-height: 500px; opacity: 1; margin-top: 8px; }
-        .card:hover .card-play-btn { max-height: 40px; opacity: 1; margin-top: 12px; padding: 8px 20px; }
 
         footer { padding: 80px 0; display: flex; justify-content: center; background-color: var(--bg); position: relative; z-index: 10; }
 
@@ -449,207 +378,462 @@
 
         .all-header { display: flex; justify-content: space-between; align-items: flex-end; padding-right: 4%; margin-top: 50px; z-index: 10; }
 
-        /* Custom Dropdown Animation & Layout */
-        .custom-dropdown {
-            position: relative;
-            display: inline-block;
-        }
-
+        .custom-dropdown { position: relative; display: inline-block; }
         .dropdown-toggle {
-            background-color: rgba(255,255,255,0.05);
-            color: var(--text);
-            border: 1px solid rgba(255,255,255,0.1);
-            padding: 8px 16px;
-            border-radius: 20px;
-            font-size: 13px;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            min-width: 140px;
-            text-align: left;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            font-family: inherit;
+            background-color: rgba(255,255,255,0.05); color: var(--text);
+            border: 1px solid rgba(255,255,255,0.1); padding: 8px 16px; border-radius: 20px;
+            font-size: 13px; cursor: pointer; transition: all 0.3s ease; min-width: 140px;
+            text-align: left; display: flex; justify-content: space-between; align-items: center; font-family: inherit;
         }
-
-        .dropdown-toggle:hover {
-            border-color: var(--accent);
-            background-color: rgba(255,255,255,0.1);
-        }
-
-        .custom-dropdown.open .dropdown-toggle {
-            border-radius: 8px 8px 0 0;
-            background-color: rgba(255,255,255,0.1);
-            border-color: var(--accent);
-        }
-
+        .dropdown-toggle:hover { border-color: var(--accent); background-color: rgba(255,255,255,0.1); }
+        .custom-dropdown.open .dropdown-toggle { border-radius: 8px 8px 0 0; background-color: rgba(255,255,255,0.1); border-color: var(--accent); }
         .dropdown-menu {
-            position: absolute;
-            top: 100%;
-            left: 0;
-            right: 0;
-            background-color: var(--card-bg);
-            border: 1px solid var(--accent);
-            border-top: none;
-            border-radius: 0 0 8px 8px;
-            overflow: hidden;
-            max-height: 0;
-            opacity: 0;
-            transition: max-height 0.4s ease, opacity 0.4s ease;
-            z-index: 100;
+            position: absolute; top: 100%; left: 0; right: 0; background-color: var(--card-bg);
+            border: 1px solid var(--accent); border-top: none; border-radius: 0 0 8px 8px;
+            overflow: hidden; max-height: 0; opacity: 0; transition: max-height 0.4s ease, opacity 0.4s ease; z-index: 100;
         }
-
-        .custom-dropdown.open .dropdown-menu {
-            max-height: 200px;
-            opacity: 1;
-        }
-
-        .dropdown-item {
-            padding: 10px 16px;
-            font-size: 13px;
-            cursor: pointer;
-            transition: background-color 0.2s ease;
-        }
-
-        .dropdown-item:hover {
-            background-color: var(--accent);
-            color: white;
-        }
+        .custom-dropdown.open .dropdown-menu { max-height: 200px; opacity: 1; }
+        .dropdown-item { padding: 10px 16px; font-size: 13px; cursor: pointer; transition: background-color 0.2s ease; }
+        .dropdown-item:hover { background-color: var(--accent); color: white; }
 
         body::after {
             content: ""; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
             background: url('https://upload.wikimedia.org/wikipedia/commons/7/76/1k_filmgrain.png');
             opacity: 0.03; pointer-events: none; z-index: 9999;
         }
+
+        /* ---------------------------------------------------
+           CONSOLE LAUNCHER & IN-GAME UI STYLES
+        ----------------------------------------------------- */
+
+        #game-loader {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0, 0, 0, 0.85);
+            backdrop-filter: blur(25px);
+            -webkit-backdrop-filter: blur(25px);
+            z-index: 9000;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.6s ease;
+        }
+
+        #game-loader.active {
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        .loader-svg {
+            color: white;
+            filter: drop-shadow(0 0 20px var(--accent-glow));
+            margin-bottom: 30px;
+        }
+
+        .loader-icon {
+            width: 150px;
+            height: 220px;
+            object-fit: cover;
+            border-radius: 12px;
+            box-shadow: 0 0 40px var(--accent-glow);
+            margin-bottom: 30px;
+            transition: transform 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        .loader-icon.landscape {
+            width: 250px;
+            height: 140px;
+        }
+
+        @keyframes sine-spin {
+            0% { transform: rotate(0deg) scale(1); }
+            15% { transform: rotate(360deg) scale(1.1); }
+            100% { transform: rotate(360deg) scale(1); }
+        }
+
+        .anim-sine-spin {
+            animation: sine-spin 2.5s cubic-bezier(0.45, 0.05, 0.55, 0.95) infinite;
+        }
+
+        .loader-title {
+            font-size: 2.5rem;
+            font-weight: 800;
+            color: white;
+            margin: 0 0 10px 0;
+            letter-spacing: 1px;
+            text-shadow: 0 2px 10px rgba(0,0,0,0.8);
+        }
+
+        .loader-subtitle {
+            font-size: 1rem;
+            color: #aaa;
+            max-width: 400px;
+            text-align: center;
+            line-height: 1.5;
+            transition: opacity 0.4s ease;
+        }
+
+        .btn-launch {
+            margin-top: 30px;
+            background: transparent;
+            color: white;
+            border: 2px solid rgba(255,255,255,0.8);
+            padding: 15px 40px;
+            font-size: 18px;
+            font-weight: 800;
+            letter-spacing: 2px;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.4s ease;
+            box-shadow: inset 0 3px 0 rgba(255,255,255,0.2), inset 0 -3px 0 rgba(0,0,0,0.3), 0 4px 15px rgba(0,0,0,0.4);
+            
+            opacity: 0;
+            pointer-events: none;
+            transform: translateY(20px);
+        }
+
+        .btn-launch.visible {
+            opacity: 1;
+            pointer-events: auto;
+            transform: translateY(0);
+        }
+
+        .btn-launch:hover {
+            background: white;
+            color: black;
+            box-shadow: inset 0 3px 0 rgba(0,0,0,0.1), inset 0 -3px 0 rgba(0,0,0,0.1), 0 6px 25px rgba(255,255,255,0.5);
+            transform: scale(1.05) translateY(0);
+        }
+
+        #game-container {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            z-index: 8000;
+            background: #000;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.8s ease, filter 0.4s ease;
+        }
+
+        #game-container.active {
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        #game-container.paused {
+            filter: blur(15px) brightness(0.6);
+            pointer-events: none; 
+        }
+
+        #game-iframe {
+            width: 100%;
+            height: 100%;
+            border: none;
+        }
+
+        #in-game-hover-zone {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 25px;
+            z-index: 9500;
+            display: none;
+        }
+
+        #in-game-header {
+            position: fixed;
+            top: 0; left: 0; width: 100%;
+            padding: 15px 4%;
+            background: rgba(5, 5, 5, 0.9);
+            backdrop-filter: blur(10px);
+            z-index: 9400;
+            display: flex;
+            justify-content: center;
+            transform: translateY(-100%);
+            transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+            box-sizing: border-box;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+        }
+
+        #in-game-hover-zone:hover ~ #in-game-header, 
+        #in-game-header:hover {
+            transform: translateY(0);
+        }
+
+        #quit-modal {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            z-index: 9600;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.4s ease;
+        }
+
+        #quit-modal.active {
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        .quit-icon {
+            width: 120px;
+            height: 180px;
+            object-fit: cover;
+            border-radius: 8px;
+            box-shadow: 0 0 30px rgba(255,255,255,0.2);
+            margin-bottom: 25px;
+        }
+        .quit-icon.landscape { width: 200px; height: 112px; }
+
+        .quit-title {
+            font-size: 2rem;
+            font-weight: 800;
+            color: white;
+            margin: 0 0 10px 0;
+            text-shadow: 0 2px 10px rgba(0,0,0,0.8);
+        }
+
+        .quit-subtitle {
+            font-size: 1rem;
+            color: #aaa;
+            margin: 0 0 30px 0;
+        }
+
+        .quit-btn-container {
+            display: flex;
+            gap: 20px;
+        }
+
+        .btn-resume {
+            background: transparent;
+            color: white;
+            border: 2px solid rgba(255,255,255,0.8);
+            padding: 12px 30px;
+            font-size: 14px;
+            font-weight: bold;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: inset 0 2px 0 rgba(255,255,255,0.2), inset 0 -2px 0 rgba(0,0,0,0.3);
+        }
+
+        .btn-resume:hover {
+            background: rgba(255,255,255,0.1);
+            transform: scale(1.05);
+        }
+
+        .btn-quit {
+            background: white;
+            color: black;
+            border: none;
+            padding: 12px 30px;
+            font-size: 14px;
+            font-weight: bold;
+            border-radius: 6px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(255,255,255,0.3);
+        }
+
+        .btn-quit:hover {
+            transform: scale(1.05);
+            box-shadow: 0 6px 20px rgba(255,255,255,0.5);
+        }
+
+        .btn-quit svg {
+            filter: drop-shadow(0 0 2px rgba(0,0,0,0.2));
+        }
+
     </style>
 </head>
 <body>
     <canvas id="themeCanvas" style="display:none;"></canvas>
 
-    <header id="mainHeader">
-        <div class="header-left">
-            <a href="https://githbprime.github.io/primegames" class="logo">PRIME GAMES</a>
+    <div id="ui-wrapper">
+        <header id="mainHeader">
+            <div class="header-left">
+                <a href="https://githbprime.github.io/primegames" class="logo">PRIME GAMES</a>
+                
+                <nav class="main-nav">
+                    <button id="nav-games" class="nav-btn active" onclick="switchMode('games')">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <rect x="2" y="6" width="20" height="12" rx="2" ry="2"></rect>
+                            <path d="M6 12h4"></path>
+                            <path d="M8 10v4"></path>
+                            <path d="M15 13h.01"></path>
+                            <path d="M18 11h.01"></path>
+                        </svg>
+                        Games
+                    </button>
+                    <button id="nav-ent" class="nav-btn" onclick="handleEntClick(event)">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <rect x="2" y="7" width="20" height="15" rx="2" ry="2"></rect>
+                            <polyline points="17 2 12 7 7 2"></polyline>
+                        </svg>
+                        Entertainment
+                        <div id="ent-wip-tag" class="wip-tag">Feature is under construction! 🚧</div>
+                    </button>
+                </nav>
+            </div>
+            <input type="text" id="searchBar" placeholder="Search games/apps..." onkeyup="search()">
+        </header>
+
+        <div id="home-view">
+            <div id="hero">
+                <div class="hero-content">
+                    <h1 id="hero-title"></h1>
+                    <p id="hero-desc"></p>
+                    <a href="#" id="hero-play" class="play-btn">▶ Play Now</a>
+                </div>
+                <a href="https://docs.google.com/forms/d/e/1FAIpQLSeS_ODOaVA3azjFqq7a31kPo8krNr6x7iWwRavSEfqqhKb0sw/viewform?usp=header" 
+                   target="_blank" 
+                   id="vote-btn"
+                   class="request-btn vote-hero-btn" style="position: absolute; bottom: 30px; left: 4%; font-size: 11px; z-index: 999">
+                   Vote for featured game of the week
+                </a>
+            </div>
             
-            <nav class="main-nav">
-                <button id="nav-games" class="nav-btn active" onclick="switchMode('games')">
-                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                        <rect x="2" y="6" width="20" height="12" rx="2" ry="2"></rect>
-                        <path d="M6 12h4"></path>
-                        <path d="M8 10v4"></path>
-                        <path d="M15 13h.01"></path>
-                        <path d="M18 11h.01"></path>
-                    </svg>
-                    Games
-                </button>
-                <button id="nav-ent" class="nav-btn" onclick="handleEntClick(event)">
-                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                        <rect x="2" y="7" width="20" height="15" rx="2" ry="2"></rect>
-                        <polyline points="17 2 12 7 7 2"></polyline>
-                    </svg>
-                    Entertainment
-                    <div id="ent-wip-tag" class="wip-tag">Feature is under construction! 🚧</div>
-                </button>
-            </nav>
-        </div>
-        <input type="text" id="searchBar" placeholder="Search games/apps..." onkeyup="search()">
-    </header>
+            <div class="container">
+                <div id="games-container" class="tab-content active-tab">
+                    <div class="reveal-section"><div class="row-title">Trending Now</div><div id="trending-games" class="row"></div></div>
+                    <div class="reveal-section"><div class="row-title">New Releases</div><div id="new-games" class="row"></div></div>
+                    <div class="reveal-section"><div class="row-title">Pokémon Main Series</div><div id="pokemon-games" class="row"></div></div>
+                    
+                    <div class="reveal-section" id="recent-games-wrapper" style="display: none;">
+                        <div class="row-title">Continue Playing</div>
+                        <div id="recent-games" class="row"></div>
+                    </div>
 
-    <div id="home-view">
-        <div id="hero">
-            <div class="hero-content">
-                <h1 id="hero-title"></h1>
-                <p id="hero-desc"></p>
-                <a href="#" id="hero-play" class="play-btn">▶ Play Now</a>
+                    <div class="reveal-section">
+                        <div class="all-header">
+                            <div class="row-title">All Games</div>
+                            <div class="custom-dropdown" id="sort-games-dropdown">
+                                <button class="dropdown-toggle" onclick="toggleDropdown(event, 'games')">
+                                    <span id="sort-games-label">Oldest First</span>
+                                    <span class="chevron">▼</span>
+                                </button>
+                                <div class="dropdown-menu">
+                                    <div class="dropdown-item" onclick="selectSort('games', 'oldest', 'Oldest First')">Oldest First</div>
+                                    <div class="dropdown-item" onclick="selectSort('games', 'newest', 'Newest First')">Newest First</div>
+                                    <div class="dropdown-item" onclick="selectSort('games', 'az', 'A-Z')">A-Z</div>
+                                    <div class="dropdown-item" onclick="selectSort('games', 'za', 'Z-A')">Z-A</div>
+                                </div>
+                            </div>
+                        </div>
+                        <div id="all-games" class="row"></div>
+                    </div>
+                    <div class="reveal-section"><div class="big-row-title">Apps</div><div id="apps-games" class="row"></div></div>
+                </div>
+
+                <div id="ent-container" class="tab-content">
+                    <div class="reveal-section"><div class="row-title">Trending Now</div><div id="trending-ent" class="row"></div></div>
+                    <div class="reveal-section"><div class="row-title">New Releases</div><div id="new-ent" class="row"></div></div>
+                    
+                    <div class="reveal-section" id="recent-ent-wrapper" style="display: none;">
+                        <div class="row-title">Continue Watching</div>
+                        <div id="recent-ent" class="row"></div>
+                    </div>
+
+                    <div class="reveal-section">
+                        <div class="all-header">
+                            <div class="row-title">All Movies & Shows</div>
+                            <div class="custom-dropdown" id="sort-ent-dropdown">
+                                <button class="dropdown-toggle" onclick="toggleDropdown(event, 'ent')">
+                                    <span id="sort-ent-label">Oldest First</span>
+                                    <span class="chevron">▼</span>
+                                </button>
+                                <div class="dropdown-menu">
+                                    <div class="dropdown-item" onclick="selectSort('ent', 'oldest', 'Oldest First')">Oldest First</div>
+                                    <div class="dropdown-item" onclick="selectSort('ent', 'newest', 'Newest First')">Newest First</div>
+                                    <div class="dropdown-item" onclick="selectSort('ent', 'az', 'A-Z')">A-Z</div>
+                                    <div class="dropdown-item" onclick="selectSort('ent', 'za', 'Z-A')">Z-A</div>
+                                </div>
+                            </div>
+                        </div>
+                        <div id="all-ent" class="row"></div>
+                    </div>
+                </div>
+
             </div>
-            <a href="https://docs.google.com/forms/d/e/1FAIpQLSeS_ODOaVA3azjFqq7a31kPo8krNr6x7iWwRavSEfqqhKb0sw/viewform?usp=header" 
-               target="_blank" 
-               id="vote-btn"
-               class="request-btn vote-hero-btn" style="position: absolute; bottom: 30px; left: 4%; font-size: 11px; z-index: 999">
-               Vote for featured game of the week
-            </a>
+
+            <footer id="requestFooter">
+                <a href="https://docs.google.com/forms/d/e/1FAIpQLScIhmI3hEFJE3hjmUuGqQIFWCHLSbySl_R3BNaJIWPNFbFuSA/viewform?usp=publish-editor" target="_blank" class="request-btn">Request a Game/Movie</a>
+            </footer>
         </div>
+
+        <div id="expanded-view">
+            <div class="expanded-content">
+                <h1 class="expanded-title" id="exp-title">Title</h1>
+                <p class="expanded-desc" id="exp-desc"></p>
+                <button id="exp-play" class="play-btn">▶ Play Now</button>
+            </div>
+        </div>
+    </div> <!-- END ui-wrapper -->
+
+    <!-- CONSOLE LAUNCHER OVERLAYS -->
+    <div id="game-loader">
+        <!-- SVG Icons for Load Phase -->
+        <svg id="loader-svg-games" class="loader-svg anim-sine-spin" style="display:none;" width="120" height="120" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+            <rect x="2" y="6" width="20" height="12" rx="2" ry="2"></rect>
+            <path d="M6 12h4"></path>
+            <path d="M8 10v4"></path>
+            <path d="M15 13h.01"></path>
+            <path d="M18 11h.01"></path>
+        </svg>
+
+        <svg id="loader-svg-ent" class="loader-svg anim-sine-spin" style="display:none;" width="120" height="120" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+            <rect x="2" y="7" width="20" height="15" rx="2" ry="2"></rect>
+            <polyline points="17 2 12 7 7 2"></polyline>
+        </svg>
+
+        <!-- Static Image for Launch Phase -->
+        <img src="" id="loader-img" class="loader-icon" style="display: none;">
+
+        <h2 class="loader-title" id="loader-status">Loading Your Game...</h2>
+        <p class="loader-subtitle" id="loader-sub">Depending on the game's size, this may take a while. Grab a snack? 🍿</p>
         
-        <div class="container">
-            <!-- GAMES TAB -->
-            <div id="games-container" class="tab-content active-tab">
-                <div class="reveal-section"><div class="row-title">Trending Now</div><div id="trending-games" class="row"></div></div>
-                <div class="reveal-section"><div class="row-title">New Releases</div><div id="new-games" class="row"></div></div>
-                <div class="reveal-section"><div class="row-title">Pokémon Main Series</div><div id="pokemon-games" class="row"></div></div>
-                
-                <div class="reveal-section" id="recent-games-wrapper" style="display: none;">
-                    <div class="row-title">Continue Playing</div>
-                    <div id="recent-games" class="row"></div>
-                </div>
-
-                <div class="reveal-section">
-                    <div class="all-header">
-                        <div class="row-title">All Games</div>
-                        <div class="custom-dropdown" id="sort-games-dropdown">
-                            <button class="dropdown-toggle" onclick="toggleDropdown(event, 'games')">
-                                <span id="sort-games-label">Oldest First</span>
-                                <span class="chevron">▼</span>
-                            </button>
-                            <div class="dropdown-menu">
-                                <div class="dropdown-item" onclick="selectSort('games', 'oldest', 'Oldest First')">Oldest First</div>
-                                <div class="dropdown-item" onclick="selectSort('games', 'newest', 'Newest First')">Newest First</div>
-                                <div class="dropdown-item" onclick="selectSort('games', 'az', 'A-Z')">A-Z</div>
-                                <div class="dropdown-item" onclick="selectSort('games', 'za', 'Z-A')">Z-A</div>
-                            </div>
-                        </div>
-                    </div>
-                    <div id="all-games" class="row"></div>
-                </div>
-                <div class="reveal-section"><div class="big-row-title">Apps</div><div id="apps-games" class="row"></div></div>
-            </div>
-
-            <!-- ENTERTAINMENT TAB -->
-            <div id="ent-container" class="tab-content">
-                <div class="reveal-section"><div class="row-title">Trending Now</div><div id="trending-ent" class="row"></div></div>
-                <div class="reveal-section"><div class="row-title">New Releases</div><div id="new-ent" class="row"></div></div>
-                
-                <div class="reveal-section" id="recent-ent-wrapper" style="display: none;">
-                    <div class="row-title">Continue Watching</div>
-                    <div id="recent-ent" class="row"></div>
-                </div>
-
-                <div class="reveal-section">
-                    <div class="all-header">
-                        <div class="row-title">All Movies & Shows</div>
-                        <div class="custom-dropdown" id="sort-ent-dropdown">
-                            <button class="dropdown-toggle" onclick="toggleDropdown(event, 'ent')">
-                                <span id="sort-ent-label">Oldest First</span>
-                                <span class="chevron">▼</span>
-                            </button>
-                            <div class="dropdown-menu">
-                                <div class="dropdown-item" onclick="selectSort('ent', 'oldest', 'Oldest First')">Oldest First</div>
-                                <div class="dropdown-item" onclick="selectSort('ent', 'newest', 'Newest First')">Newest First</div>
-                                <div class="dropdown-item" onclick="selectSort('ent', 'az', 'A-Z')">A-Z</div>
-                                <div class="dropdown-item" onclick="selectSort('ent', 'za', 'Z-A')">Z-A</div>
-                            </div>
-                        </div>
-                    </div>
-                    <div id="all-ent" class="row"></div>
-                </div>
-            </div>
-
-        </div>
-
-        <footer id="requestFooter">
-            <a href="https://docs.google.com/forms/d/e/1FAIpQLScIhmI3hEFJE3hjmUuGqQIFWCHLSbySl_R3BNaJIWPNFbFuSA/viewform?usp=publish-editor" target="_blank" class="request-btn">Request a Game/Movie</a>
-        </footer>
+        <button id="loader-launch-btn" class="btn-launch" onclick="launchPhase()">LAUNCH</button>
     </div>
 
-    <!-- The Expanded Menu -->
-    <div id="expanded-view">
-        <div class="expanded-content">
-            <h1 class="expanded-title" id="exp-title">Title</h1>
-            <p class="expanded-desc" id="exp-desc"></p>
-            <a href="#" id="exp-play" class="play-btn">▶ Play Now</a>
+    <!-- IN-GAME IFRAME CONTAINER -->
+    <div id="game-container">
+        <iframe id="game-iframe" src=""></iframe>
+    </div>
+
+    <!-- IN-GAME HOVER HEADER -->
+    <div id="in-game-hover-zone"></div>
+    <div id="in-game-header">
+        <div class="logo" onclick="showQuitModal()">PRIME GAMES</div>
+    </div>
+
+    <!-- QUIT CONFIRMATION MODAL -->
+    <div id="quit-modal">
+        <img src="" id="quit-img" class="quit-icon">
+        <h2 class="quit-title">Are you sure you want to quit?</h2>
+        <p class="quit-subtitle">Verify your progress is saved before quitting.</p>
+        <div class="quit-btn-container">
+            <button class="btn-resume" onclick="resumeGame()">Resume ⯈</button>
+            <button class="btn-quit" onclick="quitGame()">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
+                    <polyline points="16 17 21 12 16 7"></polyline>
+                    <line x1="21" y1="12" x2="9" y2="12"></line>
+                </svg>
+                Quit
+            </button>
         </div>
     </div>
 
     <script>
         let currentMode = 'games';
+        let currentGame = null; 
 
         const featuredGame = { 
             title: "The Binding of Isaac", 
@@ -703,49 +887,43 @@
             }
         ];
 
-        // Core Functions
         function switchMode(mode) {
             currentMode = mode;
             
-            // Toggle Tab Buttons
             document.getElementById('nav-games').classList.toggle('active', mode === 'games');
             document.getElementById('nav-ent').classList.toggle('active', mode === 'ent');
 
-            // Toggle Search Placeholder
             const searchBar = document.getElementById('searchBar');
             searchBar.value = ''; 
             searchBar.placeholder = mode === 'games' ? "Search games/apps..." : "Search movies/shows...";
 
-            // Toggle Content Containers
             document.getElementById('games-container').classList.toggle('active-tab', mode === 'games');
             document.getElementById('ent-container').classList.toggle('active-tab', mode === 'ent');
 
-            // Set Hero
             const heroData = mode === 'games' ? featuredGame : featuredEnt;
             document.getElementById('hero-title').textContent = heroData.title;
             document.getElementById('hero-desc').textContent = heroData.desc;
-            document.getElementById('hero-play').href = heroData.url;
+            
+            const heroBtn = document.getElementById('hero-play');
+            heroBtn.onclick = (e) => {
+                e.preventDefault();
+                startGame(heroData.title, mode);
+            };
+
             document.getElementById('hero').style.backgroundImage = `url('${heroData.imgSrc}')`;
             extractThemeColor(heroData.imgSrc);
 
-            // Hide/Show vote button based on tab
             document.getElementById('vote-btn').style.display = mode === 'games' ? 'block' : 'none';
-
-            // Re-run search logic to reset view safely
             search();
         }
 
-        // Local Storage Logic
         function saveRecent(title, mode) {
             const key = mode === 'games' ? 'prime_recent_games' : 'prime_recent_ent';
             let recents = JSON.parse(localStorage.getItem(key)) || [];
-            
             recents = recents.filter(item => item !== title);
             recents.unshift(title);
-            
             if (recents.length > 6) recents.pop();
             localStorage.setItem(key, JSON.stringify(recents));
-
             loadRecents(mode); 
         }
 
@@ -774,7 +952,6 @@
             }
         }
 
-        // Advanced color extraction: averages colors, accepts greys/blacks/whites, handles CORS errors safely
         function extractThemeColor(imgSrc) {
             if (!imgSrc || imgSrc === "IMG") {
                 applyTheme({ r: 68, g: 68, b: 68 });
@@ -800,34 +977,21 @@
                         const b = imageData[i + 2];
                         const luminance = (0.299 * r + 0.587 * g + 0.114 * b);
                         
-                        // Average out all visible pixels (avoid complete blacks or blown out whites)
                         if (luminance >= 15 && luminance <= 240) { 
-                            rSum += r;
-                            gSum += g;
-                            bSum += b;
-                            count++;
+                            rSum += r; gSum += g; bSum += b; count++;
                         }
                     }
                     
                     if (count > 0) {
-                        applyTheme({ 
-                            r: Math.floor(rSum / count), 
-                            g: Math.floor(gSum / count), 
-                            b: Math.floor(bSum / count) 
-                        });
+                        applyTheme({ r: Math.floor(rSum / count), g: Math.floor(gSum / count), b: Math.floor(bSum / count) });
                     } else {
                         applyTheme({ r: 68, g: 68, b: 68 }); 
                     }
                 } catch (e) {
-                    // Fallback if browser blocks canvas reading (CORS) e.g., Pinterest links
                     applyTheme({ r: 68, g: 68, b: 68 });
                 }
             };
-            
-            img.onerror = function() {
-                applyTheme({ r: 68, g: 68, b: 68 });
-            };
-            
+            img.onerror = function() { applyTheme({ r: 68, g: 68, b: 68 }); };
             img.src = imgSrc;
         }
 
@@ -845,15 +1009,18 @@
             const db = mode === 'games' ? gamesDB : entDB;
             const game = db.find(g => g.title === gameTitle);
             if (!game) return;
-            
-            saveRecent(game.title, mode);
 
             const expView = document.getElementById('expanded-view');
             const homeView = document.getElementById('home-view');
             
             document.getElementById('exp-title').textContent = game.title;
             document.getElementById('exp-desc').textContent = game.desc;
-            document.getElementById('exp-play').href = game.url;
+            
+            const playBtn = document.getElementById('exp-play');
+            playBtn.onclick = (e) => {
+                e.preventDefault();
+                startGame(game.title, mode);
+            };
 
             const finalImg = (game.bigImgSrc === "IMG" || !game.bigImgSrc) ? game.imgSrc : game.bigImgSrc;
             
@@ -879,16 +1046,15 @@
             }, 800);
         }
 
+        // Play buttons removed from grid cards. Whole card is clickable.
         function createCardHTML(item, mode) {
             const landscapeClass = mode === 'ent' ? 'landscape' : '';
             return `
-                <div class="card ${landscapeClass}" data-name="${item.title}">
+                <div class="card ${landscapeClass}" data-name="${item.title}" onclick="openExpandedMenu('${item.title.replace(/'/g, "\\'")}', '${mode}')">
                     <img src="${item.imgSrc}" alt="${item.title} Glow" class="glow">
-                    <img src="${item.imgSrc}" alt="${item.title}" class="poster" onclick="openExpandedMenu('${item.title.replace(/'/g, "\\'")}', '${mode}')">
+                    <img src="${item.imgSrc}" alt="${item.title}" class="poster">
                     <div class="card-info">
                         <span class="card-title">${item.title}</span>
-                        <p class="card-desc">${item.desc || 'No description available.'}</p>
-                        <a href="${item.url}" class="card-play-btn" onclick="saveRecent('${item.title.replace(/'/g, "\\'")}', '${mode}')">⯈ PLAY</a>
                     </div>
                 </div>
             `;
@@ -935,18 +1101,13 @@
                 footer.style.display = "none";
                 sections.forEach(s => {
                     s.classList.add('revealed');
-                    
                     if (s.querySelector('#all-' + currentMode) || s.querySelector('#apps-' + currentMode)) {
                         s.style.display = "block";
                     } else {
                         s.style.display = "none";
                     }
-
                     const row = s.querySelector('.row');
-                    if (row) { 
-                        row.style.flexWrap = "wrap"; 
-                        row.style.overflowX = "visible"; 
-                    }
+                    if (row) { row.style.flexWrap = "wrap"; row.style.overflowX = "visible"; }
                 });
                 activeContainer.querySelectorAll('.card').forEach(card => {
                     let name = card.getAttribute('data-name').toLowerCase();
@@ -962,11 +1123,9 @@
                     } else {
                         s.style.display = "block";
                     }
-
                     const row = s.querySelector('.row');
                     if (row && (row.id.includes('trending') || row.id.includes('new') || row.id.includes('pokemon') || row.id.includes('recent'))) { 
-                        row.style.flexWrap = "nowrap"; 
-                        row.style.overflowX = "auto"; 
+                        row.style.flexWrap = "nowrap"; row.style.overflowX = "auto"; 
                     }
                 });
                 activeContainer.querySelectorAll('.card').forEach(c => c.style.display = "flex");
@@ -983,11 +1142,8 @@
             allItems.sort((a, b) => {
                 if (criteria === 'az') return a.title.localeCompare(b.title);
                 if (criteria === 'za') return b.title.localeCompare(a.title);
-                
                 let indexA = parseInt(a.index) || 0;
                 let indexB = parseInt(b.index) || 0;
-                
-                // MATH FIXED: Lower index means older. So Oldest First = A - B
                 return criteria === 'oldest' ? indexA - indexB : indexB - indexA;
             });
             
@@ -1019,27 +1175,17 @@
             const tag = document.getElementById('ent-wip-tag');
             
             if (entWipState === 0) {
-                // First click: Mild jiggle, warm yellow
                 entWipState = 1;
                 btn.classList.add('wip-yellow', 'anim-jiggle-mild');
                 tag.textContent = "Feature is under construction! \uD83D\uDEA7";
-                
-                setTimeout(() => {
-                    btn.classList.remove('anim-jiggle-mild');
-                }, 350);
-
+                setTimeout(() => btn.classList.remove('anim-jiggle-mild'), 350);
             } else if (entWipState === 1 || entWipState === 2) {
-                // Subsequent clicks: Violent jiggle, angry red
                 entWipState = 2;
                 clearTimeout(violentJiggleTimeout);
-                
                 btn.classList.remove('wip-yellow', 'anim-jiggle-mild');
                 btn.classList.add('wip-red', 'anim-jiggle-violent');
                 tag.textContent = "UNDER. CONSTRUCTION! \uD83D\uDEA7\uD83D\uDEA7\uD83D\uDEA7";
-                
-                violentJiggleTimeout = setTimeout(() => {
-                    btn.classList.remove('anim-jiggle-violent');
-                }, 1000);
+                violentJiggleTimeout = setTimeout(() => btn.classList.remove('anim-jiggle-violent'), 1000);
             }
         }
 
@@ -1051,24 +1197,153 @@
         }
 
         window.addEventListener('click', function(event) {
-            // Close custom dropdowns
             document.querySelectorAll('.custom-dropdown').forEach(d => d.classList.remove('open'));
-            
-            // Reset the Entertainment button warning if clicking away
             if (entWipState !== 0) {
                 const btn = document.getElementById('nav-ent');
-                if (!btn.contains(event.target)) {
-                    resetEntWip();
-                }
+                if (!btn.contains(event.target)) resetEntWip();
             }
         });
 
+        /* -----------------------------------------------------------------
+           CONSOLE LAUNCHER LOGIC
+        ------------------------------------------------------------------- */
+        
+        function startGame(gameTitle, mode) {
+            const db = mode === 'games' ? gamesDB : entDB;
+            const game = db.find(g => g.title === gameTitle);
+            if (!game) return;
+
+            if (game.tags.includes('apps')) {
+                window.location.href = game.url;
+                return;
+            }
+
+            saveRecent(game.title, mode);
+            currentGame = game; 
+
+            const uiWrapper = document.getElementById('ui-wrapper');
+            const loader = document.getElementById('game-loader');
+            const loaderSvgGames = document.getElementById('loader-svg-games');
+            const loaderSvgEnt = document.getElementById('loader-svg-ent');
+            const loaderImg = document.getElementById('loader-img');
+            const loaderStatus = document.getElementById('loader-status');
+            const loaderSub = document.getElementById('loader-sub');
+            const launchBtn = document.getElementById('loader-launch-btn');
+            const iframe = document.getElementById('game-iframe');
+
+            uiWrapper.style.opacity = '0';
+            uiWrapper.style.pointerEvents = 'none';
+
+            // Reset UI for load phase: Show SVGs, Hide Img, Hide Btn
+            loaderSvgGames.style.display = mode === 'games' ? 'block' : 'none';
+            loaderSvgEnt.style.display = mode === 'ent' ? 'block' : 'none';
+            loaderImg.style.display = 'none';
+            
+            // Prep the hidden poster for phase 2
+            loaderImg.src = game.imgSrc;
+            if (mode === 'ent') loaderImg.classList.add('landscape');
+            else loaderImg.classList.remove('landscape');
+            
+            loaderStatus.textContent = "Loading Your Game...";
+            loaderSub.style.opacity = '1';
+            loaderSub.style.display = 'block';
+            launchBtn.classList.remove('visible');
+            
+            loader.classList.add('active');
+
+            // Set up Promises (Min 0.3s + wait for iframe load)
+            const minTimePromise = new Promise(resolve => setTimeout(resolve, 300));
+            const iframeLoadPromise = new Promise(resolve => {
+                iframe.onload = () => resolve();
+            });
+            
+            // Start Loading Iframe
+            iframe.src = game.url;
+
+            Promise.all([minTimePromise, iframeLoadPromise]).then(() => {
+                // Emerge the Launch Button
+                launchBtn.classList.add('visible');
+            });
+        }
+
+        function launchPhase() {
+            const loaderSvgGames = document.getElementById('loader-svg-games');
+            const loaderSvgEnt = document.getElementById('loader-svg-ent');
+            const loaderImg = document.getElementById('loader-img');
+            const loaderStatus = document.getElementById('loader-status');
+            const loaderSub = document.getElementById('loader-sub');
+            const loader = document.getElementById('game-loader');
+            const launchBtn = document.getElementById('loader-launch-btn');
+            const iframeContainer = document.getElementById('game-container');
+            const hoverZone = document.getElementById('in-game-hover-zone');
+
+            // Hide UI elements 
+            launchBtn.classList.remove('visible');
+            loaderStatus.textContent = "Launching Game...";
+            loaderSub.style.opacity = '0';
+            setTimeout(() => loaderSub.style.display = 'none', 400); 
+
+            // Swap spinning SVGs for the actual static poster
+            loaderSvgGames.style.display = 'none';
+            loaderSvgEnt.style.display = 'none';
+            loaderImg.style.display = 'block';
+
+            // Wait brief moment before entering game
+            setTimeout(() => {
+                loader.classList.remove('active');
+                iframeContainer.classList.add('active');
+                hoverZone.style.display = 'block'; 
+            }, 600); 
+        }
+
+        function showQuitModal() {
+            const iframeContainer = document.getElementById('game-container');
+            const quitModal = document.getElementById('quit-modal');
+            const quitImg = document.getElementById('quit-img');
+
+            if (!currentGame) return;
+
+            iframeContainer.classList.add('paused');
+
+            quitImg.src = currentGame.imgSrc;
+            if (currentMode === 'ent') quitImg.classList.add('landscape');
+            else quitImg.classList.remove('landscape');
+
+            quitModal.classList.add('active');
+        }
+
+        function resumeGame() {
+            const iframeContainer = document.getElementById('game-container');
+            const quitModal = document.getElementById('quit-modal');
+
+            quitModal.classList.remove('active');
+            iframeContainer.classList.remove('paused');
+        }
+
+        function quitGame() {
+            const uiWrapper = document.getElementById('ui-wrapper');
+            const iframeContainer = document.getElementById('game-container');
+            const iframe = document.getElementById('game-iframe');
+            const hoverZone = document.getElementById('in-game-hover-zone');
+            const quitModal = document.getElementById('quit-modal');
+
+            quitModal.classList.remove('active');
+            iframeContainer.classList.remove('active');
+            iframeContainer.classList.remove('paused');
+            hoverZone.style.display = 'none';
+            iframe.src = ""; 
+            currentGame = null;
+
+            uiWrapper.style.opacity = '1';
+            uiWrapper.style.pointerEvents = 'auto';
+
+            goHome(); 
+        }
+
         window.onload = () => {
             loadAllDatabases();
-            // Default load Oldest First
             sortAll('games', 'oldest');
             sortAll('ent', 'oldest');
-            
             switchMode('games');
 
             const observer = new IntersectionObserver((entries) => entries.forEach(e => { if (e.isIntersecting) e.target.classList.add('revealed'); }), { threshold: 0.1 });
