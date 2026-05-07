@@ -1007,8 +1007,8 @@
         let sfxHover = new Audio();
         let sfxClick = new Audio();
         
-        sfxHover.volume = 0.3; 
-        sfxClick.volume = 0.5;
+        sfxHover.volume = 1.0; 
+        sfxClick.volume = 1.2;
 
         // Fetch audio as Blobs to bypass offline Range-request restrictions
         fetch('./Small.wav').then(res => res.blob()).then(blob => sfxHover.src = URL.createObjectURL(blob)).catch(()=>{});
@@ -1093,7 +1093,7 @@
             { title: "Deltarune", url: "./deltarune/index.html", imgSrc: "https://i.ebayimg.com/images/g/YSMAAeSwsI9oltEI/s-l400.png", bigImgSrc: "https://i.pinimg.com/736x/67/bc/94/67bc9407f1c1d7cea9645a3d7227e155.jpg", tags: ["new", "trending", "all"], index: "17", desc: "Fall into a mysterious 'Dark World' and discover your destiny as a Lightner." },
             { title: "Undertale", url: "./undertale/index.html", imgSrc: "https://m.media-amazon.com/images/M/MV5BMWI3ZTkxZjktYWU3NC00OGQ1LWFlNzgtYzIwMWI4NDg2YTU0XkEyXkFqcGc@._V1_.jpg", bigImgSrc: "https://wallpapercave.com/wp/wp15736065.jpg", tags: ["new", "all"], index: "18", desc: "Tumble into a vast subterranean world where choice defines everything." },
             { title: "Achievement Unlocked", url: "./achievement/index.html", imgSrc: "https://static.tvtropes.org/pmwiki/pub/images/psychotronic_achievementunlocked_title.png", bigImgSrc: "https://i.ytimg.com/vi/kGN2nonqb1s/sddefault.jpg", tags: ["new", "all"], index: "19", desc: "Collect hundreds of meaningless rewards in this satirical platformer." },
-            { title: "Geotastic", url: "./geoguessr/index.html", imgSrc: "https://static.wixstatic.com/media/a4eb4c_9f38dd00986a4c319dd68bc284c35783~mv2.png/v1/fill/w_1240,h_1240,al_c/a4eb4c_9f38dd00986a4c319dd68bc284c35783~mv2.png", bigImgSrc: "https://www.thomasfelzmann.at/wp-content/uploads/2021/12/A238231D-A86B-4BDE-BF26-BA5A4A4DE0B8.jpeg", tags: ["new", "trending", "all"], index: "20", desc: "Test your global knowledge dropped into random locations via Street View." },
+            { title: "Geotastic", url: "./geoguessr/index.html", imgSrc: "https://static.wixstatic.com/media/a4eb4c_9f38dd00986a4c319dd68bc284c35783~mv2.png/v1/fill/w_1240,h_1240,al_c/a4eb4c_9f38dd00986a4c319dd68bc284c35783~mv2.png", bigImgSrc: "https://www.thomasfelzmann.at/wp-content/uploads/2021/12/A238231D-A86B-4BDE-BF26-BA5A4A4DE0B8.jpeg", tags: ["new", "trending", "all", "online"], index: "20", desc: "Test your global knowledge dropped into random locations via Street View." },
             { title: "AxiaLM", url: "https://axialm.github.io/chat", imgSrc: "./logo.png", bigImgSrc: "./AxiaLM banner.png", tags: ["apps"], index: "00", desc: "Talk to AxiaLM, a highly sophisticated LLM based off of the LLaMa AI series." },
             { title: "Pokémon: Platinum", url: "./platinum/index.html", imgSrc: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQsFbDWpk4RKVjf-RpBRgSjQ_WBj6hl4_iNVqa33B2Tqw&s", bigImgSrc: "https://static0.gamerantimages.com/wordpress/wp-content/uploads/2025/01/official-cover-art-of-pokemon-platinum.jpg?q=49&fit=crop&w=825&dpr=2", tags: ["new", "pokemon", "all"], index: "21", desc: "Return to the Sinnoh region in Pokémon Platinum for an enhanced adventure." }
         ];
@@ -1241,7 +1241,7 @@
         function updateDownloadButtonState() {
             const btn = document.getElementById('exp-download');
             // Hide for Entertainment mode AND Apps
-            if (currentMode === 'ent' || (currentExpandedGame && currentExpandedGame.tags.includes('apps'))) {
+            if (currentMode === 'ent' || (currentExpandedGame && (currentExpandedGame.tags.includes('apps') || currentExpandedGame.tags.includes('online')))) {
                 btn.style.display = 'none';
                 return;
             } else {
@@ -1440,7 +1440,7 @@
                 document.getElementById('home-view').style.display = 'block';
                 document.getElementById('searchBar').style.display = 'block';
                 
-                const heroData = currentMode === 'games' ? featuredGame : featuredEnt;
+                const heroData = currentMode === 'games' ? featuredGame : featuredEnt;wh
                 extractThemeColor(heroData.imgSrc);
                 currentExpandedGame = null;
             }, 800);
