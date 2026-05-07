@@ -31,6 +31,89 @@
             transition: opacity 1.5s ease;
         }
 
+        /* ---------------------------------------------------
+           OFFLINE BANNER & STATES
+        ----------------------------------------------------- */
+        #offline-banner {
+            position: fixed; top: 0; left: 0; width: 100%;
+            background: #b9090b; color: white; text-align: center;
+            padding: 12px; font-weight: 800; font-size: 14px; z-index: 10000;
+            display: flex; align-items: center; justify-content: center; gap: 10px;
+            transform: translateY(-100%); transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+            box-shadow: 0 4px 15px rgba(0,0,0,0.5);
+            pointer-events: none; /* Cannot be clicked away */
+        }
+        body.offline-mode #offline-banner { transform: translateY(0); }
+
+        /* Dimming everything except Downloads when offline */
+        body.offline-mode .tab-content .reveal-section { opacity: 0.3; pointer-events: none; filter: grayscale(0.5); }
+        body.offline-mode .tab-content #downloads-games-wrapper { opacity: 1; pointer-events: auto; filter: none; }
+        body.offline-mode #nav-ent { opacity: 0.3; pointer-events: none; }
+        body.offline-mode #hero { opacity: 0.3; pointer-events: none; filter: grayscale(0.5); }
+
+        /* ---------------------------------------------------
+           WELCOME SCREEN
+        ----------------------------------------------------- */
+        #welcome-screen {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: #050505; z-index: 10000;
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
+            overflow: hidden;
+            transition: opacity 0.8s ease;
+        }
+
+        .welcome-bg {
+            position: absolute; top: -50%; left: -50%; width: 200%; height: 200%;
+            transform: rotate(-20deg) scale(1.1);
+            display: flex; flex-direction: column; gap: 15px; justify-content: center;
+            opacity: 0.15; pointer-events: none;
+        }
+
+        .welcome-row { display: flex; gap: 15px; width: max-content; }
+        .welcome-row.left { animation: scrollLeft 90s linear infinite; }
+        .welcome-row.right { animation: scrollRight 90s linear infinite; }
+
+        @keyframes scrollLeft { 0% { transform: translateX(0); } 100% { transform: translateX(-15%); } }
+        @keyframes scrollRight { 0% { transform: translateX(-15%); } 100% { transform: translateX(0); } }
+
+        .welcome-poster { width: 160px; height: 240px; object-fit: cover; border-radius: 8px; filter: grayscale(0.2) contrast(1.2); }
+
+        .welcome-ui {
+            position: relative; z-index: 2;
+            display: flex; flex-direction: column; align-items: center; justify-content: space-between;
+            height: 60vh;
+        }
+
+        .welcome-logo {
+            font-size: 5rem; font-weight: 900; color: var(--accent); margin: 0;
+            letter-spacing: 8px; text-shadow: 0 0 30px rgba(185,9,11,0.6), 0 0 80px var(--accent);
+            font-style: italic;
+            animation: pulse-glow 3s infinite alternate ease-in-out;
+        }
+
+        @keyframes pulse-glow {
+            0% { text-shadow: 0 0 30px rgba(185,9,11,0.6), 0 0 80px var(--accent); transform: scale(1); }
+            100% { text-shadow: 0 0 50px rgba(185,9,11,0.9), 0 0 120px var(--accent); transform: scale(1.02); }
+        }
+
+        #enter-btn {
+            background: rgba(5,5,5,0.8); color: var(--text);
+            border: 2px solid var(--accent); padding: 15px 60px;
+            font-size: 1.5rem; font-weight: 800; letter-spacing: 6px;
+            border-radius: 4px; cursor: pointer; transition: all 0.4s ease;
+            box-shadow: inset 0 0 20px rgba(185,9,11,0.2), 0 0 20px rgba(185,9,11,0.2);
+            text-transform: uppercase;
+            backdrop-filter: blur(5px);
+        }
+
+        #enter-btn:hover {
+            background: var(--accent); color: white;
+            box-shadow: inset 0 0 20px rgba(0,0,0,0.5), 0 0 50px var(--accent-glow);
+            transform: scale(1.1); letter-spacing: 8px;
+        }
+
+        /* --------------------------------------------------- */
+
         #ui-wrapper {
             transition: opacity 0.5s ease, filter 0.5s ease;
         }
@@ -121,8 +204,13 @@
             text-shadow: 1px 1px 10px rgba(0,0,0,0.5);
         }
 
+        /* Buttons */
+        .exp-buttons {
+            display: flex; flex-direction: column; gap: 15px; align-items: flex-start; margin-top: 10px;
+        }
+
         .play-btn {
-            display: inline-block;
+            display: flex; align-items: center; justify-content: center; gap: 8px;
             background-color: var(--accent);
             color: white;
             padding: 12px 32px;
@@ -133,6 +221,7 @@
             transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
             box-shadow: 0 4px 15px var(--accent-glow);
             cursor: pointer;
+            border: none;
         }
 
         .play-btn:hover {
@@ -140,6 +229,25 @@
             box-shadow: 0 8px 25px var(--accent-glow);
             filter: brightness(1.2);
         }
+
+        .download-btn {
+            display: flex; align-items: center; justify-content: center; gap: 8px;
+            background-color: var(--accent); 
+            color: white;
+            border: 2px solid transparent; 
+            padding: 12px 32px;
+            font-size: 16px; font-weight: bold; border-radius: 4px;
+            cursor: pointer; transition: all 0.3s ease;
+            box-shadow: 0 4px 15px var(--accent-glow);
+        }
+        .download-btn:hover { transform: scale(1.08); box-shadow: 0 8px 25px var(--accent-glow); filter: brightness(1.2); }
+        
+        .download-btn.installing { pointer-events: none; background-color: transparent; border-color: var(--accent); color: var(--accent); box-shadow: none; }
+        .download-btn.installed { background-color: transparent; border-color: #2ecc71; color: #2ecc71; box-shadow: none; }
+        .download-btn.installed:hover { background: rgba(46, 204, 113, 0.1); transform: scale(1.05); }
+
+        .anim-spin-circle { animation: spinCircle 1s linear infinite; }
+        @keyframes spinCircle { 100% { transform: rotate(360deg); } }
 
         header {
             padding: 20px 4%;
@@ -315,7 +423,7 @@
             scrollbar-width: thin; scrollbar-color: var(--accent) transparent;
         }
 
-        #trending-games, #new-games, #pokemon-games, #recent-games, #trending-ent, #new-ent, #recent-ent {
+        #trending-games, #new-games, #pokemon-games, #recent-games, #downloads-games, #trending-ent, #new-ent, #recent-ent {
             overflow-x: auto; overflow-y: hidden; flex-wrap: nowrap; padding-bottom: 50px;
         }
 
@@ -656,10 +764,35 @@
 <body>
     <canvas id="themeCanvas" style="display:none;"></canvas>
 
-    <div id="ui-wrapper">
+    <!-- OFFLINE BANNER -->
+    <div id="offline-banner">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="1" y1="1" x2="23" y2="23"></line>
+            <path d="M16.72 11.06A10.94 10.94 0 0 1 19 12.55"></path>
+            <path d="M5 12.55a10.94 10.94 0 0 1 5.17-2.39"></path>
+            <path d="M10.71 5.05A16 16 0 0 1 22.58 9"></path>
+            <path d="M1.42 9a15.91 15.91 0 0 1 4.7-2.88"></path>
+            <path d="M8.53 16.11a6 6 0 0 1 6.95 0"></path>
+            <line x1="12" y1="20" x2="12.01" y2="20"></line>
+        </svg>
+        No Wi-Fi connection.
+    </div>
+
+    <!-- WELCOME SCREEN -->
+    <div id="welcome-screen">
+        <div class="welcome-bg" id="welcome-bg-grid">
+            <!-- Populated via JS -->
+        </div>
+        <div class="welcome-ui">
+            <h1 class="welcome-logo">PRIME GAMES</h1>
+            <button id="enter-btn" onclick="enterHub()">Enter</button>
+        </div>
+    </div>
+
+    <div id="ui-wrapper" style="display: none;">
         <header id="mainHeader">
             <div class="header-left">
-                <a href="https://githbprime.github.io/primegames" class="logo">PRIME GAMES</a>
+                <div class="logo" onclick="handleLogoClick()">PRIME GAMES</div>
                 
                 <nav class="main-nav">
                     <button id="nav-games" class="nav-btn active" onclick="switchMode('games')">
@@ -701,6 +834,7 @@
             </div>
             
             <div class="container">
+                <!-- GAMES TAB -->
                 <div id="games-container" class="tab-content active-tab">
                     <div class="reveal-section"><div class="row-title">Trending Now</div><div id="trending-games" class="row"></div></div>
                     <div class="reveal-section"><div class="row-title">New Releases</div><div id="new-games" class="row"></div></div>
@@ -709,6 +843,12 @@
                     <div class="reveal-section" id="recent-games-wrapper" style="display: none;">
                         <div class="row-title">Continue Playing</div>
                         <div id="recent-games" class="row"></div>
+                    </div>
+
+                    <!-- NEW: DOWNLOADS SECTION -->
+                    <div class="reveal-section" id="downloads-games-wrapper" style="display: none;">
+                        <div class="row-title">Downloads</div>
+                        <div id="downloads-games" class="row"></div>
                     </div>
 
                     <div class="reveal-section">
@@ -732,6 +872,7 @@
                     <div class="reveal-section"><div class="big-row-title">Apps</div><div id="apps-games" class="row"></div></div>
                 </div>
 
+                <!-- ENTERTAINMENT TAB -->
                 <div id="ent-container" class="tab-content">
                     <div class="reveal-section"><div class="row-title">Trending Now</div><div id="trending-ent" class="row"></div></div>
                     <div class="reveal-section"><div class="row-title">New Releases</div><div id="new-ent" class="row"></div></div>
@@ -768,18 +909,29 @@
             </footer>
         </div>
 
+        <!-- The Expanded Menu -->
         <div id="expanded-view">
             <div class="expanded-content">
                 <h1 class="expanded-title" id="exp-title">Title</h1>
                 <p class="expanded-desc" id="exp-desc"></p>
-                <button id="exp-play" class="play-btn">▶ Play Now</button>
+                <div class="exp-buttons">
+                    <button id="exp-play" class="play-btn">▶ Play Now</button>
+                    <!-- Download button (only shows for games) -->
+                    <button id="exp-download" class="download-btn not-installed" onclick="toggleDownload()">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                            <polyline points="7 10 12 15 17 10"></polyline>
+                            <line x1="12" y1="15" x2="12" y2="3"></line>
+                        </svg>
+                        Download
+                    </button>
+                </div>
             </div>
         </div>
     </div> <!-- END ui-wrapper -->
 
     <!-- CONSOLE LAUNCHER OVERLAYS -->
     <div id="game-loader">
-        <!-- SVG Icons for Load Phase -->
         <svg id="loader-svg-games" class="loader-svg anim-sine-spin" style="display:none;" width="120" height="120" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
             <rect x="2" y="6" width="20" height="12" rx="2" ry="2"></rect>
             <path d="M6 12h4"></path>
@@ -793,7 +945,6 @@
             <polyline points="17 2 12 7 7 2"></polyline>
         </svg>
 
-        <!-- Static Image for Launch Phase -->
         <img src="" id="loader-img" class="loader-icon" style="display: none;">
 
         <h2 class="loader-title" id="loader-status">Loading Your Game...</h2>
@@ -834,6 +985,50 @@
     <script>
         let currentMode = 'games';
         let currentGame = null; 
+        let currentExpandedGame = null;
+        let downloadInterval = null;
+
+        // --- AUDIO SYSTEM ---
+        const sfxHover = new Audio('./Small.wav');
+        const sfxClick = new Audio('./Big.wav');
+        
+        sfxHover.volume = 0.3; 
+        sfxClick.volume = 0.5;
+
+        const interactiveElements = 'a, button, .card, .dropdown-toggle, .dropdown-item, .logo, #enter-btn';
+
+        document.addEventListener('mouseover', (e) => {
+            const target = e.target.closest(interactiveElements);
+            if (!target) return;
+            
+            const related = e.relatedTarget;
+            if (related && target.contains(related)) return; 
+            
+            sfxHover.currentTime = 0;
+            sfxHover.play().catch(() => {}); 
+        });
+
+        document.addEventListener('click', (e) => {
+            const target = e.target.closest(interactiveElements);
+            if (!target) return;
+            
+            sfxClick.currentTime = 0;
+            sfxClick.play().catch(() => {});
+        });
+        // --------------------
+
+        // --- OFFLINE STATE LOGIC ---
+        function checkNetworkStatus() {
+            if (!navigator.onLine) {
+                document.body.classList.add('offline-mode');
+                if (currentMode !== 'games') switchMode('games'); // Force to games tab if they lose connection
+            } else {
+                document.body.classList.remove('offline-mode');
+            }
+        }
+        window.addEventListener('offline', checkNetworkStatus);
+        window.addEventListener('online', checkNetworkStatus);
+        // --------------------
 
         const featuredGame = { 
             title: "The Binding of Isaac", 
@@ -887,6 +1082,49 @@
             }
         ];
 
+        // Helper function for shuffling arrays (to keep rows dynamic and random!)
+        function shuffleArray(array) {
+            let shuffled = [...array];
+            for (let i = shuffled.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+            }
+            return shuffled;
+        }
+
+        // --- WELCOME SCREEN LOGIC ---
+        function buildWelcomeGrid() {
+            const bg = document.getElementById('welcome-bg-grid');
+            const allImages = [...gamesDB, ...entDB].map(i => i.imgSrc).filter(src => src !== "IMG");
+            
+            for(let i=0; i<6; i++) {
+                const row = document.createElement('div');
+                row.className = `welcome-row ${i % 2 === 0 ? 'left' : 'right'}`;
+                
+                // Shuffle multiple pools to create a massive, completely random row every time
+                let rowImages = [];
+                for(let j=0; j<8; j++) {
+                    rowImages = rowImages.concat(shuffleArray(allImages));
+                }
+                
+                row.innerHTML = rowImages.map(src => `<img src="${src}" class="welcome-poster">`).join('');
+                bg.appendChild(row);
+            }
+        }
+
+        function enterHub() {
+            const ws = document.getElementById('welcome-screen');
+            const ui = document.getElementById('ui-wrapper');
+            
+            ws.style.opacity = '0';
+            setTimeout(() => {
+                ws.style.display = 'none';
+                ui.style.display = 'block';
+                ui.offsetHeight;
+            }, 800);
+        }
+
+        // --- HUB LOGIC ---
         function switchMode(mode) {
             currentMode = mode;
             
@@ -917,6 +1155,7 @@
             search();
         }
 
+        // Local Storage Logic (Recents & Downloads)
         function saveRecent(title, mode) {
             const key = mode === 'games' ? 'prime_recent_games' : 'prime_recent_ent';
             let recents = JSON.parse(localStorage.getItem(key)) || [];
@@ -952,6 +1191,85 @@
             }
         }
 
+        function loadDownloads() {
+            let downloads = JSON.parse(localStorage.getItem('prime_downloads')) || [];
+            let row = document.getElementById('downloads-games');
+            let wrapper = document.getElementById('downloads-games-wrapper');
+            
+            row.innerHTML = '';
+
+            if (downloads.length > 0) {
+                wrapper.style.display = 'block';
+                downloads.forEach(title => {
+                    const item = gamesDB.find(g => g.title === title);
+                    if (item) row.insertAdjacentHTML('beforeend', createCardHTML(item, 'games'));
+                });
+            } else {
+                wrapper.style.display = 'none';
+            }
+        }
+
+        // Download Simulation Logic
+        function updateDownloadButtonState() {
+            const btn = document.getElementById('exp-download');
+            // Hide for Entertainment mode
+            if (currentMode === 'ent') {
+                btn.style.display = 'none';
+                return;
+            } else {
+                btn.style.display = 'flex';
+            }
+
+            let downloads = JSON.parse(localStorage.getItem('prime_downloads')) || [];
+            if (currentExpandedGame && downloads.includes(currentExpandedGame.title)) {
+                btn.className = 'download-btn installed';
+                const trashSVG = `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>`;
+                btn.innerHTML = `${trashSVG} Uninstall`;
+            } else {
+                btn.className = 'download-btn not-installed';
+                const downloadSVG = `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>`;
+                btn.innerHTML = `${downloadSVG} Download`;
+            }
+        }
+
+        function toggleDownload() {
+            if (!currentExpandedGame || currentMode === 'ent') return;
+            
+            let downloads = JSON.parse(localStorage.getItem('prime_downloads')) || [];
+            const btn = document.getElementById('exp-download');
+            
+            if (downloads.includes(currentExpandedGame.title)) {
+                // Uninstall
+                downloads = downloads.filter(t => t !== currentExpandedGame.title);
+                localStorage.setItem('prime_downloads', JSON.stringify(downloads));
+                updateDownloadButtonState();
+                loadDownloads();
+            } else {
+                // Install Phase
+                btn.className = 'download-btn installing';
+                let progress = 0;
+                
+                const spinnerSVG = `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="anim-spin-circle"><path d="M21 12a9 9 0 1 1-6.219-8.56"></path></svg>`;
+                btn.innerHTML = `${spinnerSVG} Installing... 0%`;
+                
+                clearInterval(downloadInterval);
+                downloadInterval = setInterval(() => {
+                    progress += Math.floor(Math.random() * 15) + 5;
+                    if (progress >= 100) {
+                        progress = 100;
+                        clearInterval(downloadInterval);
+                        downloads.unshift(currentExpandedGame.title);
+                        localStorage.setItem('prime_downloads', JSON.stringify(downloads));
+                        updateDownloadButtonState();
+                        loadDownloads();
+                    } else {
+                        btn.innerHTML = `${spinnerSVG} Installing... ${progress}%`;
+                    }
+                }, 300);
+            }
+        }
+
+        // Advanced color extraction
         function extractThemeColor(imgSrc) {
             if (!imgSrc || imgSrc === "IMG") {
                 applyTheme({ r: 68, g: 68, b: 68 });
@@ -1005,10 +1323,22 @@
             root.style.setProperty('--bg', brightness > 40 ? darkTint : '#050505');
         }
 
+        function handleLogoClick() {
+            if (document.body.classList.contains('expanded-view-active')) {
+                // If expanded menu is open, just close it smoothly
+                goHome();
+            } else {
+                // Otherwise, act as a normal redirect to the main site
+                window.location.href = "https://githbprime.github.io/primegames";
+            }
+        }
+
         function openExpandedMenu(gameTitle, mode) {
             const db = mode === 'games' ? gamesDB : entDB;
             const game = db.find(g => g.title === gameTitle);
             if (!game) return;
+
+            currentExpandedGame = game;
 
             const expView = document.getElementById('expanded-view');
             const homeView = document.getElementById('home-view');
@@ -1021,6 +1351,8 @@
                 e.preventDefault();
                 startGame(game.title, mode);
             };
+
+            updateDownloadButtonState();
 
             const finalImg = (game.bigImgSrc === "IMG" || !game.bigImgSrc) ? game.imgSrc : game.bigImgSrc;
             
@@ -1036,6 +1368,7 @@
 
         function goHome() {
             document.body.classList.remove('expanded-view-active');
+            clearInterval(downloadInterval); // Stop installation simulation if they close the menu
             setTimeout(() => {
                 document.getElementById('expanded-view').style.display = 'none';
                 document.getElementById('home-view').style.display = 'block';
@@ -1043,10 +1376,10 @@
                 
                 const heroData = currentMode === 'games' ? featuredGame : featuredEnt;
                 extractThemeColor(heroData.imgSrc);
+                currentExpandedGame = null;
             }, 800);
         }
 
-        // Play buttons removed from grid cards. Whole card is clickable.
         function createCardHTML(item, mode) {
             const landscapeClass = mode === 'ent' ? 'landscape' : '';
             return `
@@ -1061,32 +1394,41 @@
         }
 
         function loadAllDatabases() {
-            ['trending-games', 'new-games', 'pokemon-games', 'all-games', 'apps-games'].forEach(id => {
-                const el = document.getElementById(id);
+            // Games Tab Loading (Sorted Oldest to Newest)
+            const gameTagsToLoad = ['trending', 'new', 'pokemon'];
+            gameTagsToLoad.forEach(tag => {
+                const el = document.getElementById(tag + '-games');
                 if (el) el.innerHTML = '';
-            });
-            gamesDB.forEach(game => {
-                const html = createCardHTML(game, 'games');
-                game.tags.forEach(tag => {
-                    const el = document.getElementById(tag + '-games');
-                    if (el) el.insertAdjacentHTML('beforeend', html);
+                
+                let matchingGames = gamesDB.filter(g => g.tags.includes(tag));
+                
+                // Sort from Oldest (Left) to Newest (Right) based on index
+                matchingGames.sort((a, b) => (parseInt(a.index) || 0) - (parseInt(b.index) || 0));
+                
+                matchingGames.forEach(game => {
+                    el.insertAdjacentHTML('beforeend', createCardHTML(game, 'games'));
                 });
             });
 
-            ['trending-ent', 'new-ent', 'all-ent'].forEach(id => {
-                const el = document.getElementById(id);
+            // Entertainment Tab Loading (Sorted Oldest to Newest)
+            const entTagsToLoad = ['trending', 'new'];
+            entTagsToLoad.forEach(tag => {
+                const el = document.getElementById(tag + '-ent');
                 if (el) el.innerHTML = '';
-            });
-            entDB.forEach(ent => {
-                const html = createCardHTML(ent, 'ent');
-                ent.tags.forEach(tag => {
-                    const el = document.getElementById(tag + '-ent');
-                    if (el) el.insertAdjacentHTML('beforeend', html);
+                
+                let matchingEnt = entDB.filter(g => g.tags.includes(tag));
+                
+                // Sort from Oldest (Left) to Newest (Right) based on index
+                matchingEnt.sort((a, b) => (parseInt(a.index) || 0) - (parseInt(b.index) || 0));
+                
+                matchingEnt.forEach(ent => {
+                    el.insertAdjacentHTML('beforeend', createCardHTML(ent, 'ent'));
                 });
             });
 
             loadRecents('games');
             loadRecents('ent');
+            loadDownloads();
         }
 
         function search() {
@@ -1117,14 +1459,14 @@
                 hero.style.display = "flex";
                 footer.style.display = "flex";
                 sections.forEach(s => {
-                    if(s.id === 'recent-games-wrapper' || s.id === 'recent-ent-wrapper') {
+                    if(s.id === 'recent-games-wrapper' || s.id === 'recent-ent-wrapper' || s.id === 'downloads-games-wrapper') {
                         const row = s.querySelector('.row');
                         s.style.display = row.children.length > 0 ? "block" : "none";
                     } else {
                         s.style.display = "block";
                     }
                     const row = s.querySelector('.row');
-                    if (row && (row.id.includes('trending') || row.id.includes('new') || row.id.includes('pokemon') || row.id.includes('recent'))) { 
+                    if (row && (row.id.includes('trending') || row.id.includes('new') || row.id.includes('pokemon') || row.id.includes('recent') || row.id.includes('downloads'))) { 
                         row.style.flexWrap = "nowrap"; row.style.overflowX = "auto"; 
                     }
                 });
@@ -1149,6 +1491,15 @@
             
             allRow.innerHTML = '';
             allItems.forEach(item => allRow.insertAdjacentHTML('beforeend', createCardHTML(item, mode)));
+
+            // Also load the isolated Apps row for games here
+            if (mode === 'games') {
+                const appRow = document.getElementById('apps-games');
+                appRow.innerHTML = '';
+                db.filter(i => i.tags.includes('apps')).forEach(app => {
+                    appRow.insertAdjacentHTML('beforeend', createCardHTML(app, mode));
+                });
+            }
         }
 
         function toggleDropdown(event, mode) {
@@ -1207,7 +1558,6 @@
         /* -----------------------------------------------------------------
            CONSOLE LAUNCHER LOGIC
         ------------------------------------------------------------------- */
-        
         function startGame(gameTitle, mode) {
             const db = mode === 'games' ? gamesDB : entDB;
             const game = db.find(g => g.title === gameTitle);
@@ -1234,12 +1584,10 @@
             uiWrapper.style.opacity = '0';
             uiWrapper.style.pointerEvents = 'none';
 
-            // Reset UI for load phase: Show SVGs, Hide Img, Hide Btn
             loaderSvgGames.style.display = mode === 'games' ? 'block' : 'none';
             loaderSvgEnt.style.display = mode === 'ent' ? 'block' : 'none';
             loaderImg.style.display = 'none';
             
-            // Prep the hidden poster for phase 2
             loaderImg.src = game.imgSrc;
             if (mode === 'ent') loaderImg.classList.add('landscape');
             else loaderImg.classList.remove('landscape');
@@ -1251,17 +1599,14 @@
             
             loader.classList.add('active');
 
-            // Set up Promises (Min 0.3s + wait for iframe load)
             const minTimePromise = new Promise(resolve => setTimeout(resolve, 300));
             const iframeLoadPromise = new Promise(resolve => {
                 iframe.onload = () => resolve();
             });
             
-            // Start Loading Iframe
             iframe.src = game.url;
 
             Promise.all([minTimePromise, iframeLoadPromise]).then(() => {
-                // Emerge the Launch Button
                 launchBtn.classList.add('visible');
             });
         }
@@ -1277,18 +1622,15 @@
             const iframeContainer = document.getElementById('game-container');
             const hoverZone = document.getElementById('in-game-hover-zone');
 
-            // Hide UI elements 
             launchBtn.classList.remove('visible');
             loaderStatus.textContent = "Launching Game...";
             loaderSub.style.opacity = '0';
             setTimeout(() => loaderSub.style.display = 'none', 400); 
 
-            // Swap spinning SVGs for the actual static poster
             loaderSvgGames.style.display = 'none';
             loaderSvgEnt.style.display = 'none';
             loaderImg.style.display = 'block';
 
-            // Wait brief moment before entering game
             setTimeout(() => {
                 loader.classList.remove('active');
                 iframeContainer.classList.add('active');
@@ -1341,6 +1683,7 @@
         }
 
         window.onload = () => {
+            buildWelcomeGrid();
             loadAllDatabases();
             sortAll('games', 'oldest');
             sortAll('ent', 'oldest');
@@ -1348,6 +1691,8 @@
 
             const observer = new IntersectionObserver((entries) => entries.forEach(e => { if (e.isIntersecting) e.target.classList.add('revealed'); }), { threshold: 0.1 });
             document.querySelectorAll('.reveal-section').forEach(s => observer.observe(s));
+            
+            checkNetworkStatus(); // Apply offline mechanics if loading initially without wifi
             
             setTimeout(() => document.body.classList.add('loaded'), 100);
         };
