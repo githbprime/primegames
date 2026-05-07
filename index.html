@@ -13,6 +13,7 @@
             --accent: #b9090b;
             --accent-glow: rgba(185, 9, 11, 0.5);
             --header-bg: rgba(5, 5, 5, 0.8);
+            --offline-offset: 0px; /* Dynamic offset for the offline banner */
         }
 
         body {
@@ -21,8 +22,9 @@
             font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
             margin: 0;
             padding: 0;
+            padding-top: var(--offline-offset);
             overflow-x: hidden;
-            transition: background-color 1.2s cubic-bezier(0.4, 0, 0.2, 1);
+            transition: background-color 1.2s cubic-bezier(0.4, 0, 0.2, 1), padding-top 0.4s ease;
             opacity: 0; 
         }
 
@@ -35,7 +37,7 @@
            OFFLINE BANNER & STATES
         ----------------------------------------------------- */
         #offline-banner {
-            position: fixed; top: 0; left: 0; width: 100%;
+            position: fixed; top: 0; left: 0; width: 100%; height: 44px; box-sizing: border-box;
             background: #b9090b; color: white; text-align: center;
             padding: 12px; font-weight: 800; font-size: 14px; z-index: 10000;
             display: flex; align-items: center; justify-content: center; gap: 10px;
@@ -43,6 +45,11 @@
             box-shadow: 0 4px 15px rgba(0,0,0,0.5);
             pointer-events: none; /* Cannot be clicked away */
         }
+        
+        body.offline-mode {
+            --offline-offset: 44px;
+        }
+
         body.offline-mode #offline-banner { transform: translateY(0); }
 
         /* Dimming everything except Downloads when offline */
@@ -50,20 +57,17 @@
         body.offline-mode .tab-content #downloads-games-wrapper { opacity: 1; pointer-events: auto; filter: none; }
         body.offline-mode #nav-ent { opacity: 0.3; pointer-events: none; }
         body.offline-mode #hero { opacity: 0.3; pointer-events: none; filter: grayscale(0.5); }
-        
-        /* Shift the in-game menu down so the offline banner doesn't block it */
-        body.offline-mode #in-game-hover-zone, 
-        body.offline-mode #in-game-header { top: 44px; }
 
         /* ---------------------------------------------------
            WELCOME SCREEN
         ----------------------------------------------------- */
         #welcome-screen {
-            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            position: fixed; left: 0; width: 100%; 
+            top: var(--offline-offset); height: calc(100vh - var(--offline-offset));
             background: #050505; z-index: 10000;
             display: flex; flex-direction: column; align-items: center; justify-content: center;
             overflow: hidden;
-            transition: opacity 0.8s ease;
+            transition: opacity 0.8s ease, top 0.4s ease, height 0.4s ease;
         }
 
         .welcome-bg {
@@ -146,14 +150,15 @@
 
         #expanded-view {
             position: fixed;
-            top: 0;
             left: 0;
-            height: 100vh;
+            top: var(--offline-offset);
+            height: calc(100vh - var(--offline-offset));
             z-index: 150; 
             display: none; 
             background-color: var(--bg);
             transform: scale(1.1); 
             opacity: 0;
+            transition: opacity 0.8s ease, top 0.4s ease, height 0.4s ease;
         }
 
         body.expanded-view-active #expanded-view {
@@ -259,7 +264,7 @@
             align-items: center;
             justify-content: space-between;
             position: sticky;
-            top: 0;
+            top: var(--offline-offset);
             background: var(--header-bg);
             backdrop-filter: blur(10px);
             -webkit-backdrop-filter: blur(10px);
@@ -267,7 +272,7 @@
             border-bottom: 2px solid var(--accent);
             box-shadow: 0 4px 30px rgba(0, 0, 0, 0.5);
             transform: translateY(-100%);
-            transition: transform 0.8s cubic-bezier(0.16, 1, 0.3, 1), border-color 1.2s ease;
+            transition: transform 0.8s cubic-bezier(0.16, 1, 0.3, 1), border-color 1.2s ease, top 0.4s ease;
         }
 
         body.loaded header {
@@ -520,7 +525,8 @@
 
         #game-loader {
             position: fixed;
-            top: 0; left: 0; width: 100%; height: 100%;
+            left: 0; width: 100%;
+            top: var(--offline-offset); height: calc(100vh - var(--offline-offset));
             background: rgba(0, 0, 0, 0.85);
             backdrop-filter: blur(25px);
             -webkit-backdrop-filter: blur(25px);
@@ -531,7 +537,7 @@
             justify-content: center;
             opacity: 0;
             pointer-events: none;
-            transition: opacity 0.6s ease;
+            transition: opacity 0.6s ease, top 0.4s ease, height 0.4s ease;
         }
 
         #game-loader.active {
@@ -622,12 +628,13 @@
 
         #game-container {
             position: fixed;
-            top: 0; left: 0; width: 100%; height: 100%;
+            left: 0; width: 100%;
+            top: var(--offline-offset); height: calc(100vh - var(--offline-offset));
             z-index: 8000;
             background: #000;
             opacity: 0;
             pointer-events: none;
-            transition: opacity 0.8s ease, filter 0.4s ease;
+            transition: opacity 0.8s ease, filter 0.4s ease, top 0.4s ease, height 0.4s ease;
         }
 
         #game-container.active {
@@ -648,22 +655,25 @@
 
         #in-game-hover-zone {
             position: fixed;
-            top: 0; left: 0; width: 100%; height: 25px;
+            left: 0; width: 100%; height: 25px;
+            top: var(--offline-offset);
             z-index: 9500;
             display: none;
+            transition: top 0.4s ease;
         }
 
         #in-game-header {
             position: fixed;
-            top: 0; left: 0; width: 100%;
+            left: 0; width: 100%;
+            top: var(--offline-offset);
             padding: 15px 4%;
             background: rgba(5, 5, 5, 0.9);
             backdrop-filter: blur(10px);
             z-index: 9400;
-            display: flex;
+            display: none; /* Changed: Only shown during gameplay */
             justify-content: center;
             transform: translateY(-100%);
-            transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+            transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1), top 0.4s ease;
             box-sizing: border-box;
             border-bottom: 1px solid rgba(255,255,255,0.1);
         }
@@ -675,7 +685,8 @@
 
         #quit-modal {
             position: fixed;
-            top: 0; left: 0; width: 100%; height: 100%;
+            left: 0; width: 100%;
+            top: var(--offline-offset); height: calc(100vh - var(--offline-offset));
             z-index: 9600;
             display: flex;
             flex-direction: column;
@@ -683,7 +694,7 @@
             justify-content: center;
             opacity: 0;
             pointer-events: none;
-            transition: opacity 0.4s ease;
+            transition: opacity 0.4s ease, top 0.4s ease, height 0.4s ease;
         }
 
         #quit-modal.active {
@@ -1678,6 +1689,7 @@
                 loader.classList.remove('active');
                 iframeContainer.classList.add('active');
                 hoverZone.style.display = 'block'; 
+                document.getElementById('in-game-header').style.display = 'flex'; // Explicitly reveal the hidden header logic ONLY during games
             }, 600); 
         }
 
@@ -1710,12 +1722,16 @@
             const iframeContainer = document.getElementById('game-container');
             const iframe = document.getElementById('game-iframe');
             const hoverZone = document.getElementById('in-game-hover-zone');
+            const inGameHeader = document.getElementById('in-game-header');
             const quitModal = document.getElementById('quit-modal');
 
             quitModal.classList.remove('active');
             iframeContainer.classList.remove('active');
             iframeContainer.classList.remove('paused');
+            
             hoverZone.style.display = 'none';
+            inGameHeader.style.display = 'none'; // Lock the header away again
+            
             iframe.src = ""; 
             currentGame = null;
 
