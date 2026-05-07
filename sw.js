@@ -1,27 +1,61 @@
-// sw.js - Prime Games Service Worker
-const CACHE_NAME = 'prime-core-v1';
-const CORE_ASSETS = [
-    './',
-    './index.html',
-    './Small.wav',
-    './Big.wav'
-];
+const CACHE_NAME = 'prime-core-v2';
 
-// Install: Save the core site to the device
+// Install: Cache baseline assets
 self.addEventListener('install', (event) => {
     event.waitUntil(
         caches.open(CACHE_NAME).then((cache) => {
-            return cache.addAll(CORE_ASSETS);
+            return cache.addAll([
+                './index.html',
+                './Small.wav',
+                './Big.wav'
+            ]);
         })
     );
-    self.skipWaiting();
+    self.skipWaiting(); // Force the waiting service worker to become the active service worker.
 });
 
-// Fetch: Intercept requests. If offline, serve from cache.
-self.addEventListener('fetch', (event) => {
-    event.respondWith(
-        fetch(event.request).catch(() => {
-            return caches.match(event.request);
+// Activate: Clean up old caches
+self.addEventListener('activate', (event) => {
+    event.waitUntil(
+        caches.keys().then((cacheNames) => {
+            return Promise.all(
+                cacheNames.map((cacheName) => {
+                    // Don't delete the game asset cache!
+                    if (cacheName !== CACHE_NAME && cacheName !== 'prime-games-data') {
+                        return caches.delete(cacheName);
+                    }
+                })
+            );
         })
+    );
+    self.clients.claim();
+});
+
+// Fetch: "Network First, falling back to cache" strategy
+self.addEventListener('fetch', (event) => {
+    // Only handle GET requests
+    if (event.request.method !== 'GET') return;
+
+    event.respondWith(
+        fetch(event.request)
+            .then((response) => {
+                // If online and successful, clone and cache it dynamically!
+                const resClone = response.clone();
+                caches.open(CACHE_NAME).then((cache) => {
+                    cache.put(event.request, resClone);
+                });
+                return response;
+            })
+            .catch(() => {
+                // If offline (fetch failed), return the cached version
+                return caches.match(event.request).then((cachedResponse) => {
+                    if (cachedResponse) return cachedResponse;
+                    
+                    // If it's a page request and we don't have exact match, fallback to index.html
+                    if (event.request.mode === 'navigate') {
+                        return caches.match('./index.html');
+                    }
+                });
+            })
     );
 });
