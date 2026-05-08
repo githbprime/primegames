@@ -45,7 +45,28 @@
         }
 
         /* ---------------------------------------------------
-           HIGH-ENERGY SCROLL PROGRESS BAR (CONSOLE ACCENT)
+           GLOBAL INERTIAL FOCUS RING (CONSOLE SNAP)
+        ----------------------------------------------------- */
+        #global-focus-ring {
+            position: fixed;
+            border: 4px solid white;
+            border-radius: 12px;
+            pointer-events: none;
+            z-index: 9999;
+            opacity: 0;
+            transition: all 0.25s cubic-bezier(0.25, 1, 0.3, 1);
+            box-shadow: 0 0 20px rgba(255,255,255,0.4);
+            transform: scale(0.95);
+            will-change: top, left, width, height, transform, opacity;
+        }
+
+        #global-focus-ring.active {
+            opacity: 1;
+            transform: scale(1);
+        }
+
+        /* ---------------------------------------------------
+           HIGH-ENERGY SCROLL PROGRESS BAR
         ----------------------------------------------------- */
         #scroll-progress {
             position: fixed;
@@ -82,7 +103,7 @@
         body.offline-mode #hero { opacity: 0.3; pointer-events: none; filter: grayscale(0.5); }
 
         /* ---------------------------------------------------
-           SYSTEM TRAY & HEADER (4K SCALED)
+           SYSTEM TRAY & HEADER
         ----------------------------------------------------- */
         header {
             padding: clamp(15px, 2vw, 25px) 4%;
@@ -194,7 +215,7 @@
         body.tutorial-lock *:not(.tutorial-highlight):not(#tutorial-overlay):not(#tutorial-dialog):not(#tutorial-text):not(.tutorial-btn) { pointer-events: none !important; }
 
         /* ---------------------------------------------------
-           WELCOME SCREEN (REVERSED 3D CAMERA PAN & TILT)
+           WELCOME SCREEN
         ----------------------------------------------------- */
         #welcome-screen {
             position: fixed; left: 0; width: 100%; 
@@ -208,7 +229,6 @@
 
         .welcome-bg {
             position: absolute; top: -30%; left: -30%; width: 160%; height: 160%;
-            /* Original -20deg tilt restored, but adapted to 3D. Camera faces left (right side closer) */
             transform: rotateZ(20deg) rotateY(-25deg) translateZ(-100px) scale(1.4);
             display: flex; flex-direction: column; gap: 20px; justify-content: center;
             opacity: 0.15; pointer-events: none;
@@ -219,9 +239,8 @@
         .welcome-row { display: flex; width: max-content; will-change: transform; transform-style: preserve-3d;}
         .scroll-track { display: flex; gap: 20px; padding-right: 20px; will-change: transform; }
         
-        /* Smooth, slow movement from right foreground to distant left */
         .anim-scroll-left { animation: scrollLeft 140s linear infinite; }
-        .anim-scroll-right { animation: scrollLeft 170s linear infinite; } /* Parallax difference */
+        .anim-scroll-right { animation: scrollLeft 170s linear infinite; } 
 
         @keyframes scrollLeft { 0% { transform: translateX(0); } 100% { transform: translateX(-50%); } }
 
@@ -230,7 +249,6 @@
         .welcome-ui { position: relative; z-index: 2; display: flex; flex-direction: column; align-items: center; justify-content: space-between; height: 60vh; }
         .welcome-logo { font-size: clamp(3rem, 6vw, 6rem); font-weight: 900; color: var(--accent); margin: 0; letter-spacing: 8px; text-shadow: 0 0 30px rgba(185,9,11,0.6), 0 0 80px var(--accent); font-style: italic; animation: pulse-glow 3s infinite alternate ease-in-out; }
         
-        /* Action Button Pulse Animation */
         @keyframes subtle-pulse {
             0% { box-shadow: inset 0 0 20px rgba(185,9,11,0.2), 0 0 20px rgba(185,9,11,0.2); }
             100% { box-shadow: inset 0 0 20px rgba(185,9,11,0.5), 0 0 45px rgba(185,9,11,0.7); }
@@ -240,7 +258,7 @@
         #enter-btn:hover { background: var(--accent); color: white; transform: scale(1.08); letter-spacing: 8px; }
 
         /* ---------------------------------------------------
-           CORE UI & MAGNETIC BUTTONS
+           CORE UI
         ----------------------------------------------------- */
         #ui-wrapper { transition: opacity 0.5s ease, filter 0.5s ease; will-change: opacity, filter; }
 
@@ -279,20 +297,24 @@
         .hero-content, .expanded-content { position: relative; z-index: 2; padding: 0 4%; max-width: 650px; opacity: 0; transform: translateY(30px); transition: opacity 1s ease 0.4s, transform 1s cubic-bezier(0.16, 1, 0.3, 1) 0.4s; will-change: transform, opacity; transform-style: preserve-3d; }
         body.loaded .hero-content, body.expanded-view-active .expanded-content { opacity: 1; transform: translateY(0); }
 
-        /* 3D Parallax Hook via JS */
         .hero-content { transform-style: preserve-3d; }
 
-        #hero-title, .expanded-title { font-size: clamp(2.5rem, 4vw, 4.5rem); font-weight: 800; margin: 0 0 10px 0; letter-spacing: 1px; font-style: italic; text-shadow: 2px 2px 20px rgba(0,0,0,0.8); pointer-events: none; }
-        #hero-desc, .expanded-desc { font-size: clamp(1rem, 1.2vw, 1.3rem); color: #ccc; line-height: 1.6; margin: 0 0 30px 0; text-shadow: 1px 1px 15px rgba(0,0,0,0.8); pointer-events: none; }
+        #hero-title, .expanded-title { font-size: clamp(2.5rem, 4vw, 4.5rem); font-weight: 800; margin: 0 0 10px 0; letter-spacing: 1px; font-style: italic; text-shadow: 2px 2px 20px rgba(0,0,0,0.8); pointer-events: none; transform: translateZ(30px); }
+        #hero-desc, .expanded-desc { font-size: clamp(1rem, 1.2vw, 1.3rem); color: #ccc; line-height: 1.6; margin: 0 0 30px 0; text-shadow: 1px 1px 15px rgba(0,0,0,0.8); pointer-events: none; transform: translateZ(15px); }
 
-        .exp-buttons { display: flex; flex-direction: column; gap: 15px; align-items: flex-start; margin-top: 10px; }
+        .exp-buttons { display: flex; flex-direction: column; gap: 15px; align-items: flex-start; margin-top: 10px; transform: translateZ(25px); }
+        
         .play-btn { display: flex; align-items: center; justify-content: center; gap: 8px; background-color: var(--accent); color: white; padding: 14px 36px; font-size: clamp(14px, 1.1vw, 18px); font-weight: bold; text-decoration: none; border-radius: 6px; transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); box-shadow: 0 4px 20px var(--accent-glow); border: none; will-change: transform; }
         .play-btn:hover { box-shadow: 0 8px 30px var(--accent-glow); filter: brightness(1.2); }
-        .download-btn { display: flex; align-items: center; justify-content: center; gap: 8px; background-color: var(--accent); color: white; border: 2px solid transparent; padding: 14px 36px; font-size: clamp(14px, 1.1vw, 18px); font-weight: bold; border-radius: 6px; transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1); box-shadow: 0 4px 20px var(--accent-glow); will-change: transform; }
+        
+        .download-btn { position: relative; overflow: hidden; display: flex; align-items: center; justify-content: center; gap: 8px; background-color: var(--accent); color: white; border: 2px solid transparent; padding: 14px 36px; font-size: clamp(14px, 1.1vw, 18px); font-weight: bold; border-radius: 6px; transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1); box-shadow: 0 4px 20px var(--accent-glow); will-change: transform; }
         .download-btn:hover { box-shadow: 0 8px 30px var(--accent-glow); filter: brightness(1.2); }
         .download-btn.installing { pointer-events: none; background-color: transparent; border-color: var(--accent); color: var(--accent); box-shadow: none; }
         .download-btn.installed { background-color: transparent; border-color: #2ecc71; color: #2ecc71; box-shadow: none; }
         .download-btn.installed:hover { background: rgba(46, 204, 113, 0.1); }
+        
+        /* Physical Download Progress Bar */
+        .dl-progress-bar { position: absolute; left: 0; top: 0; height: 100%; background: rgba(255, 255, 255, 0.15); width: 0%; pointer-events: none; transition: width 0.5s linear; z-index: 0; box-shadow: inset -3px 0 10px rgba(255,255,255,0.3); }
 
         .anim-spin-circle { animation: spinCircle 1s linear infinite; }
         @keyframes spinCircle { 100% { transform: rotate(360deg); } }
@@ -301,44 +323,39 @@
         .tab-content { display: none; }
         .tab-content.active-tab { display: block; }
         
-        /* Snappy Scroll-Triggered Reveal Animations */
         .reveal-section { opacity: 0; transform: translateY(50px) scale(0.95); transition: opacity 0.8s cubic-bezier(0.175, 0.885, 0.32, 1.275), transform 0.8s cubic-bezier(0.175, 0.885, 0.32, 1.275); margin-bottom: 20px; will-change: transform, opacity; }
         .reveal-section.revealed { opacity: 1; transform: translateY(0) scale(1); }
         
         .row-title { font-size: clamp(18px, 1.4vw, 24px); font-weight: 600; margin-top: 60px; margin-bottom: 15px; color: #ffffff; letter-spacing: 0.5px; }
         .big-row-title { font-size: clamp(24px, 2.8vw, 40px); font-weight: 800; margin-top: 100px; margin-bottom: 20px; color: #ffffff; }
 
-        .row { display: flex; gap: 25px; padding: 40px 0; margin: 0; scrollbar-width: thin; scrollbar-color: var(--accent) transparent; perspective: 1000px; }
+        .row { display: flex; gap: 25px; padding: 40px 0; margin: 0; scrollbar-width: thin; scrollbar-color: var(--accent) transparent; perspective: 1200px; }
         #trending-games, #new-games, #pokemon-games, #recent-games, #downloads-games, #trending-ent, #new-ent, #recent-ent { overflow-x: auto; overflow-y: hidden; flex-wrap: nowrap; padding-bottom: 50px; }
         #all-games, #apps-games, #all-ent { flex-wrap: wrap; justify-content: flex-start; overflow: visible; }
         .row::-webkit-scrollbar { height: 4px; }
         .row::-webkit-scrollbar-thumb { background: rgba(255, 255, 255, 0.1); border-radius: 10px; }
         .row:hover::-webkit-scrollbar-thumb { background: var(--accent); }
 
-        /* Card with 3D capability */
+        /* ---------------------------------------------------
+           3D Z-DEPTH CARDS
+        ----------------------------------------------------- */
         .card { flex: 0 0 auto; width: clamp(160px, 12vw, 220px); position: relative; transition: all 0.4s cubic-bezier(0.165, 0.84, 0.44, 1); color: inherit; display: flex; flex-direction: column; margin-bottom: 20px; will-change: transform; transform-style: preserve-3d; z-index: 1; }
         .card.landscape { width: clamp(280px, 20vw, 380px); }
-        .card:hover { transform: translateY(-12px) scale(1.04); z-index: 20; }
         
-        .card-poster-wrapper { position: relative; width: 100%; border-radius: 8px; transform-style: preserve-3d; }
+        .card-poster-wrapper { position: relative; width: 100%; border-radius: 8px; transform-style: preserve-3d; transition: transform 0.4s ease; }
         
-        /* Console Focus Ring isolated from the text! */
-        .card-poster-wrapper::after { content: ''; position: absolute; top: -6px; left: -6px; right: -6px; bottom: -6px; border: 3px solid white; border-radius: 12px; pointer-events: none; opacity: 0; z-index: 10; transition: opacity 0.3s ease, transform 0.3s ease; transform: translateZ(10px) scale(0.95); box-shadow: 0 0 20px rgba(255,255,255,0.4); }
-        .card:hover .card-poster-wrapper::after { opacity: 1; transform: translateZ(10px) scale(1); }
-
-        .card img.glow { position: absolute; top: 0; left: 0; width: 100%; height: clamp(230px, 18vw, 320px); object-fit: cover; border-radius: 8px; filter: blur(35px); opacity: 0.65; transform: scale(1.05); z-index: 0; transition: opacity 0.4s ease, transform 0.4s ease; background: var(--accent); pointer-events: none; }
+        .card img.glow { position: absolute; top: 0; left: 0; width: 100%; height: clamp(230px, 18vw, 320px); object-fit: cover; border-radius: 8px; filter: blur(35px); opacity: 0.65; z-index: 0; transition: opacity 0.4s ease, transform 0.4s ease; background: var(--accent); pointer-events: none; }
         .card.landscape img.glow { height: clamp(150px, 12vw, 210px); }
-        .card:hover img.glow { opacity: 0.90; transform: scale(1.15); }
         
-        .card img.poster { position: relative; width: 100%; height: clamp(230px, 18vw, 320px); object-fit: cover; border-radius: 8px; border: 1px solid rgba(255,255,255,0.1); z-index: 1; box-shadow: 0 10px 20px rgba(0,0,0,0.4); transition: border-color 0.4s ease; }
+        .card img.poster { position: relative; width: 100%; height: clamp(230px, 18vw, 320px); object-fit: cover; border-radius: 8px; border: 1px solid rgba(255,255,255,0.1); z-index: 1; box-shadow: 0 10px 20px rgba(0,0,0,0.4); transition: border-color 0.4s ease; transform-style: preserve-3d; }
         .card.landscape img.poster { height: clamp(150px, 12vw, 210px); }
-        .card:hover img.poster { border-color: transparent; }
         
-        .card-info { margin-top: 15px; position: relative; z-index: 2; text-align: center; pointer-events: none; transform: translateZ(20px); }
+        .card-info { margin-top: 15px; position: relative; z-index: 2; text-align: center; pointer-events: none; transition: transform 0.4s ease; transform-style: preserve-3d; }
         .card-title { font-size: clamp(13px, 1vw, 16px); font-weight: bold; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; display: block; opacity: 0.8; transition: opacity 0.3s ease; }
         .card:hover .card-title { opacity: 1; white-space: normal; text-shadow: 0 2px 5px rgba(0,0,0,0.8); }
 
-        footer { padding: 80px 0; display: flex; justify-content: center; background-color: var(--bg); position: relative; z-index: 10; }
+        /* Request Button & Footer */
+        footer { padding: 40px 0 80px 0; display: flex; justify-content: center; background-color: var(--bg); position: relative; z-index: 10; width: 100%; }
         .request-btn { background: rgba(255,255,255,0.03); color: #999; border: 1px solid rgba(255,255,255,0.1); padding: 14px 40px; font-size: clamp(12px, 1vw, 15px); font-weight: bold; text-decoration: none; border-radius: 30px; transition: all 0.3s ease; text-transform: uppercase; letter-spacing: 2px; }
         .request-btn:hover { background: var(--accent); color: white; border-color: var(--accent); box-shadow: 0 0 20px var(--accent-glow); transform: translateY(-2px); }
 
@@ -398,6 +415,7 @@
 </head>
 <body>
     <div id="scroll-progress"></div>
+    <div id="global-focus-ring"></div>
 
     <canvas id="themeCanvas" style="display:none;"></canvas>
 
@@ -489,14 +507,10 @@
                 <div class="hero-content">
                     <h1 id="hero-title"></h1>
                     <p id="hero-desc"></p>
-                    <a href="#" id="hero-play" class="play-btn">▶ Play Now</a>
+                    <div class="exp-buttons">
+                        <a href="#" id="hero-play" class="play-btn">▶ Play Now</a>
+                    </div>
                 </div>
-                <a href="https://docs.google.com/forms/d/e/1FAIpQLSeS_ODOaVA3azjFqq7a31kPo8krNr6x7iWwRavSEfqqhKb0sw/viewform?usp=header" 
-                   target="_blank" 
-                   id="vote-btn"
-                   class="request-btn vote-hero-btn" style="position: absolute; bottom: 40px; left: 4%; z-index: 999">
-                   Vote for featured game
-                </a>
             </div>
             
             <div class="container">
@@ -547,6 +561,11 @@
                     </div>
                 </div>
             </div>
+            
+            <!-- Global Footer added back to enable Game Requests -->
+            <footer id="requestFooter">
+                <a href="https://docs.google.com/forms/d/e/1FAIpQLScIhmI3hEFJE3hjmUuGqQIFWCHLSbySl_R3BNaJIWPNFbFuSA/viewform?usp=header" target="_blank" class="request-btn">Request a Game</a>
+            </footer>
         </div>
 
         <div id="expanded-view">
@@ -697,6 +716,41 @@
             if (progBar) progBar.style.width = scrolled + '%';
         });
 
+        // --- INERTIAL GLOBAL FOCUS RING ---
+        const focusRing = document.getElementById('global-focus-ring');
+        let currentHoveredCard = null;
+
+        document.addEventListener('mouseover', (e) => {
+            const card = e.target.closest('.card');
+            if (card) {
+                currentHoveredCard = card;
+                updateFocusRing();
+            } else if (!e.target.closest('.card') && focusRing) {
+                currentHoveredCard = null;
+                focusRing.classList.remove('active');
+            }
+        });
+
+        window.addEventListener('scroll', updateFocusRing, {passive: true});
+        document.addEventListener('scroll', (e) => {
+            if(e.target.classList && e.target.classList.contains('row')) {
+                updateFocusRing();
+            }
+        }, true);
+
+        function updateFocusRing() {
+            if (currentHoveredCard && focusRing && !document.body.classList.contains('expanded-view-active')) {
+                const rect = currentHoveredCard.getBoundingClientRect();
+                focusRing.style.width = `${rect.width + 12}px`;
+                focusRing.style.height = `${rect.height + 12}px`;
+                focusRing.style.top = `${rect.top - 6}px`;
+                focusRing.style.left = `${rect.left - 6}px`;
+                focusRing.classList.add('active');
+            } else if (focusRing) {
+                focusRing.classList.remove('active');
+            }
+        }
+
         // --- MAGNETIC BUTTONS SCRIPT ---
         function bindMagnetic(btn) {
             if(!btn || btn.dataset.magnetic) return;
@@ -714,17 +768,31 @@
             });
         }
 
-        // --- 3D TILT EFFECT SCRIPT FOR DYNAMIC CARDS ---
+        // --- TRUE 3D TILT EFFECT SCRIPT (WITH Z-DEPTH) ---
         function tiltCard(e, card) {
             const rect = card.getBoundingClientRect();
             const x = e.clientX - rect.left;
             const y = e.clientY - rect.top;
             const centerX = rect.width / 2;
             const centerY = rect.height / 2;
-            const rotateX = ((y - centerY) / centerY) * -15; 
-            const rotateY = ((x - centerX) / centerX) * 15;
-            card.style.transform = `translateY(-12px) scale(1.04) rotateX(${rotateX}deg) rotateY(${rotateY}deg)`;
+            
+            const rotateX = ((y - centerY) / centerY) * -10; 
+            const rotateY = ((x - centerX) / centerX) * 10;
+            
+            card.style.transform = `translateY(-8px) scale(1.02) rotateX(${rotateX}deg) rotateY(${rotateY}deg)`;
+            
+            const posterWrapper = card.querySelector('.card-poster-wrapper');
+            const info = card.querySelector('.card-info');
+            const glow = card.querySelector('.glow');
+            
+            if(posterWrapper) posterWrapper.style.transform = 'translateZ(20px)';
+            if(info) info.style.transform = 'translateZ(40px)';
+            if(glow) glow.style.transform = 'translateZ(-10px) scale(1.15)'; 
+            
             card.style.transition = 'transform 0.1s ease-out';
+            if(posterWrapper) posterWrapper.style.transition = 'transform 0.1s ease-out';
+            if(info) info.style.transition = 'transform 0.1s ease-out';
+            if(glow) glow.style.transition = 'transform 0.1s ease-out';
             card.style.zIndex = '20';
         }
 
@@ -732,6 +800,14 @@
             card.style.transform = '';
             card.style.transition = 'all 0.4s cubic-bezier(0.165, 0.84, 0.44, 1)';
             card.style.zIndex = '1';
+            
+            const posterWrapper = card.querySelector('.card-poster-wrapper');
+            const info = card.querySelector('.card-info');
+            const glow = card.querySelector('.glow');
+            
+            if(posterWrapper) { posterWrapper.style.transform = ''; posterWrapper.style.transition = 'all 0.4s ease'; }
+            if(info) { info.style.transform = ''; info.style.transition = 'all 0.4s ease'; }
+            if(glow) { glow.style.transform = ''; glow.style.transition = 'all 0.4s ease'; }
         }
 
         // --- SYSTEM TRAY (BATTERY & PING) ---
@@ -882,7 +958,7 @@
                     const textEl = document.getElementById('tutorial-text');
                     if(textEl) textEl.innerText = "Downloading... please wait.";
                     document.querySelectorAll('.tutorial-highlight').forEach(el => el.classList.remove('tutorial-highlight'));
-                    return; // Pause progression until the download confirms
+                    return; 
                 }
             }
 
@@ -1087,9 +1163,6 @@
             
             extractThemeColor(heroData.imgSrc);
 
-            const voteBtn = document.getElementById('vote-btn');
-            if (voteBtn) voteBtn.style.display = mode === 'games' ? 'block' : 'none';
-            
             search();
         }
 
@@ -1182,11 +1255,11 @@
             if (currentExpandedGame && downloads.includes(currentExpandedGame.title)) {
                 btn.className = 'download-btn installed';
                 const trashSVG = `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>`;
-                btn.innerHTML = `${trashSVG} Uninstall`;
+                btn.innerHTML = `<span style="position:relative; z-index:1; display:flex; align-items:center; gap:8px;">${trashSVG} Uninstall</span>`;
             } else {
                 btn.className = 'download-btn not-installed';
                 const downloadSVG = `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>`;
-                btn.innerHTML = `${downloadSVG} Download`;
+                btn.innerHTML = `<span style="position:relative; z-index:1; display:flex; align-items:center; gap:8px;">${downloadSVG} Download</span>`;
             }
         }
 
@@ -1213,7 +1286,7 @@
             } else {
                 btn.className = 'download-btn installing';
                 const spinnerSVG = `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="anim-spin-circle"><path d="M21 12a9 9 0 1 1-6.219-8.56"></path></svg>`;
-                btn.innerHTML = `${spinnerSVG} Installing...`;
+                btn.innerHTML = `<div class="dl-progress-bar" id="dl-bar"></div><span style="position:relative; z-index:1; display:flex; align-items:center; gap:8px;">${spinnerSVG} Installing... 0%</span>`;
 
                 if ('caches' in window) {
                     try {
@@ -1241,13 +1314,17 @@
                 downloadInterval = setInterval(() => {
                     progress += Math.floor(Math.random() * 10) + 2;
                     if (progress > 95) progress = 95; 
-                    btn.innerHTML = `${spinnerSVG} Installing... ${progress}%`;
+                    const bar = document.getElementById('dl-bar');
+                    if (bar) bar.style.width = `${progress}%`;
+                    btn.querySelector('span').innerHTML = `${spinnerSVG} Installing... ${progress}%`;
                 }, 500);
 
                 hiddenFrame.onload = () => {
                     setTimeout(() => {
                         clearInterval(downloadInterval);
-                        btn.innerHTML = `${spinnerSVG} Installing... 100%`;
+                        const bar = document.getElementById('dl-bar');
+                        if (bar) bar.style.width = `100%`;
+                        btn.querySelector('span').innerHTML = `${spinnerSVG} Installing... 100%`;
                         
                         setTimeout(() => {
                             if(document.body.contains(hiddenFrame)) {
@@ -1648,7 +1725,7 @@
             if(launchBtn) launchBtn.classList.remove('visible');
             
             setTimeout(() => {
-                if(loaderStatus) loaderStatus.textContent = "Initializing Engine...";
+                if(loaderStatus) loaderStatus.textContent = "Launching Game...";
                 if(loaderSub) {
                     loaderSub.style.opacity = '0';
                     setTimeout(() => loaderSub.style.display = 'none', 400); 
