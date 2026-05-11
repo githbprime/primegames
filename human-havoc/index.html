@@ -1,0 +1,1406 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Web Sandbox Engine (Test Build)</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/planck-js@0.3.31/dist/planck.min.js"></script>
+    <style>
+        body { margin: 0; padding: 0; overflow: hidden; background-color: #000; color: white; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; user-select: none; }
+        
+        #canvas-container {
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            background-color: #0d0d0d;
+            background-image: 
+                linear-gradient(rgba(255, 255, 255, 0.04) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(255, 255, 255, 0.04) 1px, transparent 1px);
+        }
+        canvas { display: block; }
+        
+        #ui-layer { position: absolute; top: 0; left: 0; pointer-events: none; width: 100%; height: 100%; display: flex; justify-content: space-between; }
+        
+        /* Left Sidebar */
+        .left-wrapper { display: flex; pointer-events: auto; z-index: 10; height: 100%; box-shadow: 10px 0 20px rgba(0,0,0,0.5); }
+        .sidebar-categories { width: 60px; background-color: rgba(18, 18, 18, 0.98); border-right: 1px solid #2a2a2a; display: flex; flex-direction: column; align-items: center; padding-top: 10px; }
+        .cat-btn { width: 40px; height: 40px; margin-bottom: 10px; background: #1a1a1a; border: 1px solid #333; color: #888; cursor: pointer; display: flex; justify-content: center; align-items: center; transition: 0.1s; border-radius: 3px;}
+        .cat-btn svg { width: 22px; height: 22px; }
+        .cat-btn:hover { background: #252525; color: #ccc; }
+        .cat-btn.active { background: #2a2a2a; border-color: #555; color: #fff; box-shadow: inset 3px 0 0 #ccc; }
+        
+        .sidebar-main-panel { width: 250px; background-color: rgba(15, 15, 15, 0.95); border-right: 1px solid #2a2a2a; display: flex; flex-direction: column; justify-content: space-between; }
+        .items-scroll-area { padding: 10px; flex-grow: 1; overflow-y: auto; }
+        .sidebar-items { display: none; flex-wrap: wrap; align-content: flex-start; gap: 8px; }
+        .sidebar-items.active { display: flex; }
+        .item-btn { width: calc(50% - 4px); height: 65px; background: #1a1a1a; border: 1px solid #333; color: #aaa; font-size: 11px; display: flex; flex-direction: column; justify-content: center; align-items: center; cursor: pointer; transition: 0.1s; border-radius: 3px; font-weight: 600;}
+        .item-btn:hover { background: #252525; color: #fff; border-color: #555;}
+        .item-btn.selected { background: #2a2a2a; border-color: #888; color: #fff; }
+        .item-btn svg { width: 24px; height: 24px; margin-bottom: 6px; }
+
+        .bottom-area-container { display: flex; flex-direction: column; background: rgba(12, 12, 12, 0.95); }
+        .settings-area { padding: 10px 10px 0 10px; }
+        .divider { width: 100%; height: 1px; background-color: #2a2a2a; margin-top: 10px; }
+        .clear-tools-area { padding: 10px; display: flex; flex-direction: column; gap: 8px; }
+        .action-btn-wide { background: #1a1a1a; border: 1px solid #333; color: #aaa; width: 100%; height: 32px; border-radius: 3px; cursor: pointer; display: flex; align-items: center; padding: 0 10px; font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; transition: 0.1s; gap: 10px; }
+        .action-btn-wide:hover { background: #252525; color: #fff; border-color: #555; }
+        .action-btn-wide svg { width: 12px; height: 12px; stroke-width: 2.5; }
+        .action-btn-wide svg.red-icon { color: #ef4444; }
+        .action-btn-wide svg.gray-icon { color: #888; }
+        .action-btn-wide:hover svg.gray-icon { color: #ccc; }
+
+        /* Right Sidebar: Mini Tool Bar */
+        .right-toolbar { position: absolute; right: 20px; top: 50%; transform: translateY(-50%); background: rgba(18, 18, 18, 0.95); border: 1px solid #333; border-radius: 6px; padding: 8px; pointer-events: auto; z-index: 10; display: flex; flex-direction: column; width: 70px; align-items: center; box-shadow: -4px 4px 15px rgba(0,0,0,0.5); }
+        .right-tabs { display: flex; flex-direction: column; gap: 4px; width: 100%; margin-bottom: 10px; border-bottom: 1px solid #333; padding-bottom: 8px; }
+        .tab-btn { background: transparent; color: #666; font-size: 10px; text-transform: uppercase; font-weight: bold; border: none; cursor: pointer; transition: 0.1s; padding: 4px 0; }
+        .tab-btn:hover { color: #aaa; }
+        .tab-btn.active { color: #fff; }
+        .tool-group { display: none; flex-direction: column; gap: 6px; width: 100%; align-items: center; }
+        .tool-group.active { display: flex; }
+        .tool-btn-right { width: 44px; height: 44px; background: #1a1a1a; border: 1px solid #444; border-radius: 4px; color: #aaa; cursor: pointer; display: flex; justify-content: center; align-items: center; transition: 0.1s; flex-direction: column; gap: 2px;}
+        .tool-btn-right svg { width: 20px; height: 20px; }
+        .tool-btn-right span { font-size: 9px; font-weight: bold; }
+        .tool-btn-right:hover { background: #252525; color: #fff; }
+        .tool-btn-right.active { background: #2a2a2a; border-color: #fff; color: #fff; box-shadow: inset 0 0 10px rgba(255,255,255,0.1); }
+
+        #top-right-hud { position: absolute; top: 20px; right: 20px; display: flex; gap: 10px; z-index: 5; flex-direction: column; align-items: flex-end; }
+        .hud-row { display: flex; gap: 10px; }
+        .hud-box { background: rgba(15,15,15,0.95); border: 1px solid #333; padding: 12px 20px; color: #fff; pointer-events: none; border-radius: 4px; box-shadow: 0 4px 10px rgba(0,0,0,0.5); }
+        .hud-box.border-right { border-right: 3px solid #555; text-align: right; }
+        .hud-box.border-left { border-left: 3px solid #555; text-align: left; }
+        .hud-label { font-size: 10px; color: #666; letter-spacing: 1px; margin-bottom: 2px; text-transform: uppercase; font-weight: bold;}
+        .hud-value { font-size: 16px; font-weight: bold; margin-bottom: 4px; color: #eee;}
+        .hud-hint { font-size: 10px; color: #888; font-family: monospace;}
+
+        #hover-temp-hud { display: none; background: rgba(15,15,15,0.95); border: 1px solid #333; border-left: 3px solid #ef4444; padding: 8px 15px; color: white; border-radius: 4px; box-shadow: 0 4px 10px rgba(0,0,0,0.5); min-width: 120px;}
+
+        #fps-counter { display: none; position: absolute; top: 120px; right: 20px; font-family: monospace; font-size: 15px; font-weight: bold; color: white; text-shadow: -1px -1px 0 #000, 1px -1px 0 #000, -1px 1px 0 #000, 1px 1px 0 #000; z-index: 5; pointer-events: none; }
+
+        #context-menu { pointer-events: auto; }
+        .context-item { transition: background 0.1s; }
+
+        .toast-container { position: absolute; bottom: 20px; right: 20px; pointer-events: none; display: flex; flex-direction: column; gap: 8px; align-items: flex-end; z-index: 100;}
+        .toast-msg { background: rgba(10,10,10,0.95); border: 1px solid #444; color: #fff; padding: 8px 16px; font-family: 'Courier New', Courier, monospace; font-size: 12px; opacity: 0; transition: opacity 0.3s; border-radius: 2px; border-left: 3px solid #666;}
+        
+        #settings-menu { pointer-events: auto; background-color: rgba(10, 10, 10, 0.98); }
+        .settings-category-btn { font-size: 12px; font-weight: bold; color: #666; text-transform: uppercase; cursor: pointer; padding: 8px 0; transition: 0.1s; }
+        .settings-category-btn:hover { color: #aaa; }
+        .settings-category-btn.active { color: #fff; }
+        .settings-tab { display: none; }
+        .settings-tab.active { display: block; }
+
+        /* Disclaimer Overlay */
+        #disclaimer-overlay { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.95); z-index: 1000; display: flex; justify-content: center; align-items: center; pointer-events: auto; flex-direction: column; text-align: center; padding: 40px;}
+        #disclaimer-overlay h1 { font-size: 2rem; color: #ef4444; margin-bottom: 20px; text-transform: uppercase; letter-spacing: 2px; }
+        #disclaimer-overlay p { color: #ccc; max-width: 600px; line-height: 1.6; margin-bottom: 30px; font-size: 0.9rem;}
+        #accept-btn { background: #ef4444; color: white; border: none; padding: 12px 30px; font-size: 1rem; font-weight: bold; border-radius: 4px; cursor: pointer; transition: 0.2s; text-transform: uppercase; letter-spacing: 1px;}
+        #accept-btn:hover { background: #dc2626; box-shadow: 0 0 15px rgba(239, 68, 68, 0.5); }
+    </style>
+</head>
+<body>
+
+    <div id="disclaimer-overlay">
+        <h1>Content Warning</h1>
+        <p>This physics sandbox environment contains stylized, cartoonish depictions of structural damage, mechanical limb detachment, and vital fluid particle emissions. It is intended for mature users capable of handling simulated physical destruction.<br><br>Viewer discretion is advised.</p>
+        <button id="accept-btn" onclick="acceptDisclaimer()">I Understand & Accept</button>
+    </div>
+
+    <div id="canvas-container">
+        <canvas id="game-canvas"></canvas>
+    </div>
+
+    <div id="ui-layer">
+        <div class="left-wrapper">
+            <div class="sidebar-categories">
+                <button class="cat-btn active" id="cat-entities" onclick="switchCategory('entities')" title="Entities">
+                    <svg viewBox="0 0 24 24" fill="currentColor"><path d="M13 4a3.5 3.5 0 1 1 0 7 3.5 3.5 0 0 1 0-7zm-3 8h4c2.5 0 4.5 2 4.5 4.5V20h-7v-8z"/></svg>
+                </button>
+                <button class="cat-btn" id="cat-blocks" onclick="switchCategory('blocks')" title="Blocks">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect></svg>
+                </button>
+                <button class="cat-btn" id="cat-machinery" onclick="switchCategory('machinery')" title="Machinery">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>
+                </button>
+            </div>
+            
+            <div class="sidebar-main-panel">
+                <div class="items-scroll-area">
+                    <div id="panel-entities" class="sidebar-items active">
+                        <button class="item-btn" onclick="selectItem('human', 'Human', this)">
+                            <svg viewBox="0 0 24 24" fill="#fcd5ce"><path d="M13 4a3.5 3.5 0 1 1 0 7 3.5 3.5 0 0 1 0-7zm-3 8h4c2.5 0 4.5 2 4.5 4.5V20h-7v-8z"/></svg>Human
+                        </button>
+                        <button class="item-btn" onclick="selectItem('android', 'Android', this)">
+                            <svg viewBox="0 0 24 24" fill="#838a96"><path d="M13 4a3.5 3.5 0 1 1 0 7 3.5 3.5 0 0 1 0-7zm-3 8h4c2.5 0 4.5 2 4.5 4.5V20h-7v-8z"/></svg>Android
+                        </button>
+                    </div>
+                    
+                    <div id="panel-blocks" class="sidebar-items">
+                        <button class="item-btn" onclick="selectItem('wood', 'Wooden Crate', this)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><line x1="3" y1="9" x2="21" y2="9"></line><line x1="3" y1="15" x2="21" y2="15"></line></svg>Wood</button>
+                        <button class="item-btn" onclick="selectItem('metal', 'Metal Cube', this)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><circle cx="8" cy="8" r="1"></circle><circle cx="16" cy="16" r="1"></circle><line x1="21" y1="3" x2="3" y2="21"></line></svg>Metal</button>
+                        <button class="item-btn" onclick="selectItem('club', 'Heavy Club', this)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="4" width="6" height="16" rx="2" ry="2"></rect></svg>Heavy Club</button>
+                    </div>
+
+                    <div id="panel-machinery" class="sidebar-items">
+                        <button class="item-btn" onclick="selectItem('heater', 'Heating Element', this)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M8 2v3M16 2v3M12 2v3M4 10h16v10a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V10z"></path><path d="M8 14h8M10 18h4"></path></svg>Heater</button>
+                        <button class="item-btn" onclick="selectItem('cooler', 'Cooling Element', this)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="2" x2="12" y2="22"></line><line x1="5.66" y1="5.66" x2="18.34" y2="18.34"></line><line x1="2" y1="12" x2="22" y2="12"></line><line x1="18.34" y1="5.66" x2="5.66" y2="18.34"></line></svg>Cooler</button>
+                    </div>
+                </div>
+
+                <div class="bottom-area-container">
+                    <div class="settings-area">
+                        <button class="action-btn-wide" onclick="toggleSettings()" title="Settings">
+                            <svg class="gray-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>
+                            Settings
+                        </button>
+                        <div class="divider"></div>
+                    </div>
+                    <div class="clear-tools-area">
+                        <button class="action-btn-wide" onclick="clearEverything()">
+                            <svg class="red-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
+                            Clear Everything
+                        </button>
+                        <button class="action-btn-wide" onclick="clearEntities()">
+                            <svg class="red-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor"><circle cx="9" cy="12" r="1"></circle><circle cx="15" cy="12" r="1"></circle><path d="M8 20v2h8v-2"></path><path d="m12.5 17-.5-1-.5 1h1z"></path><path d="M16 20a2 2 0 0 0 1.56-3.25 8 8 0 1 0-11.12 0A2 2 0 0 0 8 20"></path></svg>
+                            Clear Entities
+                        </button>
+                        <button class="action-btn-wide" onclick="clearDebris()">
+                            <svg class="red-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M2.5 16A1.5 1.5 0 0 1 4 14.5h16a1.5 1.5 0 0 1 1.5 1.5v3a1.5 1.5 0 0 1-1.5 1.5H4a1.5 1.5 0 0 1-1.5-1.5v-3Z"/><path d="M12 14.5V3"/></svg>
+                            Clear Debris
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Right Side: Mini Tool Bar -->
+        <div class="right-toolbar">
+            <div class="right-tabs">
+                <button id="tab-btn-powers" class="tab-btn active" onclick="switchRightTab('powers')">Powers</button>
+                <button id="tab-btn-tools" class="tab-btn" onclick="switchRightTab('tools')">Tools</button>
+            </div>
+            <div id="group-powers" class="tool-group active">
+                <button class="tool-btn-right active" id="tool-drag" onclick="setTool('drag')" title="Drag">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 11V6a2 2 0 0 0-4 0v4M14 6a2 2 0 0 0-4 0v5M10 5a2 2 0 0 0-4 0v7M6 8a2 2 0 0 0-4 0v7a8 8 0 0 0 8 8h2a8 8 0 0 0 8-8v-6a2 2 0 0 0-2-2z"></path></svg>
+                    <span>DRAG</span>
+                </button>
+            </div>
+            <div id="group-tools" class="tool-group">
+                <button class="tool-btn-right" id="tool-hinge" onclick="setTool('hinge')" title="Pin">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"></circle><path d="M12 15v7"></path><path d="M12 2v3"></path><path d="M19 12h3"></path><path d="M2 12h3"></path></svg>
+                    <span>PIN</span>
+                </button>
+            </div>
+        </div>
+
+        <div id="top-right-hud">
+            <div class="hud-row">
+                <div class="hud-box border-left">
+                    <div class="hud-label">Time Factor</div>
+                    <div id="time-factor-val" class="hud-value text-[#eee]">100%</div>
+                    <div class="hud-hint">[Space] Pause | [G] SlowMo</div>
+                </div>
+                <div class="hud-box">
+                    <div class="hud-label">Active Power/Tool</div>
+                    <div id="active-tool-name" class="hud-value text-[#3b82f6]">Drag Tool</div>
+                    <div class="hud-hint">LMB to Interact</div>
+                </div>
+                <div class="hud-box border-right">
+                    <div class="hud-label">Current Selection</div>
+                    <div id="selected-name" class="hud-value">None</div>
+                    <div class="hud-hint" id="spawn-hint">Select to Spawn</div>
+                </div>
+            </div>
+            
+            <div id="hover-temp-hud">
+                <div class="text-[10px] font-bold text-red-300 uppercase tracking-wide mb-1">Surface Temp</div>
+                <div id="hover-temp-val" class="text-xl font-bold text-white">70 °F</div>
+            </div>
+        </div>
+        
+        <div id="fps-counter">FPS: 60</div>
+
+        <div id="context-menu" class="hidden absolute bg-[#1a1a1a] border border-[#333] rounded shadow-lg text-sm text-gray-300 w-48 z-50">
+            <div class="context-item hover:bg-[#252525] px-4 py-2 cursor-pointer border-b border-[#333] text-red-400 font-semibold" id="ctx-delete">Delete</div>
+            <div class="context-item hover:bg-[#252525] px-4 py-2 cursor-pointer border-b border-[#333]" id="ctx-freeze">Freeze</div>
+            <div class="context-item hover:bg-[#252525] px-4 py-2 cursor-pointer border-b border-[#333]" id="ctx-weightless">Make Weightless</div>
+            <div class="context-item hover:bg-[#252525] px-4 py-2 cursor-pointer" id="ctx-collision">Disable Collision</div>
+        </div>
+
+        <!-- Fullscreen Settings Overlay -->
+        <div id="settings-menu" class="hidden absolute top-0 left-0 w-full h-full z-[200] flex">
+            <div class="w-64 border-r border-[#2a2a2a] p-6 bg-[#0a0a0a]">
+                <h2 class="text-xl font-bold mb-8 text-white">SETTINGS</h2>
+                <div id="tab-graphics" class="settings-category-btn active" onclick="switchSettingsTab('graphics')">Graphics</div>
+                <div id="tab-preferences" class="settings-category-btn mt-2" onclick="switchSettingsTab('preferences')">Preferences</div>
+            </div>
+            
+            <div class="flex-1 p-10 bg-[#0d0d0d] overflow-y-auto">
+                <div class="flex justify-between items-center mb-10 border-b border-[#2a2a2a] pb-4">
+                    <h3 id="settings-header-title" class="text-2xl font-bold text-white">Graphics</h3>
+                    <button onclick="toggleSettings()" class="text-gray-400 hover:text-white transition font-bold text-lg">✕</button>
+                </div>
+                
+                <div id="settings-content-graphics" class="settings-tab active">
+                    <div class="mb-8">
+                        <label class="block text-xs font-bold text-gray-500 uppercase mb-3 tracking-wide">Water Realism Factor</label>
+                        <input type="range" id="setting-water-realism" min="0" max="100" value="100" class="w-96 accent-blue-500">
+                        <div class="text-xs text-gray-500 mt-2 max-w-md">Adjusts dynamic fluid physics passes and damping. Lowering boosts FPS. 0 creates a flat, rigid block of water.</div>
+                    </div>
+                    
+                    <div class="mt-8 border-t border-[#2a2a2a] pt-8">
+                        <label class="block text-xs font-bold text-gray-500 uppercase mb-3 tracking-wide">Frame Cap (<span id="frame-cap-label">60 FPS</span>)</label>
+                        <input type="range" id="setting-frame-cap" min="30" max="270" step="30" value="60" class="w-96 accent-blue-500">
+                        <div class="text-xs text-gray-500 mt-2 max-w-md">Sets the maximum engine framerate. Pushing the slider past 240 unlocks it to Unlimited.</div>
+                    </div>
+
+                    <div class="mt-8 border-t border-[#2a2a2a] pt-8">
+                        <label class="flex items-center space-x-3 cursor-pointer">
+                            <input type="checkbox" id="setting-show-fps" class="form-checkbox h-5 w-5 text-blue-500 rounded bg-[#1a1a1a] border-[#333]">
+                            <span class="text-white font-bold text-sm">Show FPS Counter</span>
+                        </label>
+                    </div>
+                </div>
+
+                <div id="settings-content-preferences" class="settings-tab">
+                    <div class="mb-8">
+                        <label class="block text-xs font-bold text-gray-500 uppercase mb-3 tracking-wide">Slow Motion Factor (<span id="slow-mo-label">20</span>%)</label>
+                        <input type="range" id="setting-slow-mo" min="1" max="100" value="20" class="w-96 accent-blue-500">
+                        <div class="text-xs text-gray-500 mt-2 max-w-md">Sets the exact time percentage applied to the physics engine when Slow Motion (G) is activated.</div>
+                    </div>
+
+                    <div class="mt-8 border-t border-[#2a2a2a] pt-8">
+                        <label class="block text-xs font-bold text-gray-500 uppercase mb-3 tracking-wide">Thermal Map Opacity (<span id="heatmap-opacity-label">80</span>%)</label>
+                        <input type="range" id="setting-heatmap-opacity" min="0" max="100" value="80" class="w-96 accent-blue-500">
+                        <div class="text-xs text-gray-500 mt-2 max-w-md">Controls how intensely the temperature colors override the standard world graphics.</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="toast-container" id="toast-container"></div>
+    </div>
+
+    <script>
+        // ==========================================
+        // PLANCK.JS ENGINE INITIALIZATION
+        // ==========================================
+        const pl = planck;
+        const SCALE = 30; // 30 pixels = 1 meter
+        const mapWidth = 4000, mapHeight = 4000;
+        
+        const world = pl.World({ gravity: pl.Vec2(0, 50) });
+
+        // Global Bitmasks
+        window.CAT_DEFAULT = 0x0001;
+        window.CAT_MAP = 0x0002;
+        window.CAT_WATER = 0x0004; 
+        window.CAT_BUBBLE = 0x0008; 
+        window.CAT_GHOST = 0x0010;
+        window.CAT_FLUID = 0x0020; 
+        window.CAT_SPARK = 0x0040;
+
+        const canvas = document.getElementById('game-canvas');
+        const ctx = canvas.getContext('2d');
+
+        function resizeCanvas() { canvas.width = window.innerWidth; canvas.height = window.innerHeight; }
+        window.addEventListener('resize', resizeCanvas);
+        resizeCanvas();
+
+        let viewScale = 1;
+        let viewPan = { x: mapWidth/2 - window.innerWidth/2, y: mapHeight/2 - window.innerHeight/2 };
+        let isPanning = false, lastMousePos = { x: 0, y: 0 };
+        let isRightDrag = false;
+        let rightClickStart = { x: 0, y: 0 };
+
+        let currentTool = 'drag'; 
+        let selectedItemType = null;
+        let ragdollGroupIndex = -1;
+
+        // FLAWLESS NATIVE DRAG SYSTEM
+        let activeMouseJoint = null;
+        let hoveredBodyList = [];
+
+        // Key states for rotation
+        let keys = { a: false, d: false };
+
+        // Time & Performance Globals
+        let isPaused = true; 
+        let isSlowMo = false;
+        let slowMoFactor = 0.2; 
+        let frameCap = 60;
+        let lastLoopTime = performance.now();
+
+        // Settings / Thermo Globals
+        let waterRealismFactor = 100;
+        let showFps = false;
+        let heatMapEnabled = false;
+        let heatmapOpacity = 0.8;
+        
+        const TEMP_AIR = 70; 
+        const TEMP_BOIL = 210; 
+        let globalWaterTemp = 50; 
+        
+        // Track joints for Phase 3 Mechanical Snapping
+        const activeJoints = [];
+
+        function acceptDisclaimer() {
+            document.getElementById('disclaimer-overlay').style.display = 'none';
+            isPaused = false;
+            lastLoopTime = performance.now();
+        }
+
+        // -----------------------------
+        // WATER WAVE ARCHITECTURE
+        // -----------------------------
+        const WATER_RES = 30; 
+        const waterHeight = 800;
+        const waterTop = mapHeight - waterHeight; 
+        
+        const waterStartX = 1000;
+        const waterEndX = 3000;
+        const numWaterCols = Math.ceil((waterEndX - waterStartX) / WATER_RES) + 1;
+        
+        const waterSprings = Array.from({length: numWaterCols}, (_, i) => ({
+            x: waterStartX + i * WATER_RES, targetHeight: waterTop, height: waterTop, velocity: 0, renderX: waterStartX + i * WATER_RES 
+        }));
+        
+        const bubbles = [];
+        let globalWaveTime = 0;
+
+        function updateWaterWaves(timeScale) {
+            if (waterRealismFactor <= 0 || timeScale <= 0) return; 
+            globalWaveTime += 0.05 * timeScale;
+
+            const tension = 0.03 * (waterRealismFactor / 100) * timeScale;
+            const dampening = 0.15 * (waterRealismFactor / 100) * timeScale; 
+            const spread = 0.08; 
+            
+            for (let i = 0; i < numWaterCols; i++) {
+                let spring = waterSprings[i];
+                let displacement = spring.targetHeight - spring.height;
+                spring.velocity += tension * displacement - spring.velocity * dampening;
+                spring.height += spring.velocity;
+                spring.height = Math.max(waterTop - 250, Math.min(waterTop + 250, spring.height));
+            }
+            
+            let passes = Math.max(1, Math.floor(4 * (waterRealismFactor / 100)));
+            let leftDeltas = new Array(numWaterCols).fill(0);
+            let rightDeltas = new Array(numWaterCols).fill(0);
+            
+            for (let pass = 0; pass < passes; pass++) {
+                for (let i = 0; i < numWaterCols; i++) {
+                    if (i > 0) { leftDeltas[i] = spread * (waterSprings[i].height - waterSprings[i-1].height); waterSprings[i-1].velocity += leftDeltas[i]; }
+                    if (i < numWaterCols - 1) { rightDeltas[i] = spread * (waterSprings[i].height - waterSprings[i+1].height); waterSprings[i+1].velocity += rightDeltas[i]; }
+                }
+                for (let i = 0; i < numWaterCols; i++) {
+                    if (i > 0) waterSprings[i-1].height += leftDeltas[i];
+                    if (i < numWaterCols - 1) waterSprings[i+1].height += rightDeltas[i];
+                }
+            }
+
+            for (let i = bubbles.length - 1; i >= 0; i--) {
+                let b = bubbles[i];
+                b.y -= b.speed * timeScale;
+                if (b.y < getWaterHeightAt(b.x)) bubbles.splice(i, 1); 
+            }
+        }
+
+        function triggerSplash(xPx, yPx, impactForce, direction) {
+            if (waterRealismFactor <= 0 || xPx < waterStartX || xPx > waterEndX) return;
+            const colIdx = Math.floor((xPx - waterStartX) / WATER_RES);
+            
+            if (colIdx >= 0 && colIdx < numWaterCols) {
+                const forceMag = Math.max(-80, Math.min(80, impactForce * (waterRealismFactor/100)));
+                waterSprings[colIdx].velocity += (direction > 0 ? forceMag : -forceMag);
+            }
+
+            if (impactForce > 5) {
+                let numDrops = Math.min(30, Math.floor(impactForce));
+                for(let i=0; i<numDrops; i++) {
+                    let drop = world.createDynamicBody(pl.Vec2((xPx + (Math.random()*20-10))/SCALE, (yPx - 5)/SCALE));
+                    drop.createFixture(pl.Circle((Math.random()*1.5 + 1.0)/SCALE), { 
+                        density: 1.0, friction: 0.1, restitution: 0.2,
+                        filterCategoryBits: window.CAT_WATER, filterMaskBits: window.CAT_MAP | window.CAT_DEFAULT 
+                    });
+                    
+                    let spreadX = (Math.random() - 0.5) * Math.min(30, impactForce);
+                    let upwardY = -Math.random() * Math.min(25, impactForce * 0.5) - 5; 
+                    drop.setLinearVelocity(pl.Vec2(spreadX, upwardY));
+                    drop.setUserData({ isWaterParticle: true, temperature: globalWaterTemp });
+                }
+            }
+        }
+
+        function spawnPhysicalBubble(xPx, yPx) {
+            let bub = world.createDynamicBody(pl.Vec2(xPx/SCALE, yPx/SCALE));
+            bub.setGravityScale(-0.5); 
+            bub.createFixture(pl.Circle((Math.random()*1.5 + 0.5)/SCALE), {
+                density: 0.1, friction: 0, restitution: 0.1,
+                filterCategoryBits: window.CAT_BUBBLE, filterMaskBits: window.CAT_DEFAULT | window.CAT_MAP
+            });
+            bub.setLinearVelocity(pl.Vec2((Math.random() - 0.5) * 1, -2)); 
+            bub.setUserData({ isBubble: true });
+        }
+        
+        function emitVitalFluid(xPx, yPx, velocityVec, isHuman) {
+            let drop = world.createDynamicBody(pl.Vec2((xPx + (Math.random()*10-5))/SCALE, (yPx + (Math.random()*10-5))/SCALE));
+            drop.createFixture(pl.Circle(1.5/SCALE), { 
+                density: 1.2, friction: 0.8, restitution: 0.01, 
+                filterCategoryBits: window.CAT_FLUID, filterMaskBits: window.CAT_MAP | window.CAT_DEFAULT 
+            });
+            
+            let sprayVel = pl.Vec2(velocityVec.x + (Math.random()*10-5), velocityVec.y + (Math.random()*10-5));
+            drop.setLinearVelocity(sprayVel);
+            
+            // Short lifespan for fluid droplets to save performance
+            drop.setUserData({ isVitalFluid: true, isHuman: isHuman, life: 0, maxLife: 80 + Math.random()*40, inWaterFluid: false });
+        }
+
+        function spawnSparks(xPx, yPx, count) {
+            for(let i=0; i<count; i++) {
+                let spark = world.createDynamicBody(pl.Vec2(xPx/SCALE, yPx/SCALE));
+                spark.createFixture(pl.Circle(1.0/SCALE), {
+                    density: 0.5, friction: 0.3, restitution: 0.6,
+                    filterCategoryBits: window.CAT_SPARK, filterMaskBits: window.CAT_MAP | window.CAT_DEFAULT
+                });
+                spark.setLinearVelocity(pl.Vec2((Math.random()-0.5)*30, -Math.random()*20 - 5));
+                spark.setUserData({ isSpark: true, life: 0, maxLife: 20 + Math.random()*20, inWaterFluid: false });
+            }
+        }
+
+        function spawnSmoke(xPx, yPx, count) {
+            for(let i=0; i<count; i++) {
+                let smoke = world.createDynamicBody(pl.Vec2(xPx/SCALE, yPx/SCALE));
+                smoke.setGravityScale(-0.1); 
+                smoke.createFixture(pl.Circle((Math.random()*3 + 2)/SCALE), {
+                    density: 0.1, friction: 0.1, restitution: 0.0,
+                    filterCategoryBits: window.CAT_GHOST, filterMaskBits: 0 
+                });
+                smoke.setLinearVelocity(pl.Vec2((Math.random()-0.5)*15, -Math.random()*10 - 5));
+                smoke.setUserData({ isSmoke: true, life: 0, maxLife: 60 + Math.random()*40 });
+            }
+        }
+
+        function getWaterHeightAt(xPx) {
+            if (waterRealismFactor <= 0 || xPx < waterStartX || xPx > waterEndX) return waterTop;
+            const colIdx = Math.floor((xPx - waterStartX) / WATER_RES);
+            if (colIdx >= 0 && colIdx < numWaterCols) return waterSprings[colIdx].height;
+            return waterTop;
+        }
+
+        // -----------------------------
+        // MAP BOUNDARIES
+        // -----------------------------
+        const groundBody = world.createBody(); 
+
+        function createWall(xPx, yPx, wPx, hPx) {
+            const b = world.createBody({ type: 'static', position: pl.Vec2(xPx/SCALE, yPx/SCALE) });
+            b.createFixture(pl.Box(wPx/2/SCALE, hPx/2/SCALE), { friction: 0.5, filterCategoryBits: window.CAT_MAP });
+            b.setUserData({ isProtected: true, baseColor: '#333' });
+            return b;
+        }
+
+        createWall(mapWidth/2, mapHeight + 25, mapWidth, 50); 
+        createWall(-25, mapHeight/2, 50, mapHeight); 
+        createWall(mapWidth + 25, mapHeight/2, 50, mapHeight); 
+        createWall(waterStartX / 2, mapHeight - (waterHeight/2), waterStartX, waterHeight); 
+        createWall(waterEndX + (mapWidth - waterEndX) / 2, mapHeight - (waterHeight/2), mapWidth - waterEndX, waterHeight); 
+
+        // -----------------------------
+        // SPAWNING SYSTEM
+        // -----------------------------
+        function spawnBox(material, pos, flip) {
+            let color, stroke, dens, cond, temp = TEMP_AIR;
+            let width = 20, height = 20;
+
+            if (material === 'wood') { dens = 1.0; cond = 0.01; color = '#5c4033'; stroke = '#3b281f'; } 
+            else if (material === 'metal') { dens = 5.0; cond = 0.2; color = '#838a96'; stroke = '#4d525c'; } 
+            else if (material === 'club') { dens = 3.0; cond = 0.05; color = '#4a3018'; stroke = '#2d1a0b'; height = 50; width = 8; }
+            else if (material === 'heater') { dens = 5.0; cond = 1.0; color = '#3a2020'; stroke = '#ef4444'; temp = TEMP_AIR; } // Spawn off
+            else if (material === 'cooler') { dens = 2.0; cond = 1.0; color = '#1d2b3a'; stroke = '#3b82f6'; temp = TEMP_AIR; } // Spawn off
+
+            const body = world.createDynamicBody(pl.Vec2(pos.x/SCALE, pos.y/SCALE));
+            body.createFixture(pl.Box(width/SCALE, height/SCALE), { density: dens, friction: 0.5, filterCategoryBits: window.CAT_DEFAULT });
+            
+            // F activation flag tracking
+            let isActivable = (material === 'heater' || material === 'cooler');
+
+            body.setUserData({ 
+                material: material, temperature: temp, conductivity: cond, baseColor: color, 
+                outlineColor: stroke, isRagdoll: false, density: dens, lastY: pos.y,
+                isActivable: isActivable, activated: false
+            });
+        }
+
+        function spawnRagdoll(pos, flip, type) {
+            const f = flip ? -1 : 1; 
+            const group = ragdollGroupIndex--; 
+            
+            const isHuman = (type === 'human');
+            const rDens = isHuman ? 1.0 : 5.0; 
+            
+            const cShell = isHuman ? '#fcd5ce' : '#b0b5be'; 
+            const sShell = isHuman ? '#e8a598' : '#4b515a';
+
+            function makeLimb(xOffset, yOffset, hw, hh, layer, isTorso) {
+                const b = world.createDynamicBody(pl.Vec2((pos.x + xOffset)/SCALE, (pos.y + yOffset)/SCALE));
+                b.createFixture(pl.Box(hw/SCALE, hh/SCALE), { density: rDens, friction: 0.8, filterGroupIndex: group, filterCategoryBits: window.CAT_DEFAULT });
+                b.setUserData({ 
+                    material: 'entity', temperature: 90, baseColor: cShell, outlineColor: sShell, 
+                    layer: layer, isRagdoll: true, rootGroupId: group, density: rDens, lastY: pos.y,
+                    isHuman: isHuman, damageState: 0.0, vitalFluidVolume: isHuman ? 150 : 10,
+                    damageSeeds: [Math.random(), Math.random(), Math.random(), Math.random()],
+                    isTorsoUp: isTorso 
+                }); 
+                return b;
+            }
+
+            const torsoUp = makeLimb(0, -30, 10, 17.5, 1, true);
+            const torsoLow = makeLimb(0, 0, 10, 12.5, 1, false);
+            const head = world.createDynamicBody(pl.Vec2(pos.x/SCALE, (pos.y - 60)/SCALE));
+            head.createFixture(pl.Circle(12/SCALE), { density: rDens, friction: 0.8, filterGroupIndex: group, filterCategoryBits: window.CAT_DEFAULT });
+            head.setUserData({ 
+                material: 'entity', temperature: 90, baseColor: cShell, outlineColor: sShell, 
+                layer: 1, isRagdoll: true, rootGroupId: group, density: rDens, lastY: pos.y, 
+                isHuman: isHuman, damageState: 0.0, vitalFluidVolume: isHuman ? 100 : 10,
+                damageSeeds: [Math.random(), Math.random(), Math.random(), Math.random()] 
+            });
+
+            const armUpB = makeLimb(-1, -25, 5, 15, 0, false); const armLowB = makeLimb(-1, 5, 4.5, 15, 0, false);
+            const legUpB = makeLimb(-1, 30, 6.5, 17.5, 0, false); const legLowB = makeLimb(-1, 65, 5.5, 17.5, 0, false);
+            const footB = makeLimb(5*f-1, 87.5, 10, 5, 0, false);
+
+            const armUpF = makeLimb(1, -25, 5, 15, 2, false); const armLowF = makeLimb(1, 5, 4.5, 15, 2, false);
+            const legUpF = makeLimb(1, 30, 6.5, 17.5, 2, false); const legLowF = makeLimb(1, 65, 5.5, 17.5, 2, false);
+            const footF = makeLimb(5*f+1, 87.5, 10, 5, 2, false);
+
+            function bind(bA, bB, anchorX, anchorY, minAngle, maxAngle) {
+                let j = world.createJoint(pl.RevoluteJoint({ enableLimit: true, lowerAngle: minAngle, upperAngle: maxAngle }, bA, bB, pl.Vec2((pos.x + anchorX)/SCALE, (pos.y + anchorY)/SCALE)));
+                activeJoints.push({ joint: j, breakForce: isHuman ? 40000 : 70000 }); 
+            }
+
+            bind(head, torsoUp, 0, -47.5, -0.3, 0.3); bind(torsoUp, torsoLow, 0, -12.5, -0.2, 0.2);
+            bind(torsoUp, armUpB, 0, -40, -2.5, 2.5); bind(armUpB, armLowB, 0, -10, f > 0 ? -2.5 : 0.1, f > 0 ? -0.1 : 2.5); 
+            bind(torsoUp, armUpF, 0, -40, -2.5, 2.5); bind(armUpF, armLowF, 0, -10, f > 0 ? -2.5 : 0.1, f > 0 ? -0.1 : 2.5);
+            bind(torsoLow, legUpB, 0, 12.5, -1.5, 1.5); bind(legUpB, legLowB, 0, 47.5, f > 0 ? 0.1 : -2.5, f > 0 ? 2.5 : -0.1); bind(legLowB, footB, 0, 82.5, -0.4, 0.4);
+            bind(torsoLow, legUpF, 0, 12.5, -1.5, 1.5); bind(legUpF, legLowF, 0, 47.5, f > 0 ? 0.1 : -2.5, f > 0 ? 2.5 : -0.1); bind(legLowF, footF, 0, 82.5, -0.4, 0.4);
+        }
+
+        // -----------------------------
+        // PHYSICS LOOP
+        // -----------------------------
+        world.on('pre-solve', function(contact) {
+            const fixA = contact.getFixtureA(), fixB = contact.getFixtureB();
+            const bA = fixA.getBody(), bB = fixB.getBody();
+            const udA = bA.getUserData() || {}, udB = bB.getUserData() || {};
+
+            if (udA.ghosted && fixB.getFilterCategoryBits() !== window.CAT_MAP) contact.setEnabled(false);
+            if (udB.ghosted && fixA.getFilterCategoryBits() !== window.CAT_MAP) contact.setEnabled(false);
+
+            if (udA.temperature !== undefined && udB.temperature !== undefined) {
+                const diff = udA.temperature - udB.temperature;
+                const rate = Math.min(udA.conductivity || 0.05, udB.conductivity || 0.05) * 0.05;
+                // Only modify temperature if not an active heater/cooler
+                if (!(udA.material === 'heater' && udA.activated) && !(udA.material === 'cooler' && udA.activated)) udA.temperature -= diff * rate;
+                if (!(udB.material === 'heater' && udB.activated) && !(udB.material === 'cooler' && udB.activated)) udB.temperature += diff * rate;
+            }
+            
+            // Structural Blunt Force Accumulation 
+            if (udA.isRagdoll && udB.isProtected) {
+                const vA = bA.getLinearVelocity();
+                const impactSq = vA.lengthSquared();
+                const threshold = udA.isHuman ? 2500 : 4000;
+                if(impactSq > threshold && udA.damageState < 1.0) {
+                    udA.damageState = Math.min(1.0, udA.damageState + (impactSq - threshold) / 50000);
+                }
+            } else if (udB.isRagdoll && udA.isProtected) {
+                const vB = bB.getLinearVelocity();
+                const impactSq = vB.lengthSquared();
+                const threshold = udB.isHuman ? 2500 : 4000;
+                if(impactSq > threshold && udB.damageState < 1.0) {
+                    udB.damageState = Math.min(1.0, udB.damageState + (impactSq - threshold) / 50000);
+                }
+            }
+        });
+
+        let frameCount = 0;
+
+        function gameLoop(currentTime) {
+            if (isPaused) {
+                renderCanvas();
+                requestAnimationFrame(gameLoop);
+                return;
+            }
+
+            if (frameCap < 240) {
+                const elapsed = currentTime - lastLoopTime;
+                const targetMs = 1000 / frameCap;
+                if (elapsed < targetMs - 2) { 
+                    requestAnimationFrame(gameLoop);
+                    return;
+                }
+                lastLoopTime = currentTime - (elapsed % targetMs);
+            } else {
+                lastLoopTime = currentTime;
+            }
+
+            frameCount++;
+            const timeScale = isSlowMo ? slowMoFactor : 1.0;
+            let bodiesToDestroy = [];
+            let jointsToDestroy = [];
+
+            if (timeScale > 0) {
+                world.step((1 / 60) * timeScale, 12, 8);
+                updateWaterWaves(timeScale);
+
+                // A/D Keyboard Rotation applied to dragged or hovered item
+                let activeTarget = activeMouseJoint ? activeMouseJoint.getBodyB() : (hoveredBodyList.length > 0 ? hoveredBodyList[0] : null);
+                if (activeTarget && activeTarget.getType() !== 'static') {
+                    if (keys.a) activeTarget.setAngularVelocity(activeTarget.getAngularVelocity() - 0.5 * timeScale);
+                    if (keys.d) activeTarget.setAngularVelocity(activeTarget.getAngularVelocity() + 0.5 * timeScale);
+                }
+
+                // PHASE 3.5: JOINT SNAPPING
+                for (let i = activeJoints.length - 1; i >= 0; i--) {
+                    let jData = activeJoints[i];
+                    if (!jData.joint.getBodyA().getWorld()) {
+                        activeJoints.splice(i, 1); continue;
+                    }
+                    
+                    let force = jData.joint.getReactionForce(1 / ((1/60)*timeScale));
+                    let magnitudeSq = force.x*force.x + force.y*force.y;
+                    
+                    if (magnitudeSq > jData.breakForce * jData.breakForce) {
+                        jointsToDestroy.push(jData.joint);
+                        
+                        let bA = jData.joint.getBodyA();
+                        let bB = jData.joint.getBodyB();
+                        let udA = bA.getUserData() || {};
+                        let udB = bB.getUserData() || {};
+                        
+                        if (udA.isRagdoll) udA.damageState = Math.min(1.0, udA.damageState + 0.4);
+                        if (udB.isRagdoll) udB.damageState = Math.min(1.0, udB.damageState + 0.4);
+                        
+                        if (udA.isRagdoll && !udA.isHuman) {
+                            const pA = jData.joint.getAnchorA();
+                            spawnSparks(pA.x * SCALE, pA.y * SCALE, 15);
+                            spawnSmoke(pA.x * SCALE, pA.y * SCALE, 10);
+                        }
+
+                        activeJoints.splice(i, 1);
+                    }
+                }
+
+                for (let body = world.getBodyList(); body; body = body.getNext()) {
+                    if (body.getType() === 'static') continue;
+                    
+                    const pos = body.getPosition();
+                    const ud = body.getUserData() || {};
+                    let inWater = false;
+
+                    const xPx = pos.x * SCALE;
+                    const yPx = pos.y * SCALE;
+                    
+                    let isOverPool = (xPx >= waterStartX && xPx <= waterEndX);
+                    const localWaterLvl = isOverPool ? getWaterHeightAt(xPx) : Infinity;
+
+                    if (ud.isBubble) {
+                        if (yPx < localWaterLvl - 5) bodiesToDestroy.push(body);
+                        continue;
+                    }
+                    
+                    if (ud.isSmoke) {
+                        ud.life += timeScale;
+                        if (ud.life > ud.maxLife) bodiesToDestroy.push(body);
+                        continue;
+                    }
+
+                    if (ud.isSpark) {
+                        let inWaterSpark = (yPx > localWaterLvl);
+                        ud.inWaterFluid = inWaterSpark;
+                        
+                        if (inWaterSpark) {
+                            ud.life += timeScale * 0.2; 
+                            body.setGravityScale(0.2); 
+                            const v = body.getLinearVelocity();
+                            body.setLinearVelocity(pl.Vec2(v.x * 0.9, v.y * 0.9));
+                        } else {
+                            ud.life += timeScale * 1.5; 
+                        }
+                        
+                        if (ud.life > ud.maxLife) bodiesToDestroy.push(body);
+                        continue;
+                    }
+
+                    if (ud.isWaterParticle) {
+                        if (yPx > localWaterLvl && body.getLinearVelocity().y > 0) {
+                            triggerSplash(xPx, yPx, 1, 1);
+                            bodiesToDestroy.push(body);
+                        }
+                        continue;
+                    }
+                    
+                    if (ud.isVitalFluid) {
+                        ud.life += timeScale;
+                        if (ud.life > ud.maxLife) bodiesToDestroy.push(body);
+                        
+                        if (isOverPool && yPx > localWaterLvl) {
+                            ud.inWaterFluid = true;
+                            body.setGravityScale(-0.02); 
+                            const v = body.getLinearVelocity();
+                            body.setLinearVelocity(pl.Vec2(v.x * 0.9, v.y * 0.9)); 
+                        }
+                        continue;
+                    }
+
+                    // Vital Fluid Emission
+                    if (ud.isRagdoll && ud.damageState > 0.1 && ud.vitalFluidVolume > 0) {
+                        let bleedChance = ud.damageState * (ud.isHuman ? 0.05 : 0.01) * timeScale;
+                        bleedChance += body.getLinearVelocity().lengthSquared() * 0.0005 * timeScale;
+                        
+                        if (Math.random() < bleedChance) {
+                            ud.vitalFluidVolume--;
+                            emitVitalFluid(xPx, yPx, body.getLinearVelocity(), ud.isHuman);
+                        }
+                    }
+
+                    // Active Entity Balancing (Life)
+                    if (ud.isTorsoUp && ud.damageState < 0.8) {
+                        let angle = body.getAngle();
+                        while (angle > Math.PI) angle -= 2 * Math.PI;
+                        while (angle < -Math.PI) angle += 2 * Math.PI;
+                        body.applyTorque(-angle * body.getMass() * 150 * timeScale); 
+                    }
+
+                    // Activated Temperature Components
+                    if (ud.material === 'heater' && ud.activated) ud.temperature += (500 - ud.temperature) * 0.05 * timeScale;
+                    if (ud.material === 'cooler' && ud.activated) ud.temperature += (0 - ud.temperature) * 0.05 * timeScale;
+                    if (ud.material === 'entity') ud.temperature += (90 - ud.temperature) * 0.005 * timeScale;
+
+                    if (ud.weightless) body.applyForceToCenter(pl.Vec2(0, -world.getGravity().y * body.getMass() * timeScale));
+
+                    if (isOverPool) {
+                        if (ud.lastY !== undefined) {
+                            const lastYPx = ud.lastY * SCALE;
+                            if ((lastYPx < localWaterLvl && yPx >= localWaterLvl) || (lastYPx > localWaterLvl && yPx <= localWaterLvl)) {
+                                const vY = body.getLinearVelocity().y;
+                                if (Math.abs(vY) > 2) triggerSplash(xPx, yPx, Math.abs(vY) * body.getMass() * 0.4, vY);
+                            }
+                        }
+                        ud.lastY = pos.y;
+
+                        if (yPx > localWaterLvl - 20) { 
+                            inWater = true;
+                            const bodyHeight = 40; 
+                            const depthSubmerged = yPx - (localWaterLvl - 20);
+                            const submergedFraction = Math.max(0, Math.min(1, depthSubmerged / bodyHeight));
+                            
+                            const area = body.getMass() / (ud.density || 1.0);
+                            const fluidDensity = 2.0; 
+                            body.applyForceToCenter(pl.Vec2(0, -(area * submergedFraction * fluidDensity * Math.abs(world.getGravity().y) * timeScale)));
+                            
+                            const v = body.getLinearVelocity();
+                            body.setLinearVelocity(pl.Vec2(v.x * (1 - 0.05 * timeScale), v.y * (1 - 0.05 * timeScale)));
+                            body.setAngularVelocity(body.getAngularVelocity() * (1 - 0.05 * timeScale));
+
+                            // Android Electrocution / Water damage
+                            if (!ud.isHuman && ud.isRagdoll) {
+                                if (Math.random() < 0.05 * timeScale) spawnSparks(xPx, yPx, 1);
+                                ud.damageState = Math.min(1.0, ud.damageState + 0.001 * timeScale); // Slowly degrades in water
+                            }
+
+                            const diff = ud.temperature - globalWaterTemp;
+                            const rate = (ud.conductivity || 0.05) * 0.05 * timeScale;
+                            ud.temperature -= diff * rate;
+                            globalWaterTemp += (diff * rate * body.getMass()) / 50000; 
+
+                            if (ud.temperature >= TEMP_BOIL) {
+                                const overHeat = ud.temperature - TEMP_BOIL;
+                                const numBubbles = Math.min(15, Math.floor(overHeat * 0.1 * timeScale));
+                                for(let i=0; i<numBubbles; i++) spawnPhysicalBubble(xPx + (Math.random()*40 - 20), yPx + 10);
+                                ud.temperature -= overHeat * 0.05 * timeScale;
+
+                                // Powerful upward lift from heater bubbles escaping underneath
+                                if (numBubbles > 0) {
+                                    body.applyForceToCenter(pl.Vec2(0, -body.getMass() * numBubbles * 50 * timeScale));
+                                }
+                            }
+                        }
+                    }
+
+                    if (!inWater && ud.temperature !== undefined) {
+                        // Slowly return to air temp if not an active heater/cooler
+                        if (!(ud.material === 'heater' && ud.activated) && !(ud.material === 'cooler' && ud.activated)) {
+                            ud.temperature += (TEMP_AIR - ud.temperature) * 0.0005 * timeScale;
+                        }
+                    }
+
+                    if (ud.temperature !== undefined && ud.material === 'wood' && ud.temperature > 300) { 
+                        ud.baseColor = '#241710'; ud.outlineColor = '#120b08'; 
+                    }
+                }
+                
+                jointsToDestroy.forEach(j => world.destroyJoint(j));
+                bodiesToDestroy.forEach(b => world.destroyBody(b));
+            }
+
+            renderCanvas();
+            requestAnimationFrame(gameLoop);
+        }
+
+        setInterval(() => {
+            if (showFps && !isPaused) document.getElementById('fps-counter').innerText = 'FPS: ' + frameCount;
+            frameCount = 0;
+        }, 1000);
+
+        // -----------------------------
+        // RENDERER
+        // -----------------------------
+        function getTempColor(t) {
+            let r=0, g=0, b=0;
+            if (t <= 0) { r=0; g=0; b=255; }
+            else if (t < 70) { let rto = t/70; b = Math.floor(255 * (1 - rto)); } 
+            else if (t <= 120) { let rto = (t - 70) / 50; r = Math.floor(255 * rto); } 
+            else if (t <= 160) { let rto = (t - 120) / 40; r = 255; g = Math.floor(165 * rto); } 
+            else if (t <= 200) { let rto = (t - 160) / 40; r = 255; g = 165 + Math.floor(90 * rto); } 
+            else if (t <= 210) { let rto = (t - 200) / 10; r = 255; g = 255; b = Math.floor(255 * rto); } 
+            else { r=255; g=255; b=255; }
+            return `rgb(${r},${g},${b})`;
+        }
+
+        function drawShapeHelper(fix) {
+            const shape = fix.getShape();
+            if (shape.getType() === 'polygon') {
+                ctx.beginPath();
+                const verts = shape.m_vertices;
+                for (let i = 0; i < verts.length; i++) {
+                    let vx = verts[i].x * SCALE;
+                    let vy = verts[i].y * SCALE;
+                    if (i === 0) ctx.moveTo(vx, vy);
+                    else ctx.lineTo(vx, vy);
+                }
+                ctx.closePath(); 
+            } else if (shape.getType() === 'circle') {
+                ctx.beginPath(); ctx.arc(0, 0, shape.m_radius * SCALE, 0, Math.PI * 2); 
+            }
+        }
+
+        function drawCapsuleHelper(fix, scaleW, scaleH) {
+            const shape = fix.getShape();
+            if (shape.getType() === 'polygon') {
+                const verts = shape.m_vertices;
+                let hw = Math.abs(verts[0].x) * SCALE * scaleW;
+                let hh = Math.abs(verts[0].y) * SCALE * scaleH;
+                
+                ctx.beginPath();
+                if (hh > hw) {
+                    ctx.arc(0, -hh + hw, hw, Math.PI, 0); 
+                    ctx.lineTo(hw, hh - hw);
+                    ctx.arc(0, hh - hw, hw, 0, Math.PI);  
+                    ctx.lineTo(-hw, -hh + hw);
+                } else {
+                    ctx.arc(-hw + hh, 0, hh, Math.PI/2, Math.PI*1.5); 
+                    ctx.lineTo(hw - hh, -hh);
+                    ctx.arc(hw - hh, 0, hh, -Math.PI/2, Math.PI/2);   
+                    ctx.lineTo(-hw + hh, hh);
+                }
+                ctx.closePath(); 
+            } else if (shape.getType() === 'circle') {
+                ctx.beginPath(); ctx.arc(0, 0, shape.m_radius * SCALE * scaleW, 0, Math.PI * 2); 
+            }
+        }
+
+        function renderCanvas() {
+            ctx.setTransform(1, 0, 0, 1, 0, 0); 
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            
+            const bgSize = 50 * viewScale;
+            document.getElementById('canvas-container').style.backgroundSize = `${bgSize}px ${bgSize}px`;
+            document.getElementById('canvas-container').style.backgroundPosition = `${-viewPan.x}px ${-viewPan.y}px`;
+
+            ctx.translate(-viewPan.x, -viewPan.y);
+            ctx.scale(viewScale, viewScale);
+
+            if (heatMapEnabled && heatmapOpacity > 0) {
+                ctx.globalAlpha = heatmapOpacity;
+                ctx.fillStyle = getTempColor(TEMP_AIR);
+                ctx.fillRect((viewPan.x)/viewScale, (viewPan.y)/viewScale, canvas.width/viewScale, canvas.height/viewScale);
+                
+                ctx.fillStyle = getTempColor(globalWaterTemp);
+                ctx.fillRect(waterStartX, waterTop - 50, waterEndX - waterStartX, waterHeight + 50);
+
+                ctx.globalAlpha = 1.0;
+            }
+
+            if (waterRealismFactor > 0) {
+                for (let i = 0; i < numWaterCols; i++) {
+                    let dx = Math.sin(globalWaveTime * 2 + i * 0.5) * 5;
+                    if (i > 0 && i < numWaterCols - 1) { dx -= (waterSprings[i+1].height - waterSprings[i-1].height) * 0.3; }
+                    waterSprings[i].renderX = waterSprings[i].x + dx;
+                }
+
+                let baseGrad = ctx.createLinearGradient(0, waterTop, 0, mapHeight);
+                baseGrad.addColorStop(0, 'rgba(20, 60, 110, 0.6)'); baseGrad.addColorStop(1, 'rgba(5, 20, 40, 0.9)');
+                if (heatMapEnabled) ctx.globalAlpha = 1 - heatmapOpacity;
+                
+                ctx.fillStyle = baseGrad;
+                ctx.strokeStyle = 'rgba(70, 140, 255, 0.8)'; 
+                ctx.lineWidth = 2 / viewScale;
+                
+                ctx.beginPath(); ctx.moveTo(waterStartX, mapHeight); ctx.lineTo(waterStartX, waterSprings[0].height);
+                for(let i=0; i < numWaterCols - 1; i++) {
+                    let xc = (waterSprings[i].renderX + waterSprings[i+1].renderX) / 2;
+                    let yc = (waterSprings[i].height + waterSprings[i+1].height) / 2;
+                    ctx.quadraticCurveTo(waterSprings[i].renderX, waterSprings[i].height, xc, yc);
+                }
+                ctx.lineTo(waterSprings[numWaterCols-1].renderX, waterSprings[numWaterCols-1].height);
+                ctx.lineTo(waterEndX, mapHeight); ctx.fill();
+                
+                ctx.globalAlpha = 1.0;
+                ctx.beginPath(); ctx.moveTo(waterStartX, waterSprings[0].height);
+                for(let i=0; i < numWaterCols - 1; i++) {
+                    let xc = (waterSprings[i].renderX + waterSprings[i+1].renderX) / 2;
+                    let yc = (waterSprings[i].height + waterSprings[i+1].height) / 2;
+                    ctx.quadraticCurveTo(waterSprings[i].renderX, waterSprings[i].height, xc, yc);
+                }
+                ctx.lineTo(waterSprings[numWaterCols-1].renderX, waterSprings[numWaterCols-1].height); ctx.stroke();
+            } else {
+                if (heatMapEnabled) ctx.globalAlpha = 1 - heatmapOpacity;
+                ctx.fillStyle = 'rgba(20, 60, 110, 0.4)'; ctx.fillRect(waterStartX, waterTop, waterEndX - waterStartX, waterHeight);
+                ctx.globalAlpha = 1.0;
+                ctx.strokeStyle = 'rgba(59, 130, 246, 0.6)'; ctx.lineWidth = 2 / viewScale;
+                ctx.beginPath(); ctx.moveTo(waterStartX, waterTop); ctx.lineTo(waterEndX, waterTop); ctx.stroke();
+            }
+
+            const renderQueue = [ [], [], [], [] ]; 
+            for (let body = world.getBodyList(); body; body = body.getNext()) {
+                const ud = body.getUserData() || {};
+                renderQueue[ud.isProtected ? 3 : (ud.layer !== undefined ? ud.layer : 1)].push(body);
+            }
+
+            renderQueue.forEach(layerBodies => {
+                layerBodies.forEach(body => {
+                    const pos = body.getPosition(), angle = body.getAngle(), ud = body.getUserData() || {};
+                    
+                    ctx.save();
+                    ctx.translate(pos.x * SCALE, pos.y * SCALE);
+                    ctx.rotate(angle);
+
+                    if (ud.isBubble) {
+                        ctx.fillStyle = 'rgba(255, 255, 255, 0.3)'; ctx.strokeStyle = 'rgba(255, 255, 255, 0.6)'; ctx.lineWidth = 1 / viewScale;
+                        for (let fix = body.getFixtureList(); fix; fix = fix.getNext()) { drawShapeHelper(fix); ctx.fill(); ctx.stroke(); }
+                    } else if (ud.isWaterParticle) {
+                        ctx.fillStyle = 'rgba(70, 140, 255, 0.8)';
+                        for (let fix = body.getFixtureList(); fix; fix = fix.getNext()) { drawShapeHelper(fix); ctx.fill(); }
+                    } else if (ud.isSmoke) {
+                        let prog = ud.life / ud.maxLife;
+                        ctx.fillStyle = `rgba(100, 100, 100, ${Math.max(0, (1 - prog) * 0.5)})`;
+                        for (let fix = body.getFixtureList(); fix; fix = fix.getNext()) { 
+                            ctx.beginPath(); ctx.arc(0, 0, fix.getShape().m_radius * SCALE * (1 + prog*2), 0, Math.PI * 2); ctx.fill(); 
+                        }
+                    } else if (ud.isSpark) {
+                        let prog = ud.life / ud.maxLife;
+                        let flicker = ud.inWaterFluid ? (Math.random() > 0.5) : true;
+                        
+                        if (flicker) {
+                            ctx.fillStyle = (Math.random() > 0.5) ? '#fbbf24' : '#fef08a'; // Yellow
+                            ctx.shadowBlur = ud.inWaterFluid ? 15 : 5;
+                            ctx.shadowColor = '#f59e0b';
+                            for (let fix = body.getFixtureList(); fix; fix = fix.getNext()) {
+                                ctx.beginPath(); ctx.arc(0, 0, fix.getShape().m_radius * SCALE * 1.5, 0, Math.PI * 2); ctx.fill();
+                            }
+                            ctx.shadowBlur = 0; 
+                        }
+                    } else if (ud.isVitalFluid) {
+                        let prog = ud.life / ud.maxLife;
+                        if (ud.inWaterFluid) {
+                            for (let fix = body.getFixtureList(); fix; fix = fix.getNext()) {
+                                let r = fix.getShape().m_radius * SCALE * (1 + prog * 25);
+                                let a = Math.max(0, 1 - prog) * 0.6;
+                                let grad = ctx.createRadialGradient(0,0,0, 0,0,r);
+                                let col = ud.isHuman ? `153, 27, 27` : `31, 41, 55`;
+                                grad.addColorStop(0, `rgba(${col}, ${a})`);
+                                grad.addColorStop(1, `rgba(${col}, 0)`);
+                                ctx.fillStyle = grad;
+                                ctx.beginPath(); ctx.arc(0,0,r, 0, Math.PI*2); ctx.fill();
+                            }
+                        } else {
+                            ctx.fillStyle = ud.isHuman ? 'rgba(153, 27, 27, 0.9)' : 'rgba(31, 41, 55, 0.9)';
+                            for (let fix = body.getFixtureList(); fix; fix = fix.getNext()) { drawShapeHelper(fix); ctx.fill(); }
+                        }
+                    } else if (ud.isRagdoll) {
+                        let fix = body.getFixtureList();
+                        
+                        // 1. Core Structure
+                        ctx.fillStyle = ud.isHuman ? '#e2e8f0' : '#374151';
+                        drawCapsuleHelper(fix, 0.4, 1.15); 
+                        ctx.fill();
+
+                        // 2. Fibers (Wiring/Musculature)
+                        let fiberAlpha = Math.max(0, 1 - Math.max(0, ud.damageState - 0.5) * 2);
+                        if (heatMapEnabled) fiberAlpha = 0; 
+                        
+                        if (fiberAlpha > 0) {
+                            ctx.globalAlpha = fiberAlpha;
+                            ctx.fillStyle = ud.isHuman ? '#991b1b' : '#1f2937';
+                            drawCapsuleHelper(fix, 0.85, 0.95);
+                            ctx.fill();
+                        }
+                        ctx.globalAlpha = 1.0;
+
+                        // 3. Shell (Skin/Casing)
+                        let shellAlpha = Math.max(0, 1 - (ud.damageState * 1.5));
+                        let fill = ud.baseColor, stroke = ud.outlineColor;
+                        
+                        if (heatMapEnabled && ud.temperature !== undefined) {
+                            ctx.globalAlpha = heatmapOpacity; fill = stroke = getTempColor(ud.temperature);
+                        } else { ctx.globalAlpha = shellAlpha; }
+                        
+                        if (ctx.globalAlpha > 0) {
+                            ctx.fillStyle = fill; ctx.strokeStyle = stroke; ctx.lineWidth = 2 / viewScale;
+                            drawCapsuleHelper(fix, 1.0, 1.0); ctx.fill(); ctx.stroke();
+                        }
+                        ctx.globalAlpha = 1.0;
+
+                        // 4. Clean jagged gashes to expose fibers without shell transparency
+                        if (ud.damageState > 0.1 && !heatMapEnabled) {
+                            let hw = Math.abs(fix.getShape().m_vertices ? fix.getShape().m_vertices[0].x * SCALE : fix.getShape().m_radius * SCALE);
+                            let hh = Math.abs(fix.getShape().m_vertices ? fix.getShape().m_vertices[0].y * SCALE : fix.getShape().m_radius * SCALE);
+                            
+                            ctx.fillStyle = ud.isHuman ? '#991b1b' : '#1f2937'; // Fiber color
+                            let gashCount = Math.floor(ud.damageState * 5);
+                            
+                            for(let i=0; i<gashCount; i++) {
+                                let seed = ud.damageSeeds[i % 4];
+                                let gy = -hh + (hh * 2 * seed); 
+                                let gx = (i%2===0) ? -hw : hw; 
+                                ctx.beginPath();
+                                ctx.arc(gx, gy, hw * 0.8, 0, Math.PI*2);
+                                ctx.fill();
+                            }
+
+                            if (ud.damageState > 0.6) {
+                                ctx.fillStyle = ud.isHuman ? '#e2e8f0' : '#374151'; // Core color
+                                let coreCount = Math.floor((ud.damageState - 0.5) * 4);
+                                for(let i=0; i<coreCount; i++) {
+                                    let seed = ud.damageSeeds[(i+2) % 4];
+                                    let gy = -hh + (hh * 2 * seed);
+                                    let gx = (i%2!==0) ? -hw : hw;
+                                    ctx.beginPath();
+                                    ctx.arc(gx, gy, hw * 0.5, 0, Math.PI*2);
+                                    ctx.fill();
+                                }
+                            }
+                        }
+
+                    } else {
+                        // Regular blocks - now perfectly rigid sharp rectangles again!
+                        let fill = ud.baseColor || '#fff', stroke = ud.outlineColor || '#333';
+                        if (ud.ghosted) ctx.globalAlpha = 0.5;
+
+                        if (heatMapEnabled && ud.temperature !== undefined) {
+                            ctx.globalAlpha = heatmapOpacity; fill = stroke = getTempColor(ud.temperature);
+                        } else { ctx.lineWidth = 2 / viewScale; }
+
+                        ctx.fillStyle = fill; ctx.strokeStyle = stroke;
+                        
+                        for (let fix = body.getFixtureList(); fix; fix = fix.getNext()) {
+                            drawShapeHelper(fix); ctx.fill(); ctx.stroke();
+                            
+                            // Visual indicator if active
+                            if (ud.isActivable && ud.activated) {
+                                ctx.fillStyle = ud.material === 'heater' ? 'rgba(239, 68, 68, 0.4)' : 'rgba(59, 130, 246, 0.4)';
+                                drawShapeHelper(fix); ctx.fill();
+                            }
+                        }
+                        ctx.globalAlpha = 1.0;
+                    }
+                    ctx.restore();
+                });
+            });
+
+            if (activeMouseJoint) {
+                ctx.beginPath();
+                const target = activeMouseJoint.getTarget();
+                const bPos = activeMouseJoint.getBodyB().getPosition();
+                ctx.moveTo(target.x * SCALE, target.y * SCALE); ctx.lineTo(bPos.x * SCALE, bPos.y * SCALE);
+                ctx.strokeStyle = 'rgba(255, 255, 255, 0.6)'; ctx.lineWidth = 3 / viewScale; ctx.stroke();
+            }
+
+            for (let j = world.getJointList(); j; j = j.getNext()) {
+                if (j.getType() === 'revolute-joint' && !j.m_enableLimit) { 
+                    const anchor = j.getAnchorA();
+                    ctx.beginPath(); ctx.arc(anchor.x * SCALE, anchor.y * SCALE, 4 / viewScale, 0, Math.PI * 2);
+                    ctx.fillStyle = '#fff'; ctx.fill(); ctx.strokeStyle = '#333'; ctx.lineWidth = 2 / viewScale; ctx.stroke();
+                }
+            }
+        }
+
+        // -----------------------------
+        // INPUT & TOOLS (FLAWLESS NATIVE MOUSEJOINT)
+        // -----------------------------
+        function screenToWorld(sx, sy) { return pl.Vec2((sx + viewPan.x) / viewScale / SCALE, (sy + viewPan.y) / viewScale / SCALE); }
+
+        function getBodyAt(worldPos) {
+            const searchRadius = 2.0; 
+            const aabb = pl.AABB(pl.Vec2(worldPos.x - searchRadius, worldPos.y - searchRadius), pl.Vec2(worldPos.x + searchRadius, worldPos.y + searchRadius));
+            let found = [];
+
+            world.queryAABB(aabb, function(fixture) {
+                const b = fixture.getBody();
+                const ud = b.getUserData();
+                if (!ud || (!ud.isProtected && !ud.isWaterParticle && !ud.isBubble && !ud.isVitalFluid && !ud.isSpark && !ud.isSmoke)) {
+                    if (fixture.testPoint(worldPos)) { found.push(b); }
+                    else {
+                        const dist = pl.Vec2.distance(b.getPosition(), worldPos);
+                        if (dist < searchRadius) found.push(b);
+                    }
+                }
+                return true;
+            });
+            return found;
+        }
+
+        canvas.addEventListener('wheel', e => {
+            e.preventDefault();
+            const wX = (e.clientX + viewPan.x) / viewScale; const wY = (e.clientY + viewPan.y) / viewScale;
+            viewScale = Math.max(0.2, Math.min(5, viewScale * (e.deltaY > 0 ? 0.9 : 1.1)));
+            viewPan.x = wX * viewScale - e.clientX; viewPan.y = wY * viewScale - e.clientY;
+            updateHoverTempUI(e.clientX, e.clientY);
+        }, { passive: false });
+
+        canvas.addEventListener('mousedown', e => {
+            document.getElementById('context-menu').classList.add('hidden');
+            
+            if (e.button === 1 || e.button === 2) { 
+                e.preventDefault(); isPanning = true; isRightDrag = false;
+                rightClickStart = { x: e.clientX, y: e.clientY }; lastMousePos = { x: e.clientX, y: e.clientY };
+            } else if (e.button === 0) {
+                const wPos = screenToWorld(e.clientX, e.clientY);
+                const bodies = getBodyAt(wPos);
+
+                if (bodies.length > 0 && currentTool === 'drag') {
+                    let b = bodies[0];
+                    if (b.getType() === 'static') b.setType('dynamic');
+                    b.setAwake(true);
+                    
+                    activeMouseJoint = world.createJoint(pl.MouseJoint({ 
+                        bodyA: groundBody, 
+                        bodyB: b, 
+                        target: wPos,
+                        maxForce: 50000.0 * b.getMass(), 
+                        dampingRatio: 0.9, 
+                        frequencyHz: 20.0 
+                    }));
+                    
+                } else if (bodies.length > 0 && currentTool === 'hinge') {
+                    if (bodies.length >= 2 && bodies[0] !== bodies[1]) {
+                        world.createJoint(pl.RevoluteJoint({ enableLimit: false }, bodies[0], bodies[1], wPos));
+                        showToast("Pinned bodies together.");
+                    } else {
+                        world.createJoint(pl.RevoluteJoint({ enableLimit: false }, groundBody, bodies[0], wPos));
+                        showToast("Pinned to background.");
+                    }
+                }
+            }
+        });
+
+        window.addEventListener('mousemove', e => {
+            if (isPanning) {
+                viewPan.x -= (e.clientX - lastMousePos.x); viewPan.y -= (e.clientY - lastMousePos.y);
+                if (Math.abs(e.clientX - rightClickStart.x) > 10 || Math.abs(e.clientY - rightClickStart.y) > 10) isRightDrag = true;
+            }
+            
+            if (activeMouseJoint) {
+                activeMouseJoint.setTarget(screenToWorld(e.clientX, e.clientY));
+                activeMouseJoint.getBodyB().setAwake(true);
+            }
+            
+            lastMousePos = { x: e.clientX, y: e.clientY };
+            
+            hoveredBodyList = getBodyAt(screenToWorld(e.clientX, e.clientY));
+            updateHoverTempUI(e.clientX, e.clientY);
+        });
+
+        window.addEventListener('mouseup', e => {
+            isPanning = false;
+            if (activeMouseJoint) { world.destroyJoint(activeMouseJoint); activeMouseJoint = null; }
+            if (e.button === 2 && !isRightDrag) openContextMenu(e);
+        });
+
+        window.addEventListener('contextmenu', e => e.preventDefault());
+
+        window.addEventListener('keydown', (e) => {
+            const key = e.key.toLowerCase();
+            if (key === 't') { 
+                heatMapEnabled = !heatMapEnabled; 
+                document.getElementById('hover-temp-hud').style.display = heatMapEnabled ? 'block' : 'none';
+                showToast(heatMapEnabled ? "Thermal Vision: ON" : "Thermal Vision: OFF"); 
+            }
+            if (key === ' ') { isPaused = !isPaused; updateTimeUI(); }
+            if (key === 'g') { isSlowMo = !isSlowMo; if(isSlowMo) isPaused = false; updateTimeUI(); }
+            
+            if (key === 'a') keys.a = true;
+            if (key === 'd') keys.d = true;
+
+            // Activation Key
+            if (key === 'f') {
+                let target = activeMouseJoint ? activeMouseJoint.getBodyB() : (hoveredBodyList.length > 0 ? hoveredBodyList[0] : null);
+                if (target) {
+                    let ud = target.getUserData();
+                    if (ud && ud.isActivable) {
+                        ud.activated = !ud.activated;
+                        if (ud.material === 'heater') ud.temperature = ud.activated ? 500 : TEMP_AIR;
+                        if (ud.material === 'cooler') ud.temperature = ud.activated ? 0 : TEMP_AIR;
+                        showToast(ud.material + (ud.activated ? " Activated" : " Deactivated"));
+                    }
+                }
+            }
+
+            if ((key === 'e' || key === 'q') && selectedItemType) {
+                const flip = key === 'q';
+                const wPos = screenToWorld(lastMousePos.x || window.innerWidth/2, lastMousePos.y || window.innerHeight/2);
+                if (selectedItemType === 'human' || selectedItemType === 'android') {
+                    spawnRagdoll({x: wPos.x*SCALE, y: wPos.y*SCALE}, flip, selectedItemType);
+                } else {
+                    spawnBox(selectedItemType, {x: wPos.x*SCALE, y: wPos.y*SCALE}, flip);
+                }
+            }
+        });
+
+        window.addEventListener('keyup', e => {
+            const key = e.key.toLowerCase();
+            if (key === 'a') keys.a = false;
+            if (key === 'd') keys.d = false;
+        });
+
+        // -----------------------------
+        // UI & HOVER LOGIC
+        // -----------------------------
+        function updateHoverTempUI(mouseX, mouseY) {
+            if (!heatMapEnabled) return;
+            const wPos = screenToWorld(mouseX, mouseY);
+            
+            if (hoveredBodyList && hoveredBodyList.length > 0 && hoveredBodyList[0].getUserData() && hoveredBodyList[0].getUserData().temperature !== undefined) {
+                document.getElementById('hover-temp-val').innerText = Math.round(hoveredBodyList[0].getUserData().temperature) + " °F";
+                document.getElementById('hover-temp-val').style.color = "white";
+            } else {
+                if (wPos.y * SCALE > getWaterHeightAt(wPos.x * SCALE) && wPos.x * SCALE >= waterStartX && wPos.x * SCALE <= waterEndX) {
+                    document.getElementById('hover-temp-val').innerText = Math.round(globalWaterTemp) + " °F";
+                    document.getElementById('hover-temp-val').style.color = "#888";
+                } else {
+                    document.getElementById('hover-temp-val').innerText = TEMP_AIR + " °F";
+                    document.getElementById('hover-temp-val').style.color = "#555";
+                }
+            }
+        }
+
+        let ctxTarget = null; let ctxRootId = null;
+
+        function updateTimeUI() {
+            const val = isPaused ? 0 : (isSlowMo ? Math.round(slowMoFactor * 100) : 100);
+            const el = document.getElementById('time-factor-val');
+            el.innerText = val + '%';
+            if (isPaused) el.style.color = '#ef4444'; else if (isSlowMo) el.style.color = '#3b82f6'; else el.style.color = '#eee';
+        }
+
+        function openContextMenu(e) {
+            const bodies = getBodyAt(screenToWorld(e.clientX, e.clientY));
+            if (!bodies || bodies.length === 0) return;
+            
+            ctxTarget = bodies[0]; const ud = ctxTarget.getUserData() || {}; ctxRootId = ud.isRagdoll ? ud.rootGroupId : null;
+            const menu = document.getElementById('context-menu');
+            menu.style.left = e.clientX + 'px'; menu.style.top = e.clientY + 'px'; menu.classList.remove('hidden');
+            document.getElementById('ctx-freeze').innerText = ctxTarget.getType() === 'static' ? "Unfreeze" : "Freeze";
+            document.getElementById('ctx-weightless').innerText = ud.weightless ? "Restore Weight" : "Make Weightless";
+            document.getElementById('ctx-collision').innerText = ud.ghosted ? "Enable Collision" : "Disable Collision";
+        }
+
+        function actOnTarget(actionFn) {
+            if (ctxRootId !== null) {
+                for (let b = world.getBodyList(); b; b = b.getNext()) if (b.getUserData() && b.getUserData().rootGroupId === ctxRootId) actionFn(b);
+            } else actionFn(ctxTarget);
+            document.getElementById('context-menu').classList.add('hidden');
+        }
+
+        document.getElementById('ctx-delete').addEventListener('click', () => { actOnTarget(b => world.destroyBody(b)); showToast("Deleted"); });
+        document.getElementById('ctx-freeze').addEventListener('click', () => actOnTarget(b => b.setType(b.getType() === 'static' ? 'dynamic' : 'static')));
+        document.getElementById('ctx-weightless').addEventListener('click', () => actOnTarget(b => b.getUserData().weightless = !b.getUserData().weightless));
+        document.getElementById('ctx-collision').addEventListener('click', () => actOnTarget(b => {
+            const ud = b.getUserData(); ud.ghosted = !ud.ghosted; b.getFixtureList().setFilterCategoryBits(ud.ghosted ? window.CAT_GHOST : window.CAT_DEFAULT);
+        }));
+
+        document.getElementById('setting-water-realism').addEventListener('input', (e) => { waterRealismFactor = parseInt(e.target.value); });
+        document.getElementById('setting-show-fps').addEventListener('change', (e) => { 
+            showFps = e.target.checked; document.getElementById('fps-counter').style.display = showFps ? 'block' : 'none';
+        });
+        document.getElementById('setting-frame-cap').addEventListener('input', (e) => { 
+            frameCap = parseInt(e.target.value); document.getElementById('frame-cap-label').innerText = frameCap > 240 ? "Unlimited" : frameCap + " FPS";
+        });
+        document.getElementById('setting-slow-mo').addEventListener('input', (e) => { 
+            slowMoFactor = parseInt(e.target.value) / 100; document.getElementById('slow-mo-label').innerText = e.target.value; if (isSlowMo) updateTimeUI();
+        });
+        document.getElementById('setting-heatmap-opacity').addEventListener('input', (e) => { 
+            heatmapOpacity = parseInt(e.target.value) / 100; document.getElementById('heatmap-opacity-label').innerText = e.target.value;
+        });
+
+        function switchSettingsTab(tabName) {
+            document.querySelectorAll('.settings-category-btn').forEach(el => el.classList.remove('active'));
+            document.querySelectorAll('.settings-tab').forEach(el => el.classList.remove('active'));
+            document.getElementById('tab-' + tabName).classList.add('active');
+            document.getElementById('settings-content-' + tabName).classList.add('active');
+            document.getElementById('settings-header-title').innerText = tabName.charAt(0).toUpperCase() + tabName.slice(1);
+        }
+
+        function toggleSettings() { document.getElementById('settings-menu').classList.toggle('hidden'); }
+
+        function switchCategory(catName) {
+            document.querySelectorAll('.sidebar-items').forEach(el => el.classList.remove('active'));
+            document.querySelectorAll('.cat-btn').forEach(el => el.classList.remove('active'));
+            document.getElementById('panel-' + catName).classList.add('active'); document.getElementById('cat-' + catName).classList.add('active');
+        }
+        function selectItem(type, name, element) {
+            selectedItemType = type;
+            document.querySelectorAll('.item-btn').forEach(el => el.classList.remove('selected'));
+            if(element) element.classList.add('selected');
+            document.getElementById('selected-name').innerText = name; 
+        }
+        function switchRightTab(tabName) {
+            document.querySelectorAll('.tool-group').forEach(el => el.classList.remove('active'));
+            document.querySelectorAll('.tab-btn').forEach(el => el.classList.remove('active'));
+            document.getElementById('group-' + tabName).classList.add('active'); document.getElementById('tab-btn-' + tabName).classList.add('active');
+        }
+        function setTool(toolName) {
+            currentTool = toolName; 
+            document.querySelectorAll('.tool-btn-right').forEach(b => b.classList.remove('active'));
+            document.getElementById('tool-' + toolName).classList.add('active');
+            document.getElementById('active-tool-name').innerText = toolName === 'drag' ? "Drag Tool" : "Pin Tool";
+        }
+
+        function clearEverything() { 
+            for (let b = world.getBodyList(); b; b = b.getNext()) { 
+                if (!b.getUserData() || !b.getUserData().isProtected) world.destroyBody(b); 
+            } 
+            showToast("Cleared Everything"); activeJoints.length = 0;
+        }
+        function clearEntities() { 
+            for (let b = world.getBodyList(); b; b = b.getNext()) { 
+                if (b.getUserData() && b.getUserData().material === 'entity') world.destroyBody(b); 
+            } 
+            showToast("Cleared Entities"); 
+        }
+        function clearDebris() { 
+            for (let b = world.getBodyList(); b; b = b.getNext()) { 
+                const ud = b.getUserData(); 
+                if (ud && (ud.isDebris || ud.isBubble || ud.isWaterParticle || ud.isSpark || ud.isSmoke || ud.isVitalFluid)) world.destroyBody(b); 
+            } 
+            showToast("Cleared Particles & Debris"); 
+        }
+        function showToast(msg) {
+            const container = document.getElementById('toast-container'); const toast = document.createElement('div'); toast.className = 'toast-msg'; toast.innerText = msg;
+            container.appendChild(toast); setTimeout(() => toast.style.opacity = '1', 10); setTimeout(() => { toast.style.opacity = '0'; setTimeout(() => toast.remove(), 300); }, 2000);
+        }
+
+        requestAnimationFrame(gameLoop);
+    </script>
+</body>
+</html>
