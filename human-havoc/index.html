@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Web Sandbox Engine (Test Build)</title>
+    <title>Human Havoc</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/planck-js@0.3.31/dist/planck.min.js"></script>
     <style>
@@ -87,22 +87,15 @@
         .settings-category-btn.active { color: #fff; }
         .settings-tab { display: none; }
         .settings-tab.active { display: block; }
-
-        /* Disclaimer Overlay */
-        #disclaimer-overlay { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.95); z-index: 1000; display: flex; justify-content: center; align-items: center; pointer-events: auto; flex-direction: column; text-align: center; padding: 40px;}
-        #disclaimer-overlay h1 { font-size: 2rem; color: #ef4444; margin-bottom: 20px; text-transform: uppercase; letter-spacing: 2px; }
-        #disclaimer-overlay p { color: #ccc; max-width: 600px; line-height: 1.6; margin-bottom: 30px; font-size: 0.9rem;}
-        #accept-btn { background: #ef4444; color: white; border: none; padding: 12px 30px; font-size: 1rem; font-weight: bold; border-radius: 4px; cursor: pointer; transition: 0.2s; text-transform: uppercase; letter-spacing: 1px;}
-        #accept-btn:hover { background: #dc2626; box-shadow: 0 0 15px rgba(239, 68, 68, 0.5); }
+        
+        /* Keybind capturing input */
+        .keybind-input-btn { background: #1a1a1a; border: 1px solid #444; color: #aaa; padding: 4px 12px; font-family: monospace; font-size: 11px; border-radius: 3px; cursor: pointer; transition: 0.1s; }
+        .keybind-input-btn:hover { background: #252525; color: #fff; border-color: #ef4444; }
+        .keybind-input-btn.waiting { border-color: #ef4444; color: #ef4444; animation: pulse-border 1s infinite; }
+        @keyframes pulse-border { 0% { opacity: 0.6; } 50% { opacity: 1; } 100% { opacity: 0.6; } }
     </style>
 </head>
 <body>
-
-    <div id="disclaimer-overlay">
-        <h1>Content Warning</h1>
-        <p>This physics sandbox environment contains stylized, cartoonish depictions of structural damage, mechanical limb detachment, and vital fluid particle emissions. It is intended for mature users capable of handling simulated physical destruction.<br><br>Viewer discretion is advised.</p>
-        <button id="accept-btn" onclick="acceptDisclaimer()">I Understand & Accept</button>
-    </div>
 
     <div id="canvas-container">
         <canvas id="game-canvas"></canvas>
@@ -196,7 +189,7 @@
                 <div class="hud-box border-left">
                     <div class="hud-label">Time Factor</div>
                     <div id="time-factor-val" class="hud-value text-[#eee]">100%</div>
-                    <div class="hud-hint">[Space] Pause | [G] SlowMo</div>
+                    <div class="hud-hint"><span class="kb-pause">Space</span> Pause | <span class="kb-slowmo">G</span> SlowMo</div>
                 </div>
                 <div class="hud-box">
                     <div class="hud-label">Active Power/Tool</div>
@@ -231,6 +224,7 @@
                 <h2 class="text-xl font-bold mb-8 text-white">SETTINGS</h2>
                 <div id="tab-graphics" class="settings-category-btn active" onclick="switchSettingsTab('graphics')">Graphics</div>
                 <div id="tab-preferences" class="settings-category-btn mt-2" onclick="switchSettingsTab('preferences')">Preferences</div>
+                <div id="tab-controls" class="settings-category-btn mt-2" onclick="switchSettingsTab('controls')">Controls</div>
             </div>
             
             <div class="flex-1 p-10 bg-[#0d0d0d] overflow-y-auto">
@@ -239,6 +233,7 @@
                     <button onclick="toggleSettings()" class="text-gray-400 hover:text-white transition font-bold text-lg">✕</button>
                 </div>
                 
+                <!-- Graphics Tab -->
                 <div id="settings-content-graphics" class="settings-tab active">
                     <div class="mb-8">
                         <label class="block text-xs font-bold text-gray-500 uppercase mb-3 tracking-wide">Water Realism Factor</label>
@@ -260,17 +255,65 @@
                     </div>
                 </div>
 
+                <!-- Preferences Tab -->
                 <div id="settings-content-preferences" class="settings-tab">
                     <div class="mb-8">
                         <label class="block text-xs font-bold text-gray-500 uppercase mb-3 tracking-wide">Slow Motion Factor (<span id="slow-mo-label">20</span>%)</label>
                         <input type="range" id="setting-slow-mo" min="1" max="100" value="20" class="w-96 accent-blue-500">
-                        <div class="text-xs text-gray-500 mt-2 max-w-md">Sets the exact time percentage applied to the physics engine when Slow Motion (G) is activated.</div>
+                        <div class="text-xs text-gray-500 mt-2 max-w-md">Sets the exact time percentage applied to the physics engine when Slow Motion is activated.</div>
                     </div>
 
                     <div class="mt-8 border-t border-[#2a2a2a] pt-8">
                         <label class="block text-xs font-bold text-gray-500 uppercase mb-3 tracking-wide">Thermal Map Opacity (<span id="heatmap-opacity-label">80</span>%)</label>
                         <input type="range" id="setting-heatmap-opacity" min="0" max="100" value="80" class="w-96 accent-blue-500">
                         <div class="text-xs text-gray-500 mt-2 max-w-md">Controls how intensely the temperature colors override the standard world graphics.</div>
+                    </div>
+                </div>
+
+                <!-- Controls/Keybinds Tab -->
+                <div id="settings-content-controls" class="settings-tab">
+                    <div class="text-xs text-gray-400 mb-6 max-w-md">Click any button below then press a key on your keyboard to change its binding.</div>
+                    <div class="grid grid-cols-2 gap-y-4 gap-x-12 max-w-2xl border-t border-[#2a2a2a] pt-6">
+                        <div class="flex items-center justify-between">
+                            <span class="text-sm font-semibold">Camera Up</span>
+                            <button class="keybind-input-btn" id="bind-camUp" onclick="startKeybindCapture('camUp')">W</button>
+                        </div>
+                        <div class="flex items-center justify-between">
+                            <span class="text-sm font-semibold">Camera Down</span>
+                            <button class="keybind-input-btn" id="bind-camDown" onclick="startKeybindCapture('camDown')">S</button>
+                        </div>
+                        <div class="flex items-center justify-between">
+                            <span class="text-sm font-semibold">Camera Left</span>
+                            <button class="keybind-input-btn" id="bind-camLeft" onclick="startKeybindCapture('camLeft')">A</button>
+                        </div>
+                        <div class="flex items-center justify-between">
+                            <span class="text-sm font-semibold">Camera Right</span>
+                            <button class="keybind-input-btn" id="bind-camRight" onclick="startKeybindCapture('camRight')">D</button>
+                        </div>
+                        <div class="flex items-center justify-between">
+                            <span class="text-sm font-semibold">Rotate Left</span>
+                            <button class="keybind-input-btn" id="bind-rotLeft" onclick="startKeybindCapture('rotLeft')">A</button>
+                        </div>
+                        <div class="flex items-center justify-between">
+                            <span class="text-sm font-semibold">Rotate Right</span>
+                            <button class="keybind-input-btn" id="bind-rotRight" onclick="startKeybindCapture('rotRight')">D</button>
+                        </div>
+                        <div class="flex items-center justify-between">
+                            <span class="text-sm font-semibold">Activate Object</span>
+                            <button class="keybind-input-btn" id="bind-activate" onclick="startKeybindCapture('activate')">F</button>
+                        </div>
+                        <div class="flex items-center justify-between">
+                            <span class="text-sm font-semibold">Toggle Thermal Map</span>
+                            <button class="keybind-input-btn" id="bind-thermal" onclick="startKeybindCapture('thermal')">T</button>
+                        </div>
+                        <div class="flex items-center justify-between">
+                            <span class="text-sm font-semibold">Toggle Pause</span>
+                            <button class="keybind-input-btn" id="bind-pause" onclick="startKeybindCapture('pause')">Space</button>
+                        </div>
+                        <div class="flex items-center justify-between">
+                            <span class="text-sm font-semibold">Toggle Slow Motion</span>
+                            <button class="keybind-input-btn" id="bind-slowmo" onclick="startKeybindCapture('slowmo')">G</button>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -317,13 +360,31 @@
 
         // FLAWLESS NATIVE DRAG SYSTEM
         let activeMouseJoint = null;
+        let dragAnchorBody = null; 
+        let dragJoint = null;      
+        let draggedBody = null;    
         let hoveredBodyList = [];
 
-        // Key states for rotation
-        let keys = { a: false, d: false };
+        // Dynamic Key State Tracker
+        let activePressedKeys = {};
+
+        // Custom Keybind Settings Configuration
+        let keybinds = {
+            camUp: 'w',
+            camDown: 's',
+            camLeft: 'a',
+            camRight: 'd',
+            rotLeft: 'a',
+            rotRight: 'd',
+            activate: 'f',
+            thermal: 't',
+            pause: ' ',
+            slowmo: 'g'
+        };
+        let capturingAction = null;
 
         // Time & Performance Globals
-        let isPaused = true; 
+        let isPaused = false; // Initialized to false to start game immediately without disclaimer page
         let isSlowMo = false;
         let slowMoFactor = 0.2; 
         let frameCap = 60;
@@ -339,14 +400,7 @@
         const TEMP_BOIL = 210; 
         let globalWaterTemp = 50; 
         
-        // Track joints for Phase 3 Mechanical Snapping
         const activeJoints = [];
-
-        function acceptDisclaimer() {
-            document.getElementById('disclaimer-overlay').style.display = 'none';
-            isPaused = false;
-            lastLoopTime = performance.now();
-        }
 
         // -----------------------------
         // WATER WAVE ARCHITECTURE
@@ -451,7 +505,6 @@
             let sprayVel = pl.Vec2(velocityVec.x + (Math.random()*10-5), velocityVec.y + (Math.random()*10-5));
             drop.setLinearVelocity(sprayVel);
             
-            // Short lifespan for fluid droplets to save performance
             drop.setUserData({ isVitalFluid: true, isHuman: isHuman, life: 0, maxLife: 80 + Math.random()*40, inWaterFluid: false });
         }
 
@@ -488,7 +541,7 @@
         }
 
         // -----------------------------
-        // MAP BOUNDARIES
+        // MAP BOUNDARIES (Land vs Pool)
         // -----------------------------
         const groundBody = world.createBody(); 
 
@@ -515,13 +568,12 @@
             if (material === 'wood') { dens = 1.0; cond = 0.01; color = '#5c4033'; stroke = '#3b281f'; } 
             else if (material === 'metal') { dens = 5.0; cond = 0.2; color = '#838a96'; stroke = '#4d525c'; } 
             else if (material === 'club') { dens = 3.0; cond = 0.05; color = '#4a3018'; stroke = '#2d1a0b'; height = 50; width = 8; }
-            else if (material === 'heater') { dens = 5.0; cond = 1.0; color = '#3a2020'; stroke = '#ef4444'; temp = TEMP_AIR; } // Spawn off
-            else if (material === 'cooler') { dens = 2.0; cond = 1.0; color = '#1d2b3a'; stroke = '#3b82f6'; temp = TEMP_AIR; } // Spawn off
+            else if (material === 'heater') { dens = 5.0; cond = 1.0; color = '#3a2020'; stroke = '#ef4444'; temp = TEMP_AIR; } 
+            else if (material === 'cooler') { dens = 2.0; cond = 1.0; color = '#1d2b3a'; stroke = '#3b82f6'; temp = TEMP_AIR; } 
 
             const body = world.createDynamicBody(pl.Vec2(pos.x/SCALE, pos.y/SCALE));
             body.createFixture(pl.Box(width/SCALE, height/SCALE), { density: dens, friction: 0.5, filterCategoryBits: window.CAT_DEFAULT });
             
-            // F activation flag tracking
             let isActivable = (material === 'heater' || material === 'cooler');
 
             body.setUserData({ 
@@ -549,7 +601,7 @@
                     layer: layer, isRagdoll: true, rootGroupId: group, density: rDens, lastY: pos.y,
                     isHuman: isHuman, damageState: 0.0, vitalFluidVolume: isHuman ? 150 : 10,
                     damageSeeds: [Math.random(), Math.random(), Math.random(), Math.random()],
-                    isTorsoUp: isTorso 
+                    isTorsoUp: isTorso, totalLimbHp: 100 
                 }); 
                 return b;
             }
@@ -562,7 +614,8 @@
                 material: 'entity', temperature: 90, baseColor: cShell, outlineColor: sShell, 
                 layer: 1, isRagdoll: true, rootGroupId: group, density: rDens, lastY: pos.y, 
                 isHuman: isHuman, damageState: 0.0, vitalFluidVolume: isHuman ? 100 : 10,
-                damageSeeds: [Math.random(), Math.random(), Math.random(), Math.random()] 
+                damageSeeds: [Math.random(), Math.random(), Math.random(), Math.random()],
+                totalLimbHp: 100
             });
 
             const armUpB = makeLimb(-1, -25, 5, 15, 0, false); const armLowB = makeLimb(-1, 5, 4.5, 15, 0, false);
@@ -599,7 +652,6 @@
             if (udA.temperature !== undefined && udB.temperature !== undefined) {
                 const diff = udA.temperature - udB.temperature;
                 const rate = Math.min(udA.conductivity || 0.05, udB.conductivity || 0.05) * 0.05;
-                // Only modify temperature if not an active heater/cooler
                 if (!(udA.material === 'heater' && udA.activated) && !(udA.material === 'cooler' && udA.activated)) udA.temperature -= diff * rate;
                 if (!(udB.material === 'heater' && udB.activated) && !(udB.material === 'cooler' && udB.activated)) udB.temperature += diff * rate;
             }
@@ -648,6 +700,13 @@
             let bodiesToDestroy = [];
             let jointsToDestroy = [];
 
+            // Continuous WASD Camera Panning Logic
+            const panSpeed = 10 * viewScale;
+            if (activePressedKeys[keybinds.camUp]) viewPan.y -= panSpeed;
+            if (activePressedKeys[keybinds.camDown]) viewPan.y += panSpeed;
+            if (activePressedKeys[keybinds.camLeft]) viewPan.x -= panSpeed;
+            if (activePressedKeys[keybinds.camRight]) viewPan.x += panSpeed;
+
             if (timeScale > 0) {
                 world.step((1 / 60) * timeScale, 12, 8);
                 updateWaterWaves(timeScale);
@@ -655,11 +714,11 @@
                 // A/D Keyboard Rotation applied to dragged or hovered item
                 let activeTarget = activeMouseJoint ? activeMouseJoint.getBodyB() : (hoveredBodyList.length > 0 ? hoveredBodyList[0] : null);
                 if (activeTarget && activeTarget.getType() !== 'static') {
-                    if (keys.a) activeTarget.setAngularVelocity(activeTarget.getAngularVelocity() - 0.5 * timeScale);
-                    if (keys.d) activeTarget.setAngularVelocity(activeTarget.getAngularVelocity() + 0.5 * timeScale);
+                    if (activePressedKeys[keybinds.rotLeft]) activeTarget.setAngularVelocity(activeTarget.getAngularVelocity() - 0.5 * timeScale);
+                    if (activePressedKeys[keybinds.rotRight]) activeTarget.setAngularVelocity(activeTarget.getAngularVelocity() + 0.5 * timeScale);
                 }
 
-                // PHASE 3.5: JOINT SNAPPING
+                // JOINT SNAPPING
                 for (let i = activeJoints.length - 1; i >= 0; i--) {
                     let jData = activeJoints[i];
                     if (!jData.joint.getBodyA().getWorld()) {
@@ -763,15 +822,27 @@
                         }
                     }
 
-                    // Active Entity Balancing (Life)
-                    if (ud.isTorsoUp && ud.damageState < 0.8) {
-                        let angle = body.getAngle();
-                        while (angle > Math.PI) angle -= 2 * Math.PI;
-                        while (angle < -Math.PI) angle += 2 * Math.PI;
-                        body.applyTorque(-angle * body.getMass() * 150 * timeScale); 
+                    // HIGH-STABILITY ACTIVE STANDING BALANCING SYSTEM (Fixed stand abilities)
+                    if (ud.isTorsoUp) {
+                        // Check if deeply compromised -> collapse permanently limp
+                        if (ud.damageState >= 0.8) {
+                            ud.isTorsoUp = false; 
+                        } else {
+                            let angle = body.getAngle();
+                            while (angle > Math.PI) angle -= 2 * Math.PI;
+                            while (angle < -Math.PI) angle += 2 * Math.PI;
+                            
+                            // Boosted upright restoring force for high stability self-righting
+                            let standingStrength = (1.0 - ud.damageState) * 450; 
+                            body.applyTorque(-angle * body.getMass() * standingStrength * timeScale); 
+
+                            // Force vector to stand legs upright and support weight
+                            if (yPx > localWaterLvl - 40) {
+                                body.applyForceToCenter(pl.Vec2(0, -body.getMass() * 10 * timeScale));
+                            }
+                        }
                     }
 
-                    // Activated Temperature Components
                     if (ud.material === 'heater' && ud.activated) ud.temperature += (500 - ud.temperature) * 0.05 * timeScale;
                     if (ud.material === 'cooler' && ud.activated) ud.temperature += (0 - ud.temperature) * 0.05 * timeScale;
                     if (ud.material === 'entity') ud.temperature += (90 - ud.temperature) * 0.005 * timeScale;
@@ -802,10 +873,9 @@
                             body.setLinearVelocity(pl.Vec2(v.x * (1 - 0.05 * timeScale), v.y * (1 - 0.05 * timeScale)));
                             body.setAngularVelocity(body.getAngularVelocity() * (1 - 0.05 * timeScale));
 
-                            // Android Electrocution / Water damage
                             if (!ud.isHuman && ud.isRagdoll) {
                                 if (Math.random() < 0.05 * timeScale) spawnSparks(xPx, yPx, 1);
-                                ud.damageState = Math.min(1.0, ud.damageState + 0.001 * timeScale); // Slowly degrades in water
+                                ud.damageState = Math.min(1.0, ud.damageState + 0.001 * timeScale); 
                             }
 
                             const diff = ud.temperature - globalWaterTemp;
@@ -819,7 +889,6 @@
                                 for(let i=0; i<numBubbles; i++) spawnPhysicalBubble(xPx + (Math.random()*40 - 20), yPx + 10);
                                 ud.temperature -= overHeat * 0.05 * timeScale;
 
-                                // Powerful upward lift from heater bubbles escaping underneath
                                 if (numBubbles > 0) {
                                     body.applyForceToCenter(pl.Vec2(0, -body.getMass() * numBubbles * 50 * timeScale));
                                 }
@@ -828,7 +897,6 @@
                     }
 
                     if (!inWater && ud.temperature !== undefined) {
-                        // Slowly return to air temp if not an active heater/cooler
                         if (!(ud.material === 'heater' && ud.activated) && !(ud.material === 'cooler' && ud.activated)) {
                             ud.temperature += (TEMP_AIR - ud.temperature) * 0.0005 * timeScale;
                         }
@@ -1061,12 +1129,12 @@
                         }
                         ctx.globalAlpha = 1.0;
 
-                        // 4. Clean jagged gashes to expose fibers without shell transparency
+                        // 4. Clean jagged gashes to expose fibers without shell transparency (REMOVED WEIRD DOTS)
                         if (ud.damageState > 0.1 && !heatMapEnabled) {
                             let hw = Math.abs(fix.getShape().m_vertices ? fix.getShape().m_vertices[0].x * SCALE : fix.getShape().m_radius * SCALE);
                             let hh = Math.abs(fix.getShape().m_vertices ? fix.getShape().m_vertices[0].y * SCALE : fix.getShape().m_radius * SCALE);
                             
-                            ctx.fillStyle = ud.isHuman ? '#991b1b' : '#1f2937'; // Fiber color
+                            ctx.fillStyle = ud.isHuman ? '#991b1b' : '#1f2937'; // Fiber base layer
                             let gashCount = Math.floor(ud.damageState * 5);
                             
                             for(let i=0; i<gashCount; i++) {
@@ -1079,7 +1147,7 @@
                             }
 
                             if (ud.damageState > 0.6) {
-                                ctx.fillStyle = ud.isHuman ? '#e2e8f0' : '#374151'; // Core color
+                                ctx.fillStyle = ud.isHuman ? '#e2e8f0' : '#374151'; // Core base layer
                                 let coreCount = Math.floor((ud.damageState - 0.5) * 4);
                                 for(let i=0; i<coreCount; i++) {
                                     let seed = ud.damageSeeds[(i+2) % 4];
@@ -1093,7 +1161,7 @@
                         }
 
                     } else {
-                        // Regular blocks - now perfectly rigid sharp rectangles again!
+                        // Regular blocks - perfectly rigid sharp rectangles again!
                         let fill = ud.baseColor || '#fff', stroke = ud.outlineColor || '#333';
                         if (ud.ghosted) ctx.globalAlpha = 0.5;
 
@@ -1183,6 +1251,7 @@
                     if (b.getType() === 'static') b.setType('dynamic');
                     b.setAwake(true);
                     
+                    // True Native Box2D MouseJoint: Extremely stiff, zero drifting.
                     activeMouseJoint = world.createJoint(pl.MouseJoint({ 
                         bodyA: groundBody, 
                         bodyB: b, 
@@ -1231,19 +1300,37 @@
 
         window.addEventListener('keydown', (e) => {
             const key = e.key.toLowerCase();
-            if (key === 't') { 
+            
+            // Handle key capture state first
+            if (capturingAction) {
+                e.preventDefault();
+                keybinds[capturingAction] = e.key.toLowerCase();
+                const btn = document.getElementById('bind-' + capturingAction);
+                btn.innerText = e.key === ' ' ? 'Space' : e.key.toUpperCase();
+                btn.classList.remove('waiting');
+                
+                // Update HUD guides dynamically
+                if (capturingAction === 'pause') document.querySelector('.kb-pause').innerText = btn.innerText;
+                if (capturingAction === 'slowmo') document.querySelector('.kb-slowmo').innerText = btn.innerText;
+
+                capturingAction = null;
+                return;
+            }
+
+            // Continuous key state tracking
+            activePressedKeys[key] = true;
+
+            // Direct Single-Press Handlers
+            if (key === keybinds.thermal) { 
                 heatMapEnabled = !heatMapEnabled; 
                 document.getElementById('hover-temp-hud').style.display = heatMapEnabled ? 'block' : 'none';
                 showToast(heatMapEnabled ? "Thermal Vision: ON" : "Thermal Vision: OFF"); 
             }
-            if (key === ' ') { isPaused = !isPaused; updateTimeUI(); }
-            if (key === 'g') { isSlowMo = !isSlowMo; if(isSlowMo) isPaused = false; updateTimeUI(); }
-            
-            if (key === 'a') keys.a = true;
-            if (key === 'd') keys.d = true;
+            if (key === keybinds.pause) { isPaused = !isPaused; updateTimeUI(); }
+            if (key === keybinds.slowmo) { isSlowMo = !isSlowMo; if(isSlowMo) isPaused = false; updateTimeUI(); }
 
-            // Activation Key
-            if (key === 'f') {
+            // Activation Key trigger on hovered target
+            if (key === keybinds.activate) {
                 let target = activeMouseJoint ? activeMouseJoint.getBodyB() : (hoveredBodyList.length > 0 ? hoveredBodyList[0] : null);
                 if (target) {
                     let ud = target.getUserData();
@@ -1269,8 +1356,7 @@
 
         window.addEventListener('keyup', e => {
             const key = e.key.toLowerCase();
-            if (key === 'a') keys.a = false;
-            if (key === 'd') keys.d = false;
+            activePressedKeys[key] = false;
         });
 
         // -----------------------------
@@ -1329,6 +1415,7 @@
             const ud = b.getUserData(); ud.ghosted = !ud.ghosted; b.getFixtureList().setFilterCategoryBits(ud.ghosted ? window.CAT_GHOST : window.CAT_DEFAULT);
         }));
 
+        // Dynamic Settings Overlay Controllers
         document.getElementById('setting-water-realism').addEventListener('input', (e) => { waterRealismFactor = parseInt(e.target.value); });
         document.getElementById('setting-show-fps').addEventListener('change', (e) => { 
             showFps = e.target.checked; document.getElementById('fps-counter').style.display = showFps ? 'block' : 'none';
@@ -1342,6 +1429,16 @@
         document.getElementById('setting-heatmap-opacity').addEventListener('input', (e) => { 
             heatmapOpacity = parseInt(e.target.value) / 100; document.getElementById('heatmap-opacity-label').innerText = e.target.value;
         });
+
+        // Keybinding Capturer Controller
+        function startKeybindCapture(actionName) {
+            // Cancel current capturing if clicking another button
+            if (capturingAction) {
+                document.getElementById('bind-' + capturingAction).classList.remove('waiting');
+            }
+            capturingAction = actionName;
+            document.getElementById('bind-' + actionName).classList.add('waiting');
+        }
 
         function switchSettingsTab(tabName) {
             document.querySelectorAll('.settings-category-btn').forEach(el => el.classList.remove('active'));
@@ -1400,6 +1497,7 @@
             container.appendChild(toast); setTimeout(() => toast.style.opacity = '1', 10); setTimeout(() => { toast.style.opacity = '0'; setTimeout(() => toast.remove(), 300); }, 2000);
         }
 
+        // Start native Box2D render loop
         requestAnimationFrame(gameLoop);
     </script>
 </body>
