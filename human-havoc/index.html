@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Human Havoc</title>
+    <title>Human Havoc v3.0.0</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/planck-js@0.3.31/dist/planck.min.js"></script>
     <style>
@@ -73,7 +73,7 @@
 
         #hover-temp-hud { display: none; background: rgba(15,15,15,0.95); border: 1px solid #333; border-left: 3px solid #ef4444; padding: 8px 15px; color: white; border-radius: 4px; box-shadow: 0 4px 10px rgba(0,0,0,0.5); min-width: 120px;}
 
-        #fps-counter { display: none; position: absolute; top: 120px; right: 20px; font-family: monospace; font-size: 15px; font-weight: bold; color: white; text-shadow: -1px -1px 0 #000, 1px -1px 0 #000, -1px 1px 0 #000, 1px 1px 0 #000; z-index: 5; pointer-events: none; }
+        #fps-counter { display: block; position: absolute; top: 120px; right: 20px; font-family: monospace; font-size: 15px; font-weight: bold; color: white; text-shadow: -1px -1px 0 #000, 1px -1px 0 #000, -1px 1px 0 #000, 1px 1px 0 #000; z-index: 5; pointer-events: none; }
 
         #context-menu { pointer-events: auto; }
         .context-item { transition: background 0.1s; }
@@ -135,6 +135,7 @@
                     <div id="panel-machinery" class="sidebar-items">
                         <button class="item-btn" onclick="selectItem('heater', 'Heating Element', this)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M8 2v3M16 2v3M12 2v3M4 10h16v10a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V10z"></path><path d="M8 14h8M10 18h4"></path></svg>Heater</button>
                         <button class="item-btn" onclick="selectItem('cooler', 'Cooling Element', this)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="2" x2="12" y2="22"></line><line x1="5.66" y1="5.66" x2="18.34" y2="18.34"></line><line x1="2" y1="12" x2="22" y2="12"></line><line x1="18.34" y1="5.66" x2="5.66" y2="18.34"></line></svg>Cooler</button>
+                        <button class="item-btn" onclick="selectItem('lantern', 'Lantern', this)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2v2M12 20v2M8 5h8v14H8zM6 8h12M6 16h12"></path></svg>Lantern</button>
                     </div>
                 </div>
 
@@ -199,7 +200,7 @@
                 <div class="hud-box border-right">
                     <div class="hud-label">Current Selection</div>
                     <div id="selected-name" class="hud-value">None</div>
-                    <div class="hud-hint" id="spawn-hint">Select to Spawn</div>
+                    <div class="hud-hint" id="spawn-hint">E/Q to Spawn</div>
                 </div>
             </div>
             
@@ -249,7 +250,7 @@
 
                     <div class="mt-8 border-t border-[#2a2a2a] pt-8">
                         <label class="flex items-center space-x-3 cursor-pointer">
-                            <input type="checkbox" id="setting-show-fps" class="form-checkbox h-5 w-5 text-blue-500 rounded bg-[#1a1a1a] border-[#333]">
+                            <input type="checkbox" id="setting-show-fps" class="form-checkbox h-5 w-5 text-blue-500 rounded bg-[#1a1a1a] border-[#333]" checked>
                             <span class="text-white font-bold text-sm">Show FPS Counter</span>
                         </label>
                     </div>
@@ -348,8 +349,12 @@
         window.addEventListener('resize', resizeCanvas);
         resizeCanvas();
 
-        let viewScale = 1;
-        let viewPan = { x: mapWidth/2 - window.innerWidth/2, y: mapHeight/2 - window.innerHeight/2 };
+        // CAMERA ENVELOPE: Fixed spawn zoom-out (Fix 3 & 4: Perfect central wide map overview on launch)
+        let viewScale = 0.42; 
+        let viewPan = { 
+            x: 2000 - (window.innerWidth / 2) / 0.42, 
+            y: 2800 - (window.innerHeight / 2) / 0.42 
+        };
         let isPanning = false, lastMousePos = { x: 0, y: 0 };
         let isRightDrag = false;
         let rightClickStart = { x: 0, y: 0 };
@@ -384,7 +389,7 @@
         let capturingAction = null;
 
         // Time & Performance Globals
-        let isPaused = false; // Initialized to false to start game immediately without disclaimer page
+        let isPaused = false; 
         let isSlowMo = false;
         let slowMoFactor = 0.2; 
         let frameCap = 60;
@@ -392,7 +397,7 @@
 
         // Settings / Thermo Globals
         let waterRealismFactor = 100;
-        let showFps = false;
+        let showFps = true; // FIX: Show FPS by default
         let heatMapEnabled = false;
         let heatmapOpacity = 0.8;
         
@@ -401,6 +406,9 @@
         let globalWaterTemp = 50; 
         
         const activeJoints = [];
+
+        // Set up the FPS UI correctly on startup
+        document.getElementById('fps-counter').style.display = 'block';
 
         // -----------------------------
         // WATER WAVE ARCHITECTURE
@@ -505,7 +513,8 @@
             let sprayVel = pl.Vec2(velocityVec.x + (Math.random()*10-5), velocityVec.y + (Math.random()*10-5));
             drop.setLinearVelocity(sprayVel);
             
-            drop.setUserData({ isVitalFluid: true, isHuman: isHuman, life: 0, maxLife: 80 + Math.random()*40, inWaterFluid: false });
+            // Stricter particle life cap: Fades out smoothly and is deleted
+            drop.setUserData({ isVitalFluid: true, isHuman: isHuman, life: 0, maxLife: 50 + Math.random()*20, inWaterFluid: false });
         }
 
         function spawnSparks(xPx, yPx, count) {
@@ -516,7 +525,7 @@
                     filterCategoryBits: window.CAT_SPARK, filterMaskBits: window.CAT_MAP | window.CAT_DEFAULT
                 });
                 spark.setLinearVelocity(pl.Vec2((Math.random()-0.5)*30, -Math.random()*20 - 5));
-                spark.setUserData({ isSpark: true, life: 0, maxLife: 20 + Math.random()*20, inWaterFluid: false });
+                spark.setUserData({ isSpark: true, life: 0, maxLife: 15 + Math.random()*15, inWaterFluid: false });
             }
         }
 
@@ -529,7 +538,7 @@
                     filterCategoryBits: window.CAT_GHOST, filterMaskBits: 0 
                 });
                 smoke.setLinearVelocity(pl.Vec2((Math.random()-0.5)*15, -Math.random()*10 - 5));
-                smoke.setUserData({ isSmoke: true, life: 0, maxLife: 60 + Math.random()*40 });
+                smoke.setUserData({ isSmoke: true, life: 0, maxLife: 30 + Math.random()*20 });
             }
         }
 
@@ -538,6 +547,13 @@
             const colIdx = Math.floor((xPx - waterStartX) / WATER_RES);
             if (colIdx >= 0 && colIdx < numWaterCols) return waterSprings[colIdx].height;
             return waterTop;
+        }
+
+        function getGroundHeightAt(xPx) {
+            if (xPx < waterStartX || xPx > waterEndX) {
+                return mapHeight - waterHeight; // Platform ledge surface height
+            }
+            return mapHeight; // Bottom of Pool floor
         }
 
         // -----------------------------
@@ -567,14 +583,19 @@
 
             if (material === 'wood') { dens = 1.0; cond = 0.01; color = '#5c4033'; stroke = '#3b281f'; } 
             else if (material === 'metal') { dens = 5.0; cond = 0.2; color = '#838a96'; stroke = '#4d525c'; } 
-            else if (material === 'club') { dens = 3.0; cond = 0.05; color = '#4a3018'; stroke = '#2d1a0b'; height = 50; width = 8; }
+            else if (material === 'club') { 
+                // FIX 3: Replaced spiked weapon with a basic tapered wooden club profile
+                dens = 2.0; cond = 0.01; color = '#854d0e'; stroke = '#451a03'; 
+                height = 50; width = 10; 
+            }
             else if (material === 'heater') { dens = 5.0; cond = 1.0; color = '#3a2020'; stroke = '#ef4444'; temp = TEMP_AIR; } 
             else if (material === 'cooler') { dens = 2.0; cond = 1.0; color = '#1d2b3a'; stroke = '#3b82f6'; temp = TEMP_AIR; } 
+            else if (material === 'lantern') { dens = 1.5; cond = 0.1; color = '#475569'; stroke = '#1e293b'; } // FIX 4: Lantern item
 
             const body = world.createDynamicBody(pl.Vec2(pos.x/SCALE, pos.y/SCALE));
             body.createFixture(pl.Box(width/SCALE, height/SCALE), { density: dens, friction: 0.5, filterCategoryBits: window.CAT_DEFAULT });
             
-            let isActivable = (material === 'heater' || material === 'cooler');
+            let isActivable = (material === 'heater' || material === 'cooler' || material === 'lantern');
 
             body.setUserData({ 
                 material: material, temperature: temp, conductivity: cond, baseColor: color, 
@@ -588,7 +609,7 @@
             const group = ragdollGroupIndex--; 
             
             const isHuman = (type === 'human');
-            const rDens = isHuman ? 1.0 : 5.0; 
+            const rDens = isHuman ? 0.85 : 5.5; // FIX 2: Human made much more fragile than Android
             
             const cShell = isHuman ? '#fcd5ce' : '#b0b5be'; 
             const sShell = isHuman ? '#e8a598' : '#4b515a';
@@ -599,7 +620,7 @@
                 b.setUserData({ 
                     material: 'entity', temperature: 90, baseColor: cShell, outlineColor: sShell, 
                     layer: layer, isRagdoll: true, rootGroupId: group, density: rDens, lastY: pos.y,
-                    isHuman: isHuman, damageState: 0.0, vitalFluidVolume: isHuman ? 150 : 10,
+                    isHuman: isHuman, damageState: 0.0, targetDamageState: 0.0, vitalFluidVolume: isHuman ? 150 : 10, // FIX 1: Gradual damage carving state tracking
                     damageSeeds: [Math.random(), Math.random(), Math.random(), Math.random()],
                     isTorsoUp: isTorso, totalLimbHp: 100 
                 }); 
@@ -613,7 +634,7 @@
             head.setUserData({ 
                 material: 'entity', temperature: 90, baseColor: cShell, outlineColor: sShell, 
                 layer: 1, isRagdoll: true, rootGroupId: group, density: rDens, lastY: pos.y, 
-                isHuman: isHuman, damageState: 0.0, vitalFluidVolume: isHuman ? 100 : 10,
+                isHuman: isHuman, damageState: 0.0, targetDamageState: 0.0, vitalFluidVolume: isHuman ? 100 : 10,
                 damageSeeds: [Math.random(), Math.random(), Math.random(), Math.random()],
                 totalLimbHp: 100
             });
@@ -628,7 +649,8 @@
 
             function bind(bA, bB, anchorX, anchorY, minAngle, maxAngle) {
                 let j = world.createJoint(pl.RevoluteJoint({ enableLimit: true, lowerAngle: minAngle, upperAngle: maxAngle }, bA, bB, pl.Vec2((pos.x + anchorX)/SCALE, (pos.y + anchorY)/SCALE)));
-                activeJoints.push({ joint: j, breakForce: isHuman ? 40000 : 70000 }); 
+                // FIX 2: Lower human joint snap strength, Android remains strong
+                activeJoints.push({ joint: j, breakForce: isHuman ? 15000 : 95000 }); 
             }
 
             bind(head, torsoUp, 0, -47.5, -0.3, 0.3); bind(torsoUp, torsoLow, 0, -12.5, -0.2, 0.2);
@@ -656,20 +678,24 @@
                 if (!(udB.material === 'heater' && udB.activated) && !(udB.material === 'cooler' && udB.activated)) udB.temperature += diff * rate;
             }
             
-            // Structural Blunt Force Accumulation 
+            // FIX 2: Increased blunt trauma damage sensitivity for human entities
             if (udA.isRagdoll && udB.isProtected) {
                 const vA = bA.getLinearVelocity();
                 const impactSq = vA.lengthSquared();
-                const threshold = udA.isHuman ? 2500 : 4000;
-                if(impactSq > threshold && udA.damageState < 1.0) {
-                    udA.damageState = Math.min(1.0, udA.damageState + (impactSq - threshold) / 50000);
+                const threshold = udA.isHuman ? 100 : 5000;
+                if(impactSq > threshold && udA.targetDamageState < 1.0) {
+                    let damageRate = udA.isHuman ? 6000 : 40000;
+                    udA.targetDamageState = Math.min(1.0, udA.targetDamageState + (impactSq - threshold) / damageRate);
+                    bA.setAwake(true); // FIX 5: Immediately wake up on impact
                 }
             } else if (udB.isRagdoll && udA.isProtected) {
                 const vB = bB.getLinearVelocity();
                 const impactSq = vB.lengthSquared();
-                const threshold = udB.isHuman ? 2500 : 4000;
-                if(impactSq > threshold && udB.damageState < 1.0) {
-                    udB.damageState = Math.min(1.0, udB.damageState + (impactSq - threshold) / 50000);
+                const threshold = udB.isHuman ? 100 : 5000;
+                if(impactSq > threshold && udB.targetDamageState < 1.0) {
+                    let damageRate = udB.isHuman ? 6000 : 40000;
+                    udB.targetDamageState = Math.min(1.0, udB.targetDamageState + (impactSq - threshold) / damageRate);
+                    bB.setAwake(true); // FIX 5: Immediately wake up on impact
                 }
             }
         });
@@ -714,6 +740,7 @@
                 // A/D Keyboard Rotation applied to dragged or hovered item
                 let activeTarget = activeMouseJoint ? activeMouseJoint.getBodyB() : (hoveredBodyList.length > 0 ? hoveredBodyList[0] : null);
                 if (activeTarget && activeTarget.getType() !== 'static') {
+                    activeTarget.setAwake(true); // FIX 5: Instantly wake up for user key rotations
                     if (activePressedKeys[keybinds.rotLeft]) activeTarget.setAngularVelocity(activeTarget.getAngularVelocity() - 0.5 * timeScale);
                     if (activePressedKeys[keybinds.rotRight]) activeTarget.setAngularVelocity(activeTarget.getAngularVelocity() + 0.5 * timeScale);
                 }
@@ -736,8 +763,12 @@
                         let udA = bA.getUserData() || {};
                         let udB = bB.getUserData() || {};
                         
-                        if (udA.isRagdoll) udA.damageState = Math.min(1.0, udA.damageState + 0.4);
-                        if (udB.isRagdoll) udB.damageState = Math.min(1.0, udB.damageState + 0.4);
+                        // FIX 5: Wake up snap neighbours immediately
+                        bA.setAwake(true);
+                        bB.setAwake(true);
+                        
+                        if (udA.isRagdoll) udA.targetDamageState = Math.min(1.0, udA.targetDamageState + 0.4);
+                        if (udB.isRagdoll) udB.targetDamageState = Math.min(1.0, udB.damageState + 0.4);
                         
                         if (udA.isRagdoll && !udA.isHuman) {
                             const pA = jData.joint.getAnchorA();
@@ -761,6 +792,11 @@
                     
                     let isOverPool = (xPx >= waterStartX && xPx <= waterEndX);
                     const localWaterLvl = isOverPool ? getWaterHeightAt(xPx) : Infinity;
+
+                    // Interpolate procedural carving damage smoothly (FIX 1: Gradual layer carving)
+                    if (ud.damageState !== undefined && ud.targetDamageState !== undefined) {
+                        ud.damageState += (ud.targetDamageState - ud.damageState) * 0.1 * timeScale;
+                    }
 
                     if (ud.isBubble) {
                         if (yPx < localWaterLvl - 5) bodiesToDestroy.push(body);
@@ -822,23 +858,21 @@
                         }
                     }
 
-                    // HIGH-STABILITY ACTIVE STANDING BALANCING SYSTEM (Fixed stand abilities)
+                    // FIX 1: HIGH-STABILITY ACTIVE STANDING BALANCING SYSTEM (Leg muscles hang realistically when airborne)
                     if (ud.isTorsoUp) {
-                        // Check if deeply compromised -> collapse permanently limp
                         if (ud.damageState >= 0.8) {
                             ud.isTorsoUp = false; 
                         } else {
-                            let angle = body.getAngle();
-                            while (angle > Math.PI) angle -= 2 * Math.PI;
-                            while (angle < -Math.PI) angle += 2 * Math.PI;
-                            
-                            // Boosted upright restoring force for high stability self-righting
-                            let standingStrength = (1.0 - ud.damageState) * 450; 
-                            body.applyTorque(-angle * body.getMass() * standingStrength * timeScale); 
-
-                            // Force vector to stand legs upright and support weight
-                            if (yPx > localWaterLvl - 40) {
-                                body.applyForceToCenter(pl.Vec2(0, -body.getMass() * 10 * timeScale));
+                            const groundLvl = getGroundHeightAt(xPx);
+                            // Only stand upright and engage leg/stabilizer muscles when feet are actively near the terrain platforms
+                            if (yPx > groundLvl - 130) {
+                                let angle = body.getAngle();
+                                while (angle > Math.PI) angle -= 2 * Math.PI;
+                                while (angle < -Math.PI) angle += 2 * Math.PI;
+                                
+                                let standingStrength = (1.0 - ud.damageState) * 1200; 
+                                body.applyTorque(-angle * body.getMass() * standingStrength * timeScale); 
+                                body.applyForceToCenter(pl.Vec2(0, -body.getMass() * 32)); // Supporting vertical vector
                             }
                         }
                     }
@@ -867,15 +901,18 @@
                             
                             const area = body.getMass() / (ud.density || 1.0);
                             const fluidDensity = 2.0; 
-                            body.applyForceToCenter(pl.Vec2(0, -(area * submergedFraction * fluidDensity * Math.abs(world.getGravity().y) * timeScale)));
+                            
+                            // FIX 6: BUOYANCY CALCULATIONS PERSIST UNINTERRUPTED IN SLOW MOTION (Removed timescale from force)
+                            body.applyForceToCenter(pl.Vec2(0, -(area * submergedFraction * fluidDensity * Math.abs(world.getGravity().y))));
                             
                             const v = body.getLinearVelocity();
                             body.setLinearVelocity(pl.Vec2(v.x * (1 - 0.05 * timeScale), v.y * (1 - 0.05 * timeScale)));
                             body.setAngularVelocity(body.getAngularVelocity() * (1 - 0.05 * timeScale));
 
+                            // Android Electrocution / Water damage
                             if (!ud.isHuman && ud.isRagdoll) {
                                 if (Math.random() < 0.05 * timeScale) spawnSparks(xPx, yPx, 1);
-                                ud.damageState = Math.min(1.0, ud.damageState + 0.001 * timeScale); 
+                                ud.targetDamageState = Math.min(1.0, ud.targetDamageState + 0.001 * timeScale); 
                             }
 
                             const diff = ud.temperature - globalWaterTemp;
@@ -889,8 +926,10 @@
                                 for(let i=0; i<numBubbles; i++) spawnPhysicalBubble(xPx + (Math.random()*40 - 20), yPx + 10);
                                 ud.temperature -= overHeat * 0.05 * timeScale;
 
+                                // FIX 6: Sinks appropriately - Heater draft is balanced so it does not constantly launch upward
                                 if (numBubbles > 0) {
-                                    body.applyForceToCenter(pl.Vec2(0, -body.getMass() * numBubbles * 50 * timeScale));
+                                    let bubbleLift = body.getMass() * numBubbles * 3;
+                                    body.applyForceToCenter(pl.Vec2(0, -bubbleLift));
                                 }
                             }
                         }
@@ -1070,16 +1109,20 @@
                         let flicker = ud.inWaterFluid ? (Math.random() > 0.5) : true;
                         
                         if (flicker) {
+                            ctx.save();
+                            ctx.globalAlpha = Math.max(0, 1 - prog); // FIX 4: Particle fade out implemented properly
                             ctx.fillStyle = (Math.random() > 0.5) ? '#fbbf24' : '#fef08a'; // Yellow
                             ctx.shadowBlur = ud.inWaterFluid ? 15 : 5;
                             ctx.shadowColor = '#f59e0b';
                             for (let fix = body.getFixtureList(); fix; fix = fix.getNext()) {
                                 ctx.beginPath(); ctx.arc(0, 0, fix.getShape().m_radius * SCALE * 1.5, 0, Math.PI * 2); ctx.fill();
                             }
-                            ctx.shadowBlur = 0; 
+                            ctx.restore();
                         }
                     } else if (ud.isVitalFluid) {
                         let prog = ud.life / ud.maxLife;
+                        ctx.save();
+                        ctx.globalAlpha = Math.max(0, 1 - prog); // FIX 4: Particle fade out implemented properly
                         if (ud.inWaterFluid) {
                             for (let fix = body.getFixtureList(); fix; fix = fix.getNext()) {
                                 let r = fix.getShape().m_radius * SCALE * (1 + prog * 25);
@@ -1095,13 +1138,27 @@
                             ctx.fillStyle = ud.isHuman ? 'rgba(153, 27, 27, 0.9)' : 'rgba(31, 41, 55, 0.9)';
                             for (let fix = body.getFixtureList(); fix; fix = fix.getNext()) { drawShapeHelper(fix); ctx.fill(); }
                         }
+                        ctx.restore();
                     } else if (ud.isRagdoll) {
                         let fix = body.getFixtureList();
                         
-                        // 1. Core Structure
-                        ctx.fillStyle = ud.isHuman ? '#e2e8f0' : '#374151';
+                        // 1. Core Structure (Skeletal realism - rendering joints and long bone shafts)
+                        ctx.fillStyle = ud.isHuman ? '#e2e8f0' : '#475569';
                         drawCapsuleHelper(fix, 0.4, 1.15); 
                         ctx.fill();
+                        
+                        // Structural joint bulge rendering
+                        const shape = fix.getShape();
+                        if (shape.getType() === 'polygon') {
+                            const verts = shape.m_vertices;
+                            let hw = Math.abs(verts[0].x) * SCALE;
+                            let hh = Math.abs(verts[0].y) * SCALE;
+                            ctx.fillStyle = ud.isHuman ? '#cbd5e1' : '#334155';
+                            ctx.beginPath();
+                            ctx.arc(0, -hh + hw, hw * 0.5, 0, Math.PI * 2);
+                            ctx.arc(0, hh - hw, hw * 0.5, 0, Math.PI * 2);
+                            ctx.fill();
+                        }
 
                         // 2. Fibers (Wiring/Musculature)
                         let fiberAlpha = Math.max(0, 1 - Math.max(0, ud.damageState - 0.5) * 2);
@@ -1129,35 +1186,57 @@
                         }
                         ctx.globalAlpha = 1.0;
 
-                        // 4. Clean jagged gashes to expose fibers without shell transparency (REMOVED WEIRD DOTS)
+                        // 4. Procedural Layer Carving (Fix 2: Organic look without floating dots)
                         if (ud.damageState > 0.1 && !heatMapEnabled) {
                             let hw = Math.abs(fix.getShape().m_vertices ? fix.getShape().m_vertices[0].x * SCALE : fix.getShape().m_radius * SCALE);
                             let hh = Math.abs(fix.getShape().m_vertices ? fix.getShape().m_vertices[0].y * SCALE : fix.getShape().m_radius * SCALE);
                             
-                            ctx.fillStyle = ud.isHuman ? '#991b1b' : '#1f2937'; // Fiber base layer
-                            let gashCount = Math.floor(ud.damageState * 5);
+                            ctx.save();
+                            // Clip tightly within capsule boundary 
+                            drawCapsuleHelper(fix, 1.0, 1.0);
+                            ctx.clip();
                             
-                            for(let i=0; i<gashCount; i++) {
-                                let seed = ud.damageSeeds[i % 4];
-                                let gy = -hh + (hh * 2 * seed); 
-                                let gx = (i%2===0) ? -hw : hw; 
+                            // Generate custom, highly jagged fractals inside the limb bounds
+                            ctx.fillStyle = ud.isHuman ? '#7f1d1d' : '#111827'; // Subshell fiber layer
+                            ctx.beginPath();
+                            
+                            let startY = -hh;
+                            let seedOffset = ud.damageSeeds[0] * 10;
+                            ctx.moveTo(-hw, startY);
+                            
+                            // Draw random left jagged edge
+                            for (let y = -hh; y <= hh; y += 4) {
+                                let jaggedX = -hw + (Math.sin(y * 0.2 + seedOffset) * 4 * ud.damageState) + (ud.damageSeeds[1] * 5 * ud.damageState);
+                                ctx.lineTo(jaggedX, y);
+                            }
+                            // Draw random right jagged edge
+                            for (let y = hh; y >= -hh; y -= 4) {
+                                let jaggedX = hw - (Math.cos(y * 0.2 + seedOffset) * 4 * ud.damageState) - (ud.damageSeeds[2] * 5 * ud.damageState);
+                                // Contract width based on damage state
+                                let finalX = pl.Math.clamp(-hw, hw, jaggedX - (hw * 2 * (1.0 - ud.damageState)));
+                                ctx.lineTo(finalX, y);
+                            }
+                            ctx.closePath();
+                            ctx.fill();
+
+                            // Inner Bone Core Exposure
+                            if (ud.damageState > 0.6) {
+                                ctx.fillStyle = ud.isHuman ? '#e2e8f0' : '#475569'; // Core bone color
                                 ctx.beginPath();
-                                ctx.arc(gx, gy, hw * 0.8, 0, Math.PI*2);
+                                ctx.moveTo(-hw * 0.3, -hh);
+                                for (let y = -hh; y <= hh; y += 6) {
+                                    let jaggedX = -hw * 0.3 + (Math.sin(y * 0.5 + seedOffset) * 2 * (ud.damageState - 0.6));
+                                    ctx.lineTo(jaggedX, y);
+                                }
+                                for (let y = hh; y >= -hh; y -= 6) {
+                                    let jaggedX = hw * 0.3 - (Math.cos(y * 0.5 + seedOffset) * 2 * (ud.damageState - 0.6));
+                                    let finalX = pl.Math.clamp(-hw * 0.4, hw * 0.4, jaggedX - (hw * 0.8 * (1.0 - ud.damageState)));
+                                    ctx.lineTo(finalX, y);
+                                }
+                                ctx.closePath();
                                 ctx.fill();
                             }
-
-                            if (ud.damageState > 0.6) {
-                                ctx.fillStyle = ud.isHuman ? '#e2e8f0' : '#374151'; // Core base layer
-                                let coreCount = Math.floor((ud.damageState - 0.5) * 4);
-                                for(let i=0; i<coreCount; i++) {
-                                    let seed = ud.damageSeeds[(i+2) % 4];
-                                    let gy = -hh + (hh * 2 * seed);
-                                    let gx = (i%2!==0) ? -hw : hw;
-                                    ctx.beginPath();
-                                    ctx.arc(gx, gy, hw * 0.5, 0, Math.PI*2);
-                                    ctx.fill();
-                                }
-                            }
+                            ctx.restore();
                         }
 
                     } else {
@@ -1171,13 +1250,71 @@
 
                         ctx.fillStyle = fill; ctx.strokeStyle = stroke;
                         
-                        for (let fix = body.getFixtureList(); fix; fix = fix.getNext()) {
-                            drawShapeHelper(fix); ctx.fill(); ctx.stroke();
+                        // CUSTOM RENDERING FOR THE WOODEN SLEDGE CLUB (FIX 3: Basic wooden club widening past the handle)
+                        if (ud.material === 'club') {
+                            ctx.fillStyle = '#854d0e'; // Wooden brown handle
+                            ctx.strokeStyle = '#451a03'; 
+                            ctx.lineWidth = 2 / viewScale;
                             
-                            // Visual indicator if active
-                            if (ud.isActivable && ud.activated) {
-                                ctx.fillStyle = ud.material === 'heater' ? 'rgba(239, 68, 68, 0.4)' : 'rgba(59, 130, 246, 0.4)';
-                                drawShapeHelper(fix); ctx.fill();
+                            // Draw handle shaft (Properly positioned and visible now!)
+                            ctx.beginPath();
+                            ctx.moveTo(-2, -25); 
+                            ctx.lineTo(2, -25);
+                            ctx.lineTo(2, 5);  // Visible handle grip
+                            ctx.lineTo(-2, 5);
+                            ctx.closePath();
+                            ctx.fill(); ctx.stroke();
+                            
+                            // Draw widening wooden club body head
+                            ctx.beginPath();
+                            ctx.moveTo(-2, 5);
+                            ctx.lineTo(2, 5);
+                            ctx.lineTo(8, 25);  // Widens past handle
+                            ctx.lineTo(-8, 25);
+                            ctx.closePath();
+                            ctx.fill(); ctx.stroke();
+                        } else if (ud.material === 'lantern') { // FIX 4: Lantern visual render
+                            ctx.fillStyle = ud.activated ? '#fef08a' : '#475569';
+                            ctx.strokeStyle = '#1e293b';
+                            ctx.lineWidth = 2 / viewScale;
+                            
+                            // Outer lantern frame
+                            ctx.beginPath();
+                            ctx.rect(-8, -12, 16, 24);
+                            ctx.fill(); ctx.stroke();
+                            
+                            // Cage wire lines
+                            ctx.beginPath();
+                            ctx.moveTo(-4, -12); ctx.lineTo(-4, 12);
+                            ctx.moveTo(4, -12); ctx.lineTo(4, 12);
+                            ctx.moveTo(-8, 0); ctx.lineTo(8, 0);
+                            ctx.strokeStyle = '#0f172a';
+                            ctx.stroke();
+
+                            // Light radial gradient glow when active
+                            if (ud.activated) {
+                                ctx.save();
+                                ctx.translate(0, 0);
+                                let glowRad = 120;
+                                let radGrad = ctx.createRadialGradient(0, 0, 0, 0, 0, glowRad);
+                                radGrad.addColorStop(0, 'rgba(254, 240, 138, 0.45)');
+                                radGrad.addColorStop(0.3, 'rgba(253, 224, 71, 0.15)');
+                                radGrad.addColorStop(1, 'rgba(253, 224, 71, 0)');
+                                ctx.fillStyle = radGrad;
+                                ctx.beginPath();
+                                ctx.arc(0, 0, glowRad, 0, Math.PI * 2);
+                                ctx.fill();
+                                ctx.restore();
+                            }
+                        } else {
+                            for (let fix = body.getFixtureList(); fix; fix = fix.getNext()) {
+                                drawShapeHelper(fix); ctx.fill(); ctx.stroke();
+                                
+                                // Visual indicator if active
+                                if (ud.isActivable && ud.activated) {
+                                    ctx.fillStyle = ud.material === 'heater' ? 'rgba(239, 68, 68, 0.4)' : 'rgba(59, 130, 246, 0.4)';
+                                    drawShapeHelper(fix); ctx.fill();
+                                }
                             }
                         }
                         ctx.globalAlpha = 1.0;
@@ -1249,23 +1386,24 @@
                 if (bodies.length > 0 && currentTool === 'drag') {
                     let b = bodies[0];
                     if (b.getType() === 'static') b.setType('dynamic');
-                    b.setAwake(true);
+                    b.setAwake(true); // FIX 5: Instantly wake up the body on grab
                     
-                    // True Native Box2D MouseJoint: Extremely stiff, zero drifting.
                     activeMouseJoint = world.createJoint(pl.MouseJoint({ 
                         bodyA: groundBody, 
                         bodyB: b, 
                         target: wPos,
-                        maxForce: 50000.0 * b.getMass(), 
+                        maxForce: 500000.0 * b.getMass(), 
                         dampingRatio: 0.9, 
                         frequencyHz: 20.0 
                     }));
                     
                 } else if (bodies.length > 0 && currentTool === 'hinge') {
                     if (bodies.length >= 2 && bodies[0] !== bodies[1]) {
+                        bodies[0].setAwake(true); bodies[1].setAwake(true); // FIX 5: Wake up targets
                         world.createJoint(pl.RevoluteJoint({ enableLimit: false }, bodies[0], bodies[1], wPos));
                         showToast("Pinned bodies together.");
                     } else {
+                        bodies[0].setAwake(true);
                         world.createJoint(pl.RevoluteJoint({ enableLimit: false }, groundBody, bodies[0], wPos));
                         showToast("Pinned to background.");
                     }
@@ -1333,6 +1471,7 @@
             if (key === keybinds.activate) {
                 let target = activeMouseJoint ? activeMouseJoint.getBodyB() : (hoveredBodyList.length > 0 ? hoveredBodyList[0] : null);
                 if (target) {
+                    target.setAwake(true); // FIX 5: Instantly wake up upon activation
                     let ud = target.getUserData();
                     if (ud && ud.isActivable) {
                         ud.activated = !ud.activated;
@@ -1415,7 +1554,6 @@
             const ud = b.getUserData(); ud.ghosted = !ud.ghosted; b.getFixtureList().setFilterCategoryBits(ud.ghosted ? window.CAT_GHOST : window.CAT_DEFAULT);
         }));
 
-        // Dynamic Settings Overlay Controllers
         document.getElementById('setting-water-realism').addEventListener('input', (e) => { waterRealismFactor = parseInt(e.target.value); });
         document.getElementById('setting-show-fps').addEventListener('change', (e) => { 
             showFps = e.target.checked; document.getElementById('fps-counter').style.display = showFps ? 'block' : 'none';
@@ -1432,7 +1570,6 @@
 
         // Keybinding Capturer Controller
         function startKeybindCapture(actionName) {
-            // Cancel current capturing if clicking another button
             if (capturingAction) {
                 document.getElementById('bind-' + capturingAction).classList.remove('waiting');
             }
