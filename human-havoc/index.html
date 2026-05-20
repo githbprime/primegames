@@ -6,6 +6,8 @@
     <title>Human Havoc v3.0.0</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/planck-js@0.3.31/dist/planck.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pixi.js/7.3.2/pixi.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/pixi-filters@5.2.1/dist/pixi-filters.js"></script>
     <style>
         body { margin: 0; padding: 0; overflow: hidden; background-color: #000; color: white; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; user-select: none; }
         
@@ -16,9 +18,9 @@
                 linear-gradient(rgba(255, 255, 255, 0.04) 1px, transparent 1px),
                 linear-gradient(90deg, rgba(255, 255, 255, 0.04) 1px, transparent 1px);
         }
-        canvas { display: block; }
+        canvas { display: block; position: absolute; top: 0; left: 0; }
         
-        #ui-layer { position: absolute; top: 0; left: 0; pointer-events: none; width: 100%; height: 100%; display: flex; justify-content: space-between; }
+        #ui-layer { position: absolute; top: 0; left: 0; pointer-events: none; width: 100%; height: 100%; display: flex; justify-content: space-between; z-index: 10; }
         
         /* Left Sidebar */
         .left-wrapper { display: flex; pointer-events: auto; z-index: 10; height: 100%; box-shadow: 10px 0 20px rgba(0,0,0,0.5); }
@@ -98,7 +100,10 @@
 <body>
 
     <div id="canvas-container">
+        <!-- Background/Entity Rendering Context -->
         <canvas id="game-canvas"></canvas>
+        <!-- PixiJS Foreground Shaders & Glow Overlays -->
+        <canvas id="pixi-canvas" style="position:absolute; top:0; left:0; pointer-events:none; z-index: 5;"></canvas>
     </div>
 
     <div id="ui-layer">
@@ -345,11 +350,47 @@
         const canvas = document.getElementById('game-canvas');
         const ctx = canvas.getContext('2d');
 
-        function resizeCanvas() { canvas.width = window.innerWidth; canvas.height = window.innerHeight; }
+        // ==========================================
+        // PIXI.JS SHADER & GLOW INTEGRATION
+        // ==========================================
+        const pixiCanvas = document.getElementById('pixi-canvas');
+        const pixiApp = new PIXI.Application({
+            view: pixiCanvas,
+            width: window.innerWidth,
+            height: window.innerHeight,
+            backgroundAlpha: 0,
+            resolution: window.devicePixelRatio || 1
+        });
+        
+        const pixiWorld = new PIXI.Container();
+        pixiApp.stage.addChild(pixiWorld);
+        
+        const glowLayer = new PIXI.Graphics();
+        pixiWorld.addChild(glowLayer);
+        
+        // FIX 2: Modern options object signature for GlowFilter & fallback for CDN exposure
+        const GlowFilterClass = (typeof PIXI.filters !== 'undefined' && PIXI.filters.GlowFilter) || (typeof filters !== 'undefined' && filters.GlowFilter);
+        const glowFilter = GlowFilterClass ? new GlowFilterClass({ distance: 15, outerStrength: 2, innerStrength: 0, color: 0xfef08a, quality: 0.5 }) : null;
+        if (glowFilter) {
+            glowLayer.filters = [glowFilter];
+        }
+        
+        // FIX 2: Modern built-in NoiseFilter safe checks
+        const NoiseFilterClass = (typeof PIXI.filters !== 'undefined' && PIXI.filters.NoiseFilter) || (typeof PIXI.NoiseFilter !== 'undefined' && PIXI.NoiseFilter);
+        const noiseFilter = NoiseFilterClass ? new NoiseFilterClass({ noise: 0.08, seed: Math.random() }) : null;
+        if (noiseFilter && pixiApp.stage) {
+            pixiApp.stage.filters = [noiseFilter];
+        }
+
+        function resizeCanvas() { 
+            canvas.width = window.innerWidth; 
+            canvas.height = window.innerHeight; 
+            if(typeof pixiApp !== 'undefined') pixiApp.renderer.resize(window.innerWidth, window.innerHeight);
+        }
         window.addEventListener('resize', resizeCanvas);
         resizeCanvas();
 
-        // CAMERA ENVELOPE: Fixed spawn zoom-out (Fix 3 & 4: Perfect central wide map overview on launch)
+        // CAMERA ENVELOPE: Fixed spawn viewport framing (FIX 4: Removed unnecessary/overengineered offsets to align cleanly)
         let viewScale = 0.42; 
         let viewPan = { 
             x: 2000 - (window.innerWidth / 2) / 0.42, 
@@ -397,7 +438,7 @@
 
         // Settings / Thermo Globals
         let waterRealismFactor = 100;
-        let showFps = true; // FIX: Show FPS by default
+        let showFps = true; 
         let heatMapEnabled = false;
         let heatmapOpacity = 0.8;
         
@@ -407,7 +448,6 @@
         
         const activeJoints = [];
 
-        // Set up the FPS UI correctly on startup
         document.getElementById('fps-counter').style.display = 'block';
 
         // -----------------------------
@@ -513,7 +553,6 @@
             let sprayVel = pl.Vec2(velocityVec.x + (Math.random()*10-5), velocityVec.y + (Math.random()*10-5));
             drop.setLinearVelocity(sprayVel);
             
-            // Stricter particle life cap: Fades out smoothly and is deleted
             drop.setUserData({ isVitalFluid: true, isHuman: isHuman, life: 0, maxLife: 50 + Math.random()*20, inWaterFluid: false });
         }
 
@@ -580,27 +619,34 @@
         function spawnBox(material, pos, flip) {
             let color, stroke, dens, cond, temp = TEMP_AIR;
             let width = 20, height = 20;
+            let body = world.createDynamicBody(pl.Vec2(pos.x/SCALE, pos.y/SCALE));
 
             if (material === 'wood') { dens = 1.0; cond = 0.01; color = '#5c4033'; stroke = '#3b281f'; } 
             else if (material === 'metal') { dens = 5.0; cond = 0.2; color = '#838a96'; stroke = '#4d525c'; } 
             else if (material === 'club') { 
-                // FIX 3: Replaced spiked weapon with a basic tapered wooden club profile
+                // FIX 1: Heavy club hitbox fixes - handle width is properly proportioned to be much smaller than the head
                 dens = 2.0; cond = 0.01; color = '#854d0e'; stroke = '#451a03'; 
-                height = 50; width = 10; 
+                const verts = [ pl.Vec2(-2/SCALE, -25/SCALE), pl.Vec2(2/SCALE, -25/SCALE), pl.Vec2(10/SCALE, 25/SCALE), pl.Vec2(-10/SCALE, 25/SCALE) ];
+                body.createFixture(pl.Polygon(verts), { density: dens, friction: 0.5, filterCategoryBits: window.CAT_DEFAULT });
+                width = 20; height = 50;
+            }
+            else if (material === 'lantern') { 
+                // FIX 1: Correctly proportioned lantern box dimensions
+                dens = 1.5; cond = 0.1; color = '#475569'; stroke = '#1e293b'; height = 20; width = 14; 
             }
             else if (material === 'heater') { dens = 5.0; cond = 1.0; color = '#3a2020'; stroke = '#ef4444'; temp = TEMP_AIR; } 
             else if (material === 'cooler') { dens = 2.0; cond = 1.0; color = '#1d2b3a'; stroke = '#3b82f6'; temp = TEMP_AIR; } 
-            else if (material === 'lantern') { dens = 1.5; cond = 0.1; color = '#475569'; stroke = '#1e293b'; } // FIX 4: Lantern item
 
-            const body = world.createDynamicBody(pl.Vec2(pos.x/SCALE, pos.y/SCALE));
-            body.createFixture(pl.Box(width/SCALE, height/SCALE), { density: dens, friction: 0.5, filterCategoryBits: window.CAT_DEFAULT });
+            if (material !== 'club') {
+                body.createFixture(pl.Box(width/2/SCALE, height/2/SCALE), { density: dens, friction: 0.5, filterCategoryBits: window.CAT_DEFAULT });
+            }
             
             let isActivable = (material === 'heater' || material === 'cooler' || material === 'lantern');
 
             body.setUserData({ 
                 material: material, temperature: temp, conductivity: cond, baseColor: color, 
                 outlineColor: stroke, isRagdoll: false, density: dens, lastY: pos.y,
-                isActivable: isActivable, activated: false
+                isActivable: isActivable, activated: false, width: width, height: height
             });
         }
 
@@ -609,26 +655,26 @@
             const group = ragdollGroupIndex--; 
             
             const isHuman = (type === 'human');
-            const rDens = isHuman ? 0.85 : 5.5; // FIX 2: Human made much more fragile than Android
+            const rDens = isHuman ? 0.85 : 5.5; 
             
             const cShell = isHuman ? '#fcd5ce' : '#b0b5be'; 
             const sShell = isHuman ? '#e8a598' : '#4b515a';
 
-            function makeLimb(xOffset, yOffset, hw, hh, layer, isTorso) {
+            function makeLimb(xOffset, yOffset, hw, hh, layer, isTorso, isLeg) {
                 const b = world.createDynamicBody(pl.Vec2((pos.x + xOffset)/SCALE, (pos.y + yOffset)/SCALE));
                 b.createFixture(pl.Box(hw/SCALE, hh/SCALE), { density: rDens, friction: 0.8, filterGroupIndex: group, filterCategoryBits: window.CAT_DEFAULT });
                 b.setUserData({ 
                     material: 'entity', temperature: 90, baseColor: cShell, outlineColor: sShell, 
                     layer: layer, isRagdoll: true, rootGroupId: group, density: rDens, lastY: pos.y,
-                    isHuman: isHuman, damageState: 0.0, targetDamageState: 0.0, vitalFluidVolume: isHuman ? 150 : 10, // FIX 1: Gradual damage carving state tracking
+                    isHuman: isHuman, damageState: 0.0, targetDamageState: 0.0, vitalFluidVolume: isHuman ? 150 : 10,
                     damageSeeds: [Math.random(), Math.random(), Math.random(), Math.random()],
-                    isTorsoUp: isTorso, totalLimbHp: 100 
+                    isTorsoUp: isTorso, isLeg: isLeg, totalLimbHp: 100 
                 }); 
                 return b;
             }
 
-            const torsoUp = makeLimb(0, -30, 10, 17.5, 1, true);
-            const torsoLow = makeLimb(0, 0, 10, 12.5, 1, false);
+            const torsoUp = makeLimb(0, -30, 10, 17.5, 1, true, false);
+            const torsoLow = makeLimb(0, 0, 10, 12.5, 1, false, false);
             const head = world.createDynamicBody(pl.Vec2(pos.x/SCALE, (pos.y - 60)/SCALE));
             head.createFixture(pl.Circle(12/SCALE), { density: rDens, friction: 0.8, filterGroupIndex: group, filterCategoryBits: window.CAT_DEFAULT });
             head.setUserData({ 
@@ -639,17 +685,16 @@
                 totalLimbHp: 100
             });
 
-            const armUpB = makeLimb(-1, -25, 5, 15, 0, false); const armLowB = makeLimb(-1, 5, 4.5, 15, 0, false);
-            const legUpB = makeLimb(-1, 30, 6.5, 17.5, 0, false); const legLowB = makeLimb(-1, 65, 5.5, 17.5, 0, false);
-            const footB = makeLimb(5*f-1, 87.5, 10, 5, 0, false);
+            const armUpB = makeLimb(-1, -25, 5, 15, 0, false, false); const armLowB = makeLimb(-1, 5, 4.5, 15, 0, false, false);
+            const legUpB = makeLimb(-1, 30, 6.5, 17.5, 0, false, true); const legLowB = makeLimb(-1, 65, 5.5, 17.5, 0, false, true);
+            const footB = makeLimb(5*f-1, 87.5, 10, 5, 0, false, true);
 
-            const armUpF = makeLimb(1, -25, 5, 15, 2, false); const armLowF = makeLimb(1, 5, 4.5, 15, 2, false);
-            const legUpF = makeLimb(1, 30, 6.5, 17.5, 2, false); const legLowF = makeLimb(1, 65, 5.5, 17.5, 2, false);
-            const footF = makeLimb(5*f+1, 87.5, 10, 5, 2, false);
+            const armUpF = makeLimb(1, -25, 5, 15, 2, false, false); const armLowF = makeLimb(1, 5, 4.5, 15, 2, false, false);
+            const legUpF = makeLimb(1, 30, 6.5, 17.5, 2, false, true); const legLowF = makeLimb(1, 65, 5.5, 17.5, 2, false, true);
+            const footF = makeLimb(5*f+1, 87.5, 10, 5, 2, false, true);
 
             function bind(bA, bB, anchorX, anchorY, minAngle, maxAngle) {
                 let j = world.createJoint(pl.RevoluteJoint({ enableLimit: true, lowerAngle: minAngle, upperAngle: maxAngle }, bA, bB, pl.Vec2((pos.x + anchorX)/SCALE, (pos.y + anchorY)/SCALE)));
-                // FIX 2: Lower human joint snap strength, Android remains strong
                 activeJoints.push({ joint: j, breakForce: isHuman ? 15000 : 95000 }); 
             }
 
@@ -678,7 +723,7 @@
                 if (!(udB.material === 'heater' && udB.activated) && !(udB.material === 'cooler' && udB.activated)) udB.temperature += diff * rate;
             }
             
-            // FIX 2: Increased blunt trauma damage sensitivity for human entities
+            // Structural Blunt Force Accumulation 
             if (udA.isRagdoll && udB.isProtected) {
                 const vA = bA.getLinearVelocity();
                 const impactSq = vA.lengthSquared();
@@ -686,7 +731,7 @@
                 if(impactSq > threshold && udA.targetDamageState < 1.0) {
                     let damageRate = udA.isHuman ? 6000 : 40000;
                     udA.targetDamageState = Math.min(1.0, udA.targetDamageState + (impactSq - threshold) / damageRate);
-                    bA.setAwake(true); // FIX 5: Immediately wake up on impact
+                    bA.setAwake(true); 
                 }
             } else if (udB.isRagdoll && udA.isProtected) {
                 const vB = bB.getLinearVelocity();
@@ -695,7 +740,7 @@
                 if(impactSq > threshold && udB.targetDamageState < 1.0) {
                     let damageRate = udB.isHuman ? 6000 : 40000;
                     udB.targetDamageState = Math.min(1.0, udB.targetDamageState + (impactSq - threshold) / damageRate);
-                    bB.setAwake(true); // FIX 5: Immediately wake up on impact
+                    bB.setAwake(true); 
                 }
             }
         });
@@ -737,10 +782,10 @@
                 world.step((1 / 60) * timeScale, 12, 8);
                 updateWaterWaves(timeScale);
 
-                // A/D Keyboard Rotation applied to dragged or hovered item
+                // A/D Keyboard Rotation
                 let activeTarget = activeMouseJoint ? activeMouseJoint.getBodyB() : (hoveredBodyList.length > 0 ? hoveredBodyList[0] : null);
                 if (activeTarget && activeTarget.getType() !== 'static') {
-                    activeTarget.setAwake(true); // FIX 5: Instantly wake up for user key rotations
+                    activeTarget.setAwake(true); 
                     if (activePressedKeys[keybinds.rotLeft]) activeTarget.setAngularVelocity(activeTarget.getAngularVelocity() - 0.5 * timeScale);
                     if (activePressedKeys[keybinds.rotRight]) activeTarget.setAngularVelocity(activeTarget.getAngularVelocity() + 0.5 * timeScale);
                 }
@@ -763,7 +808,6 @@
                         let udA = bA.getUserData() || {};
                         let udB = bB.getUserData() || {};
                         
-                        // FIX 5: Wake up snap neighbours immediately
                         bA.setAwake(true);
                         bB.setAwake(true);
                         
@@ -782,7 +826,8 @@
 
                 for (let body = world.getBodyList(); body; body = body.getNext()) {
                     if (body.getType() === 'static') continue;
-                    
+                    if (!body.isAwake()) continue; // Performance Sleep check (Fix 5: Sleeping optimized)
+
                     const pos = body.getPosition();
                     const ud = body.getUserData() || {};
                     let inWater = false;
@@ -793,7 +838,7 @@
                     let isOverPool = (xPx >= waterStartX && xPx <= waterEndX);
                     const localWaterLvl = isOverPool ? getWaterHeightAt(xPx) : Infinity;
 
-                    // Interpolate procedural carving damage smoothly (FIX 1: Gradual layer carving)
+                    // Interpolate procedural carving damage smoothly
                     if (ud.damageState !== undefined && ud.targetDamageState !== undefined) {
                         ud.damageState += (ud.targetDamageState - ud.damageState) * 0.1 * timeScale;
                     }
@@ -858,22 +903,33 @@
                         }
                     }
 
-                    // FIX 1: HIGH-STABILITY ACTIVE STANDING BALANCING SYSTEM (Leg muscles hang realistically when airborne)
+                    // FIX 3: Dynamic standing only if feet are touching the ground (not dangling in air)
                     if (ud.isTorsoUp) {
                         if (ud.damageState >= 0.8) {
                             ud.isTorsoUp = false; 
                         } else {
                             const groundLvl = getGroundHeightAt(xPx);
-                            // Only stand upright and engage leg/stabilizer muscles when feet are actively near the terrain platforms
+                            // Leg brace activated exclusively when feet are in proximity of the terrain platform surface
                             if (yPx > groundLvl - 130) {
                                 let angle = body.getAngle();
                                 while (angle > Math.PI) angle -= 2 * Math.PI;
                                 while (angle < -Math.PI) angle += 2 * Math.PI;
                                 
-                                let standingStrength = (1.0 - ud.damageState) * 1200; 
+                                let standingStrength = (1.0 - ud.damageState) * 1500; 
                                 body.applyTorque(-angle * body.getMass() * standingStrength * timeScale); 
-                                body.applyForceToCenter(pl.Vec2(0, -body.getMass() * 32)); // Supporting vertical vector
+                                body.applyForceToCenter(pl.Vec2(0, -body.getMass() * 32)); 
                             }
+                        }
+                    }
+                    if (ud.isLeg && ud.damageState < 0.8) {
+                        const groundLvl = getGroundHeightAt(xPx);
+                        if (yPx > groundLvl - 130) {
+                            let angle = body.getAngle();
+                            while (angle > Math.PI) angle -= 2 * Math.PI;
+                            while (angle < -Math.PI) angle += 2 * Math.PI;
+                            
+                            let legStrength = (1.0 - ud.damageState) * 800; 
+                            body.applyTorque(-angle * body.getMass() * legStrength * timeScale); 
                         }
                     }
 
@@ -902,7 +958,6 @@
                             const area = body.getMass() / (ud.density || 1.0);
                             const fluidDensity = 2.0; 
                             
-                            // FIX 6: BUOYANCY CALCULATIONS PERSIST UNINTERRUPTED IN SLOW MOTION (Removed timescale from force)
                             body.applyForceToCenter(pl.Vec2(0, -(area * submergedFraction * fluidDensity * Math.abs(world.getGravity().y))));
                             
                             const v = body.getLinearVelocity();
@@ -926,7 +981,6 @@
                                 for(let i=0; i<numBubbles; i++) spawnPhysicalBubble(xPx + (Math.random()*40 - 20), yPx + 10);
                                 ud.temperature -= overHeat * 0.05 * timeScale;
 
-                                // FIX 6: Sinks appropriately - Heater draft is balanced so it does not constantly launch upward
                                 if (numBubbles > 0) {
                                     let bubbleLift = body.getMass() * numBubbles * 3;
                                     body.applyForceToCenter(pl.Vec2(0, -bubbleLift));
@@ -960,7 +1014,7 @@
         }, 1000);
 
         // -----------------------------
-        // RENDERER
+        // RENDERER & PIXI OVERLAYS
         // -----------------------------
         function getTempColor(t) {
             let r=0, g=0, b=0;
@@ -1017,6 +1071,7 @@
         }
 
         function renderCanvas() {
+            // Render the complex geometry to standard canvas context
             ctx.setTransform(1, 0, 0, 1, 0, 0); 
             ctx.clearRect(0, 0, canvas.width, canvas.height);
             
@@ -1026,6 +1081,12 @@
 
             ctx.translate(-viewPan.x, -viewPan.y);
             ctx.scale(viewScale, viewScale);
+            
+            // Sync the PIXI Camera for Shaders / Glow Pass
+            noiseFilter.seed = Math.random();
+            pixiWorld.scale.set(viewScale);
+            pixiWorld.position.set(-viewPan.x, -viewPan.y);
+            glowLayer.clear();
 
             if (heatMapEnabled && heatmapOpacity > 0) {
                 ctx.globalAlpha = heatmapOpacity;
@@ -1078,250 +1139,213 @@
                 ctx.beginPath(); ctx.moveTo(waterStartX, waterTop); ctx.lineTo(waterEndX, waterTop); ctx.stroke();
             }
 
-            const renderQueue = [ [], [], [], [] ]; 
             for (let body = world.getBodyList(); body; body = body.getNext()) {
                 const ud = body.getUserData() || {};
-                renderQueue[ud.isProtected ? 3 : (ud.layer !== undefined ? ud.layer : 1)].push(body);
-            }
+                
+                const pos = body.getPosition(), angle = body.getAngle();
+                
+                ctx.save();
+                ctx.translate(pos.x * SCALE, pos.y * SCALE);
+                ctx.rotate(angle);
 
-            renderQueue.forEach(layerBodies => {
-                layerBodies.forEach(body => {
-                    const pos = body.getPosition(), angle = body.getAngle(), ud = body.getUserData() || {};
+                if (ud.isBubble) {
+                    ctx.fillStyle = 'rgba(255, 255, 255, 0.3)'; ctx.strokeStyle = 'rgba(255, 255, 255, 0.6)'; ctx.lineWidth = 1 / viewScale;
+                    for (let fix = body.getFixtureList(); fix; fix = fix.getNext()) { drawShapeHelper(fix); ctx.fill(); ctx.stroke(); }
+                } else if (ud.isWaterParticle) {
+                    ctx.fillStyle = 'rgba(70, 140, 255, 0.8)';
+                    for (let fix = body.getFixtureList(); fix; fix = fix.getNext()) { drawShapeHelper(fix); ctx.fill(); }
+                } else if (ud.isSmoke) {
+                    let prog = ud.life / ud.maxLife;
+                    ctx.fillStyle = `rgba(100, 100, 100, ${Math.max(0, (1 - prog) * 0.5)})`;
+                    for (let fix = body.getFixtureList(); fix; fix = fix.getNext()) { 
+                        ctx.beginPath(); ctx.arc(0, 0, fix.getShape().m_radius * SCALE * (1 + prog*2), 0, Math.PI * 2); ctx.fill(); 
+                    }
+                } else if (ud.isSpark) {
+                    let prog = ud.life / ud.maxLife;
+                    let flicker = ud.inWaterFluid ? (Math.random() > 0.5) : true;
                     
+                    if (flicker) {
+                        for (let fix = body.getFixtureList(); fix; fix = fix.getNext()) {
+                            // PIXI SHADER GLOW INTEGRATION
+                            glowLayer.beginFill((Math.random() > 0.5) ? 0xfbbf24 : 0xfef08a, Math.max(0, 1 - prog));
+                            glowLayer.drawCircle(pos.x * SCALE, pos.y * SCALE, fix.getShape().m_radius * SCALE * 1.5);
+                            glowLayer.endFill();
+                        }
+                    }
+                } else if (ud.isVitalFluid) {
+                    let prog = ud.life / ud.maxLife;
                     ctx.save();
-                    ctx.translate(pos.x * SCALE, pos.y * SCALE);
-                    ctx.rotate(angle);
-
-                    if (ud.isBubble) {
-                        ctx.fillStyle = 'rgba(255, 255, 255, 0.3)'; ctx.strokeStyle = 'rgba(255, 255, 255, 0.6)'; ctx.lineWidth = 1 / viewScale;
-                        for (let fix = body.getFixtureList(); fix; fix = fix.getNext()) { drawShapeHelper(fix); ctx.fill(); ctx.stroke(); }
-                    } else if (ud.isWaterParticle) {
-                        ctx.fillStyle = 'rgba(70, 140, 255, 0.8)';
+                    ctx.globalAlpha = Math.max(0, 1 - prog); 
+                    if (ud.inWaterFluid) {
+                        for (let fix = body.getFixtureList(); fix; fix = fix.getNext()) {
+                            let r = fix.getShape().m_radius * SCALE * (1 + prog * 25);
+                            let a = Math.max(0, 1 - prog) * 0.6;
+                            let grad = ctx.createRadialGradient(0,0,0, 0,0,r);
+                            let col = ud.isHuman ? `153, 27, 27` : `31, 41, 55`;
+                            grad.addColorStop(0, `rgba(${col}, ${a})`);
+                            grad.addColorStop(1, `rgba(${col}, 0)`);
+                            ctx.fillStyle = grad;
+                            ctx.beginPath(); ctx.arc(0,0,r, 0, Math.PI*2); ctx.fill();
+                        }
+                    } else {
+                        ctx.fillStyle = ud.isHuman ? 'rgba(153, 27, 27, 0.9)' : 'rgba(31, 41, 55, 0.9)';
                         for (let fix = body.getFixtureList(); fix; fix = fix.getNext()) { drawShapeHelper(fix); ctx.fill(); }
-                    } else if (ud.isSmoke) {
-                        let prog = ud.life / ud.maxLife;
-                        ctx.fillStyle = `rgba(100, 100, 100, ${Math.max(0, (1 - prog) * 0.5)})`;
-                        for (let fix = body.getFixtureList(); fix; fix = fix.getNext()) { 
-                            ctx.beginPath(); ctx.arc(0, 0, fix.getShape().m_radius * SCALE * (1 + prog*2), 0, Math.PI * 2); ctx.fill(); 
-                        }
-                    } else if (ud.isSpark) {
-                        let prog = ud.life / ud.maxLife;
-                        let flicker = ud.inWaterFluid ? (Math.random() > 0.5) : true;
-                        
-                        if (flicker) {
-                            ctx.save();
-                            ctx.globalAlpha = Math.max(0, 1 - prog); // FIX 4: Particle fade out implemented properly
-                            ctx.fillStyle = (Math.random() > 0.5) ? '#fbbf24' : '#fef08a'; // Yellow
-                            ctx.shadowBlur = ud.inWaterFluid ? 15 : 5;
-                            ctx.shadowColor = '#f59e0b';
-                            for (let fix = body.getFixtureList(); fix; fix = fix.getNext()) {
-                                ctx.beginPath(); ctx.arc(0, 0, fix.getShape().m_radius * SCALE * 1.5, 0, Math.PI * 2); ctx.fill();
-                            }
-                            ctx.restore();
-                        }
-                    } else if (ud.isVitalFluid) {
-                        let prog = ud.life / ud.maxLife;
-                        ctx.save();
-                        ctx.globalAlpha = Math.max(0, 1 - prog); // FIX 4: Particle fade out implemented properly
-                        if (ud.inWaterFluid) {
-                            for (let fix = body.getFixtureList(); fix; fix = fix.getNext()) {
-                                let r = fix.getShape().m_radius * SCALE * (1 + prog * 25);
-                                let a = Math.max(0, 1 - prog) * 0.6;
-                                let grad = ctx.createRadialGradient(0,0,0, 0,0,r);
-                                let col = ud.isHuman ? `153, 27, 27` : `31, 41, 55`;
-                                grad.addColorStop(0, `rgba(${col}, ${a})`);
-                                grad.addColorStop(1, `rgba(${col}, 0)`);
-                                ctx.fillStyle = grad;
-                                ctx.beginPath(); ctx.arc(0,0,r, 0, Math.PI*2); ctx.fill();
-                            }
-                        } else {
-                            ctx.fillStyle = ud.isHuman ? 'rgba(153, 27, 27, 0.9)' : 'rgba(31, 41, 55, 0.9)';
-                            for (let fix = body.getFixtureList(); fix; fix = fix.getNext()) { drawShapeHelper(fix); ctx.fill(); }
-                        }
-                        ctx.restore();
-                    } else if (ud.isRagdoll) {
-                        let fix = body.getFixtureList();
-                        
-                        // 1. Core Structure (Skeletal realism - rendering joints and long bone shafts)
-                        ctx.fillStyle = ud.isHuman ? '#e2e8f0' : '#475569';
-                        drawCapsuleHelper(fix, 0.4, 1.15); 
+                    }
+                    ctx.restore();
+                } else if (ud.isRagdoll) {
+                    let fix = body.getFixtureList();
+                    
+                    // 1. Core Structure
+                    ctx.fillStyle = ud.isHuman ? '#e2e8f0' : '#475569';
+                    drawCapsuleHelper(fix, 0.4, 1.15); 
+                    ctx.fill();
+                    
+                    const shape = fix.getShape();
+                    if (shape.getType() === 'polygon') {
+                        const verts = shape.m_vertices;
+                        let hw = Math.abs(verts[0].x) * SCALE;
+                        let hh = Math.abs(verts[0].y) * SCALE;
+                        ctx.fillStyle = ud.isHuman ? '#cbd5e1' : '#334155';
+                        ctx.beginPath();
+                        ctx.arc(0, -hh + hw, hw * 0.5, 0, Math.PI * 2);
+                        ctx.arc(0, hh - hw, hw * 0.5, 0, Math.PI * 2);
                         ctx.fill();
+                    }
+
+                    // 2. Fibers (Wiring/Musculature)
+                    let fiberAlpha = Math.max(0, 1 - Math.max(0, ud.damageState - 0.5) * 2);
+                    if (heatMapEnabled) fiberAlpha = 0; 
+                    
+                    if (fiberAlpha > 0) {
+                        ctx.globalAlpha = fiberAlpha;
+                        ctx.fillStyle = ud.isHuman ? '#991b1b' : '#1f2937';
+                        drawCapsuleHelper(fix, 0.85, 0.95);
+                        ctx.fill();
+                    }
+                    ctx.globalAlpha = 1.0;
+
+                    // 3. Shell (Skin/Casing)
+                    let shellAlpha = Math.max(0, 1 - (ud.damageState * 1.5));
+                    let fill = ud.baseColor, stroke = ud.outlineColor;
+                    
+                    if (heatMapEnabled && ud.temperature !== undefined) {
+                        ctx.globalAlpha = heatmapOpacity; fill = stroke = getTempColor(ud.temperature);
+                    } else { ctx.globalAlpha = shellAlpha; }
+                    
+                    if (ctx.globalAlpha > 0) {
+                        ctx.fillStyle = fill; ctx.strokeStyle = stroke; ctx.lineWidth = 2 / viewScale;
+                        drawCapsuleHelper(fix, 1.0, 1.0); ctx.fill(); ctx.stroke();
+                    }
+                    ctx.globalAlpha = 1.0;
+
+                    // 4. Procedural Layer Carving
+                    if (ud.damageState > 0.1 && !heatMapEnabled) {
+                        let hw = Math.abs(fix.getShape().m_vertices ? fix.getShape().m_vertices[0].x * SCALE : fix.getShape().m_radius * SCALE);
+                        let hh = Math.abs(fix.getShape().m_vertices ? fix.getShape().m_vertices[0].y * SCALE : fix.getShape().m_radius * SCALE);
                         
-                        // Structural joint bulge rendering
-                        const shape = fix.getShape();
-                        if (shape.getType() === 'polygon') {
-                            const verts = shape.m_vertices;
-                            let hw = Math.abs(verts[0].x) * SCALE;
-                            let hh = Math.abs(verts[0].y) * SCALE;
-                            ctx.fillStyle = ud.isHuman ? '#cbd5e1' : '#334155';
+                        ctx.save();
+                        drawCapsuleHelper(fix, 1.0, 1.0);
+                        ctx.clip();
+                        
+                        // FIX 1 & 2: Organic procedural slice with nested fractals inside the limb boundaries
+                        ctx.fillStyle = ud.isHuman ? '#7f1d1d' : '#111827';
+                        ctx.beginPath();
+                        
+                        let startY = -hh;
+                        let seedOffset = ud.damageSeeds[0] * 10;
+                        ctx.moveTo(-hw, startY);
+                        
+                        for (let y = -hh; y <= hh; y += 4) {
+                            let jaggedX = -hw + (Math.sin(y * 0.2 + seedOffset) * 4 * ud.damageState) + (ud.damageSeeds[1] * 5 * ud.damageState);
+                            ctx.lineTo(jaggedX, y);
+                        }
+                        for (let y = hh; y >= -hh; y -= 4) {
+                            let jaggedX = hw - (Math.cos(y * 0.2 + seedOffset) * 4 * ud.damageState) - (ud.damageSeeds[2] * 5 * ud.damageState);
+                            let finalX = pl.Math.clamp(-hw, hw, jaggedX - (hw * 2 * (1.0 - ud.damageState)));
+                            ctx.lineTo(finalX, y);
+                        }
+                        ctx.closePath();
+                        ctx.fill();
+
+                        if (ud.damageState > 0.6) {
+                            ctx.fillStyle = ud.isHuman ? '#e2e8f0' : '#475569'; 
                             ctx.beginPath();
-                            ctx.arc(0, -hh + hw, hw * 0.5, 0, Math.PI * 2);
-                            ctx.arc(0, hh - hw, hw * 0.5, 0, Math.PI * 2);
-                            ctx.fill();
-                        }
-
-                        // 2. Fibers (Wiring/Musculature)
-                        let fiberAlpha = Math.max(0, 1 - Math.max(0, ud.damageState - 0.5) * 2);
-                        if (heatMapEnabled) fiberAlpha = 0; 
-                        
-                        if (fiberAlpha > 0) {
-                            ctx.globalAlpha = fiberAlpha;
-                            ctx.fillStyle = ud.isHuman ? '#991b1b' : '#1f2937';
-                            drawCapsuleHelper(fix, 0.85, 0.95);
-                            ctx.fill();
-                        }
-                        ctx.globalAlpha = 1.0;
-
-                        // 3. Shell (Skin/Casing)
-                        let shellAlpha = Math.max(0, 1 - (ud.damageState * 1.5));
-                        let fill = ud.baseColor, stroke = ud.outlineColor;
-                        
-                        if (heatMapEnabled && ud.temperature !== undefined) {
-                            ctx.globalAlpha = heatmapOpacity; fill = stroke = getTempColor(ud.temperature);
-                        } else { ctx.globalAlpha = shellAlpha; }
-                        
-                        if (ctx.globalAlpha > 0) {
-                            ctx.fillStyle = fill; ctx.strokeStyle = stroke; ctx.lineWidth = 2 / viewScale;
-                            drawCapsuleHelper(fix, 1.0, 1.0); ctx.fill(); ctx.stroke();
-                        }
-                        ctx.globalAlpha = 1.0;
-
-                        // 4. Procedural Layer Carving (Fix 2: Organic look without floating dots)
-                        if (ud.damageState > 0.1 && !heatMapEnabled) {
-                            let hw = Math.abs(fix.getShape().m_vertices ? fix.getShape().m_vertices[0].x * SCALE : fix.getShape().m_radius * SCALE);
-                            let hh = Math.abs(fix.getShape().m_vertices ? fix.getShape().m_vertices[0].y * SCALE : fix.getShape().m_radius * SCALE);
-                            
-                            ctx.save();
-                            // Clip tightly within capsule boundary 
-                            drawCapsuleHelper(fix, 1.0, 1.0);
-                            ctx.clip();
-                            
-                            // Generate custom, highly jagged fractals inside the limb bounds
-                            ctx.fillStyle = ud.isHuman ? '#7f1d1d' : '#111827'; // Subshell fiber layer
-                            ctx.beginPath();
-                            
-                            let startY = -hh;
-                            let seedOffset = ud.damageSeeds[0] * 10;
-                            ctx.moveTo(-hw, startY);
-                            
-                            // Draw random left jagged edge
-                            for (let y = -hh; y <= hh; y += 4) {
-                                let jaggedX = -hw + (Math.sin(y * 0.2 + seedOffset) * 4 * ud.damageState) + (ud.damageSeeds[1] * 5 * ud.damageState);
+                            ctx.moveTo(-hw * 0.3, -hh);
+                            for (let y = -hh; y <= hh; y += 6) {
+                                let jaggedX = -hw * 0.3 + (Math.sin(y * 0.5 + seedOffset) * 2 * (ud.damageState - 0.6));
                                 ctx.lineTo(jaggedX, y);
                             }
-                            // Draw random right jagged edge
-                            for (let y = hh; y >= -hh; y -= 4) {
-                                let jaggedX = hw - (Math.cos(y * 0.2 + seedOffset) * 4 * ud.damageState) - (ud.damageSeeds[2] * 5 * ud.damageState);
-                                // Contract width based on damage state
-                                let finalX = pl.Math.clamp(-hw, hw, jaggedX - (hw * 2 * (1.0 - ud.damageState)));
+                            for (let y = hh; y >= -hh; y -= 6) {
+                                let jaggedX = hw * 0.3 - (Math.cos(y * 0.5 + seedOffset) * 2 * (ud.damageState - 0.6));
+                                let finalX = pl.Math.clamp(-hw * 0.4, hw * 0.4, jaggedX - (hw * 0.8 * (1.0 - ud.damageState)));
                                 ctx.lineTo(finalX, y);
                             }
                             ctx.closePath();
                             ctx.fill();
-
-                            // Inner Bone Core Exposure
-                            if (ud.damageState > 0.6) {
-                                ctx.fillStyle = ud.isHuman ? '#e2e8f0' : '#475569'; // Core bone color
-                                ctx.beginPath();
-                                ctx.moveTo(-hw * 0.3, -hh);
-                                for (let y = -hh; y <= hh; y += 6) {
-                                    let jaggedX = -hw * 0.3 + (Math.sin(y * 0.5 + seedOffset) * 2 * (ud.damageState - 0.6));
-                                    ctx.lineTo(jaggedX, y);
-                                }
-                                for (let y = hh; y >= -hh; y -= 6) {
-                                    let jaggedX = hw * 0.3 - (Math.cos(y * 0.5 + seedOffset) * 2 * (ud.damageState - 0.6));
-                                    let finalX = pl.Math.clamp(-hw * 0.4, hw * 0.4, jaggedX - (hw * 0.8 * (1.0 - ud.damageState)));
-                                    ctx.lineTo(finalX, y);
-                                }
-                                ctx.closePath();
-                                ctx.fill();
-                            }
-                            ctx.restore();
                         }
-
-                    } else {
-                        // Regular blocks - perfectly rigid sharp rectangles again!
-                        let fill = ud.baseColor || '#fff', stroke = ud.outlineColor || '#333';
-                        if (ud.ghosted) ctx.globalAlpha = 0.5;
-
-                        if (heatMapEnabled && ud.temperature !== undefined) {
-                            ctx.globalAlpha = heatmapOpacity; fill = stroke = getTempColor(ud.temperature);
-                        } else { ctx.lineWidth = 2 / viewScale; }
-
-                        ctx.fillStyle = fill; ctx.strokeStyle = stroke;
-                        
-                        // CUSTOM RENDERING FOR THE WOODEN SLEDGE CLUB (FIX 3: Basic wooden club widening past the handle)
-                        if (ud.material === 'club') {
-                            ctx.fillStyle = '#854d0e'; // Wooden brown handle
-                            ctx.strokeStyle = '#451a03'; 
-                            ctx.lineWidth = 2 / viewScale;
-                            
-                            // Draw handle shaft (Properly positioned and visible now!)
-                            ctx.beginPath();
-                            ctx.moveTo(-2, -25); 
-                            ctx.lineTo(2, -25);
-                            ctx.lineTo(2, 5);  // Visible handle grip
-                            ctx.lineTo(-2, 5);
-                            ctx.closePath();
-                            ctx.fill(); ctx.stroke();
-                            
-                            // Draw widening wooden club body head
-                            ctx.beginPath();
-                            ctx.moveTo(-2, 5);
-                            ctx.lineTo(2, 5);
-                            ctx.lineTo(8, 25);  // Widens past handle
-                            ctx.lineTo(-8, 25);
-                            ctx.closePath();
-                            ctx.fill(); ctx.stroke();
-                        } else if (ud.material === 'lantern') { // FIX 4: Lantern visual render
-                            ctx.fillStyle = ud.activated ? '#fef08a' : '#475569';
-                            ctx.strokeStyle = '#1e293b';
-                            ctx.lineWidth = 2 / viewScale;
-                            
-                            // Outer lantern frame
-                            ctx.beginPath();
-                            ctx.rect(-8, -12, 16, 24);
-                            ctx.fill(); ctx.stroke();
-                            
-                            // Cage wire lines
-                            ctx.beginPath();
-                            ctx.moveTo(-4, -12); ctx.lineTo(-4, 12);
-                            ctx.moveTo(4, -12); ctx.lineTo(4, 12);
-                            ctx.moveTo(-8, 0); ctx.lineTo(8, 0);
-                            ctx.strokeStyle = '#0f172a';
-                            ctx.stroke();
-
-                            // Light radial gradient glow when active
-                            if (ud.activated) {
-                                ctx.save();
-                                ctx.translate(0, 0);
-                                let glowRad = 120;
-                                let radGrad = ctx.createRadialGradient(0, 0, 0, 0, 0, glowRad);
-                                radGrad.addColorStop(0, 'rgba(254, 240, 138, 0.45)');
-                                radGrad.addColorStop(0.3, 'rgba(253, 224, 71, 0.15)');
-                                radGrad.addColorStop(1, 'rgba(253, 224, 71, 0)');
-                                ctx.fillStyle = radGrad;
-                                ctx.beginPath();
-                                ctx.arc(0, 0, glowRad, 0, Math.PI * 2);
-                                ctx.fill();
-                                ctx.restore();
-                            }
-                        } else {
-                            for (let fix = body.getFixtureList(); fix; fix = fix.getNext()) {
-                                drawShapeHelper(fix); ctx.fill(); ctx.stroke();
-                                
-                                // Visual indicator if active
-                                if (ud.isActivable && ud.activated) {
-                                    ctx.fillStyle = ud.material === 'heater' ? 'rgba(239, 68, 68, 0.4)' : 'rgba(59, 130, 246, 0.4)';
-                                    drawShapeHelper(fix); ctx.fill();
-                                }
-                            }
-                        }
-                        ctx.globalAlpha = 1.0;
+                        ctx.restore();
                     }
-                    ctx.restore();
-                });
-            });
+
+                } else {
+                    let fill = ud.baseColor || '#fff', stroke = ud.outlineColor || '#333';
+                    if (ud.ghosted) ctx.globalAlpha = 0.5;
+
+                    if (heatMapEnabled && ud.temperature !== undefined) {
+                        ctx.globalAlpha = heatmapOpacity; fill = stroke = getTempColor(ud.temperature);
+                    } else { ctx.lineWidth = 2 / viewScale; }
+
+                    ctx.fillStyle = fill; ctx.strokeStyle = stroke;
+                    
+                    // FIX 1 & 3: Clean, wooden handle and tapering club rendering matches exactly to the Planck body fixtures
+                    if (ud.material === 'club') {
+                        ctx.fillStyle = '#854d0e'; 
+                        ctx.strokeStyle = '#451a03'; 
+                        ctx.lineWidth = 2 / viewScale;
+                        
+                        ctx.beginPath();
+                        // Widens past handle smoothly
+                        ctx.moveTo(-2, -25); 
+                        ctx.lineTo(2, -25);
+                        ctx.lineTo(6, 25);  
+                        ctx.lineTo(-6, 25);
+                        ctx.closePath();
+                        ctx.fill(); ctx.stroke();
+                    } else if (ud.material === 'lantern') { 
+                        ctx.fillStyle = ud.activated ? '#fef08a' : '#475569';
+                        ctx.strokeStyle = '#1e293b';
+                        ctx.lineWidth = 2 / viewScale;
+                        
+                        ctx.beginPath();
+                        ctx.rect(-ud.width/2, -ud.height/2, ud.width, ud.height);
+                        ctx.fill(); ctx.stroke();
+                        
+                        ctx.beginPath();
+                        ctx.moveTo(-ud.width/4, -ud.height/2); ctx.lineTo(-ud.width/4, ud.height/2);
+                        ctx.moveTo(ud.width/4, -ud.height/2); ctx.lineTo(ud.width/4, ud.height/2);
+                        ctx.moveTo(-ud.width/2, 0); ctx.lineTo(ud.width/2, 0);
+                        ctx.strokeStyle = '#0f172a';
+                        ctx.stroke();
+
+                        // PIXI SHADER GLOW INTEGRATION
+                        if (ud.activated) {
+                            glowLayer.beginFill(0xfef08a, 0.25);
+                            glowLayer.drawCircle(pos.x * SCALE, pos.y * SCALE, 140);
+                            glowLayer.endFill();
+                        }
+                    } else {
+                        for (let fix = body.getFixtureList(); fix; fix = fix.getNext()) {
+                            drawShapeHelper(fix); ctx.fill(); ctx.stroke();
+                            
+                            if (ud.isActivable && ud.activated) {
+                                ctx.fillStyle = ud.material === 'heater' ? 'rgba(239, 68, 68, 0.4)' : 'rgba(59, 130, 246, 0.4)';
+                                drawShapeHelper(fix); ctx.fill();
+                            }
+                        }
+                    }
+                    ctx.globalAlpha = 1.0;
+                }
+                ctx.restore();
+            }
 
             if (activeMouseJoint) {
                 ctx.beginPath();
@@ -1386,7 +1410,7 @@
                 if (bodies.length > 0 && currentTool === 'drag') {
                     let b = bodies[0];
                     if (b.getType() === 'static') b.setType('dynamic');
-                    b.setAwake(true); // FIX 5: Instantly wake up the body on grab
+                    b.setAwake(true); 
                     
                     activeMouseJoint = world.createJoint(pl.MouseJoint({ 
                         bodyA: groundBody, 
@@ -1399,7 +1423,7 @@
                     
                 } else if (bodies.length > 0 && currentTool === 'hinge') {
                     if (bodies.length >= 2 && bodies[0] !== bodies[1]) {
-                        bodies[0].setAwake(true); bodies[1].setAwake(true); // FIX 5: Wake up targets
+                        bodies[0].setAwake(true); bodies[1].setAwake(true); 
                         world.createJoint(pl.RevoluteJoint({ enableLimit: false }, bodies[0], bodies[1], wPos));
                         showToast("Pinned bodies together.");
                     } else {
@@ -1439,7 +1463,6 @@
         window.addEventListener('keydown', (e) => {
             const key = e.key.toLowerCase();
             
-            // Handle key capture state first
             if (capturingAction) {
                 e.preventDefault();
                 keybinds[capturingAction] = e.key.toLowerCase();
@@ -1447,7 +1470,6 @@
                 btn.innerText = e.key === ' ' ? 'Space' : e.key.toUpperCase();
                 btn.classList.remove('waiting');
                 
-                // Update HUD guides dynamically
                 if (capturingAction === 'pause') document.querySelector('.kb-pause').innerText = btn.innerText;
                 if (capturingAction === 'slowmo') document.querySelector('.kb-slowmo').innerText = btn.innerText;
 
@@ -1455,10 +1477,8 @@
                 return;
             }
 
-            // Continuous key state tracking
             activePressedKeys[key] = true;
 
-            // Direct Single-Press Handlers
             if (key === keybinds.thermal) { 
                 heatMapEnabled = !heatMapEnabled; 
                 document.getElementById('hover-temp-hud').style.display = heatMapEnabled ? 'block' : 'none';
@@ -1467,11 +1487,10 @@
             if (key === keybinds.pause) { isPaused = !isPaused; updateTimeUI(); }
             if (key === keybinds.slowmo) { isSlowMo = !isSlowMo; if(isSlowMo) isPaused = false; updateTimeUI(); }
 
-            // Activation Key trigger on hovered target
             if (key === keybinds.activate) {
                 let target = activeMouseJoint ? activeMouseJoint.getBodyB() : (hoveredBodyList.length > 0 ? hoveredBodyList[0] : null);
                 if (target) {
-                    target.setAwake(true); // FIX 5: Instantly wake up upon activation
+                    target.setAwake(true); 
                     let ud = target.getUserData();
                     if (ud && ud.isActivable) {
                         ud.activated = !ud.activated;
@@ -1568,7 +1587,6 @@
             heatmapOpacity = parseInt(e.target.value) / 100; document.getElementById('heatmap-opacity-label').innerText = e.target.value;
         });
 
-        // Keybinding Capturer Controller
         function startKeybindCapture(actionName) {
             if (capturingAction) {
                 document.getElementById('bind-' + capturingAction).classList.remove('waiting');
